@@ -59,7 +59,7 @@ bool MuonPFIsolationWithConeVeto::isInIsolationCone(const reco::CandidatePtr& ph
           break;
         }
       }
-      result *= ( is_vertex_allowed );
+      result = result && ( is_vertex_allowed );
     }
     result *= aspacked->pt() > _vetoThreshold && deltar2 > _vetoConeSize2 && deltar2 < _coneSize2 ;
   } else if ( aspf.isNonnull() && aspf.get() ) {
