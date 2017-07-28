@@ -31,7 +31,8 @@
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 
 #include "DataFormats/Common/interface/Handle.h"
-#include "DataFormats/Histograms/interface/MEtoEDMFormat.h"
+#include <TH3F.h>
+#include <TH2D.h>
 #include "DataFormats/JetReco/interface/FFTJetPileupSummary.h"
 #include "DataFormats/VertexReco/interface/Vertex.h"
 #include "DataFormats/VertexReco/interface/VertexFwd.h"
