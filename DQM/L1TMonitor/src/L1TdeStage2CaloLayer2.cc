@@ -338,6 +338,7 @@ void L1TdeStage2CaloLayer2::analyze (
      - missing jet is in the middle
   */
 
+  /*
   l1t::EGammaBxCollection::const_iterator dataEGIt = egDataCol->begin(currBx);
   l1t::EGammaBxCollection::const_iterator emulEGIt = egEmulCol->begin(currBx);
 
@@ -346,6 +347,7 @@ void L1TdeStage2CaloLayer2::analyze (
 
   l1t::EtSumBxCollection::const_iterator dataSumIt = sumDataCol->begin(currBx);
   l1t::EtSumBxCollection::const_iterator emulSumIt = sumEmulCol->begin(currBx);
+  */
 
   if (!compareJets(jetDataCol, jetEmulCol)) {
     if (verbose)
