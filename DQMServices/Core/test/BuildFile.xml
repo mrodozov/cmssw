@@ -25,3 +25,6 @@
 </bin>
 <bin   file="DQMTestStandaloneBuildOfDQMStore.cc">
 </bin>
+<bin   file="test_version.cc">
+
+</bin>
