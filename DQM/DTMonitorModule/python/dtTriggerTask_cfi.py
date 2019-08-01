@@ -1,14 +1,14 @@
 import FWCore.ParameterSet.Config as cms
 
-dtTriggerMonitor = cms.EDAnalyzer("DTLocalTriggerTask",
+from DQMServices.Core.DQMEDAnalyzer import DQMEDAnalyzer
+dtTriggerMonitor = DQMEDAnalyzer('DTLocalTriggerTask',
     # set static booking (all the detector)
     staticBooking = cms.untracked.bool(True),
     # labels of DDU/TM data and 4D segments
-    tm_labelIn = cms.untracked.string('twinMuxStage2Digis:PhIn'),
-    tm_labelOut = cms.untracked.string('twinMuxStage2Digis:PhOut'),
+    tm_label = cms.untracked.InputTag('twinMuxStage2Digis:PhIn'),
     tmTh_label = cms.untracked.InputTag("twinMuxStage2Digis","ThIn"),
-    ros_label = cms.untracked.string('dtunpacker'),
-    seg_label = cms.untracked.string('dt4DSegments'),
+    ros_label = cms.untracked.InputTag('dtunpacker'),
+    seg_label = cms.untracked.InputTag('dt4DSegments'),
     minBXDDU = cms.untracked.int32(0),  # min BX for DDU plots
     maxBXDDU = cms.untracked.int32(20), # max BX for DDU plots
     maxBXTM = cms.untracked.int32(2),  # max BX for TM plots

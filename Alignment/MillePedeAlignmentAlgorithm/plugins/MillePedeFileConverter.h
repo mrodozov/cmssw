@@ -25,17 +25,15 @@
 #include "FWCore/Framework/interface/MakerMacros.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 
-class MillePedeFileConverter
-    : public edm::one::EDProducer<edm::EndLuminosityBlockProducer> {
- public:
+class MillePedeFileConverter : public edm::one::EDProducer<edm::EndLuminosityBlockProducer> {
+public:
   explicit MillePedeFileConverter(const edm::ParameterSet&);
-  ~MillePedeFileConverter();
+  ~MillePedeFileConverter() override;
   static void fillDescriptions(edm::ConfigurationDescriptions& descriptions);
 
- private:
-  virtual void produce(edm::Event&, const edm::EventSetup&) override {}
-  virtual void endLuminosityBlockProduce(edm::LuminosityBlock&,
-                                         const edm::EventSetup&) override final;
+private:
+  void produce(edm::Event&, const edm::EventSetup&) override {}
+  void endLuminosityBlockProduce(edm::LuminosityBlock&, const edm::EventSetup&) final;
 
   const std::string inputDir_;
   const std::string inputFileName_;

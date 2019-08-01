@@ -12,19 +12,15 @@
 
 #include "AnalysisDataFormats/TopObjects/interface/TtGenEvent.h"
 
-
 class TopGenEventAnalyzer : public edm::EDAnalyzer {
+public:
+  explicit TopGenEventAnalyzer(const edm::ParameterSet &);
+  ~TopGenEventAnalyzer() override;
 
- public:
-
-  explicit TopGenEventAnalyzer(const edm::ParameterSet&);
-  ~TopGenEventAnalyzer();
-
- private:
-
-  virtual void beginJob() ;
-  virtual void analyze(const edm::Event&, const edm::EventSetup&);
-  virtual void endJob() ;
+private:
+  void beginJob() override;
+  void analyze(const edm::Event &, const edm::EventSetup &) override;
+  void endJob() override;
 
   edm::EDGetTokenT<TtGenEvent> inputGenEventToken_;
 

@@ -1,65 +1,69 @@
 import FWCore.ParameterSet.Config as cms
-process = cms.Process("CTPPS")
 
-# minimum of logs
-#process.MessageLogger = cms.Service("MessageLogger",
-#    statistics = cms.untracked.vstring(),
-#    destinations = cms.untracked.vstring('cerr'),
-#    cerr = cms.untracked.PSet(
-#        threshold = cms.untracked.string('WARNING')
-#    )
-#)
+process = cms.Process('CTPPS')
+
+from RecoCTPPS.TotemRPLocal.PPSTimingCalibrationModeEnum_cff import PPSTimingCalibrationModeEnum
+calibrationMode = PPSTimingCalibrationModeEnum.CondDB
+
+# import of standard configurations
+process.load('Configuration.StandardSequences.Services_cff')
+process.load('FWCore.MessageService.MessageLogger_cfi')
+process.load('Configuration.EventContent.EventContent_cff')
+process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
+
+from Configuration.AlCa.GlobalTag import GlobalTag
+process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:run2_hlt_relval', '')
+
+if calibrationMode == PPSTimingCalibrationModeEnum.JSON:
+    process.load('CondFormats.CTPPSReadoutObjects.ppsTimingCalibrationESSource_cfi')
+    process.ppsTimingCalibrationESSource.calibrationFile = cms.FileInPath('RecoCTPPS/TotemRPLocal/data/timing_offsets_ufsd_2018.dec18.cal.json')
+elif calibrationMode == PPSTimingCalibrationModeEnum.SQLite:
+    # load calibrations from database
+    process.load('CondCore.CondDB.CondDB_cfi')
+    process.CondDB.connect = 'sqlite_file:ppsDiamondTiming_calibration.sqlite' # SQLite input
+    process.PoolDBESSource = cms.ESSource('PoolDBESSource',
+        process.CondDB,
+        DumpStats = cms.untracked.bool(True),
+        toGet = cms.VPSet(
+            cms.PSet(
+                record = cms.string('PPSTimingCalibrationRcd'),
+                tag = cms.string('PPSDiamondTimingCalibration')
+            )
+        )
+    )
 
 # raw data source
 #process.source = cms.Source("NewEventStreamFileReader",
 #    fileNames = cms.untracked.vstring(
 #        '/store/t0streamer/Data/Physics/000/286/591/run286591_ls0521_streamPhysics_StorageManager.dat',
+#        '/store/t0streamer/Minidaq/A/000/303/982/run303982_ls0001_streamA_StorageManager.dat',
 #    )
 #)
 process.source = cms.Source('PoolSource',
     fileNames = cms.untracked.vstring(
-        'root://eoscms.cern.ch:1094//eos/totem/data/ctpps/run284036.root',
+#        '/store/data/Run2017E/ZeroBias/RAW/v1/000/304/447/00000/001C958C-7FA9-E711-858F-02163E011A5F.root',
+#        '/store/data/Commissioning2018/ZeroBias/RAW/v1/000/314/816/00000/FCDB2DE6-4845-E811-91A1-FA163E6CD0D3.root',
+        '/store/data/Run2018C/DoubleMuon/RAW/v1/000/319/525/00000/CE9C5CAC-AD85-E811-852B-FA163E26680F.root',
     ),
 )
 
 process.maxEvents = cms.untracked.PSet(
-    input = cms.untracked.int32(1000)
+    input = cms.untracked.int32(-1)
 )
-
-# diamonds mapping
-process.totemDAQMappingESSourceXML_TimingDiamond = cms.ESSource("TotemDAQMappingESSourceXML",
-  verbosity = cms.untracked.uint32(0),
-  subSystem = cms.untracked.string("TimingDiamond"),
-  configuration = cms.VPSet(
-    # before diamonds inserted in DAQ
-    cms.PSet(
-      validityRange = cms.EventRange("1:min - 283819:max"),
-      mappingFileNames = cms.vstring(),
-      maskFileNames = cms.vstring()
-    ),
-    # after diamonds inserted in DAQ
-    cms.PSet(
-      validityRange = cms.EventRange("283820:min - 999999999:max"),
-      mappingFileNames = cms.vstring("CondFormats/CTPPSReadoutObjects/xml/mapping_timing_diamond.xml"),
-      maskFileNames = cms.vstring()
-    )
-  )
-)
+process.MessageLogger.cerr.FwkReport.reportEvery = cms.untracked.int32( 1000 )
 
 # raw-to-digi conversion
-process.load('EventFilter.CTPPSRawToDigi.ctppsDiamondRawToDigi_cfi')
-process.ctppsDiamondRawToDigi.rawDataTag = cms.InputTag("rawDataCollector")
+process.load("EventFilter.CTPPSRawToDigi.ctppsRawToDigi_cff")
+
+# local RP reconstruction chain with standard settings
+process.load("RecoCTPPS.Configuration.recoCTPPS_cff")
 
 # rechits production
-process.load('Geometry.VeryForwardGeometry.geometryRP_cfi')
+process.load('Geometry.VeryForwardGeometry.geometryRPFromDD_2018_cfi')
 process.load('RecoCTPPS.TotemRPLocal.ctppsDiamondRecHits_cfi')
 
 # local tracks fitter
 process.load('RecoCTPPS.TotemRPLocal.ctppsDiamondLocalTracks_cfi')
-#process.ctppsDiamondLocalTracks.trackingAlgorithmParams.threshold = cms.double(1.5)
-#process.ctppsDiamondLocalTracks.trackingAlgorithmParams.sigma = cms.double(0)
-#process.ctppsDiamondLocalTracks.trackingAlgorithmParams.resolution = cms.double(0.025) # in mm
-#process.ctppsDiamondLocalTracks.trackingAlgorithmParams.pixel_efficiency_function = cms.string("(TMath::Erf((x-[0]+0.5*[1])/([2]/4)+2)+1)*TMath::Erfc((x-[0]-0.5*[1])/([2]/4)-2)/4")
 
 process.output = cms.OutputModule("PoolOutputModule",
     fileName = cms.untracked.string("file:AOD.root"),
@@ -72,8 +76,8 @@ process.output = cms.OutputModule("PoolOutputModule",
 # execution configuration
 process.p = cms.Path(
     process.ctppsDiamondRawToDigi *
-    process.ctppsDiamondRecHits *
-    process.ctppsDiamondLocalTracks
+    process.ctppsDiamondLocalReconstruction
 )
 
-process.outpath = cms.EndPath(process.output) 
+process.outpath = cms.EndPath(process.output)
+

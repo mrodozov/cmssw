@@ -7,22 +7,18 @@
 #include "FWCore/Framework/interface/EDAnalyzer.h"
 
 class SiStripFedCablingBuilder : public edm::EDAnalyzer {
+public:
+  SiStripFedCablingBuilder(const edm::ParameterSet& iConfig);
 
- public:
+  ~SiStripFedCablingBuilder() override{};
 
-  SiStripFedCablingBuilder( const edm::ParameterSet& iConfig);
+  void beginRun(const edm::Run&, const edm::EventSetup&) override;
 
-  ~SiStripFedCablingBuilder(){};
+  void analyze(const edm::Event&, const edm::EventSetup&) override { ; }
 
-  void beginRun( const edm::Run&, const edm::EventSetup& );
-
-  void analyze(const edm::Event& , const edm::EventSetup& ) {;}
-
- private:
-
+private:
   bool printFecCabling_;
   bool printDetCabling_;
   bool printRegionCabling_;
-
 };
 #endif

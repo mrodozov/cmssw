@@ -1,12 +1,11 @@
 #ifndef GeneratorInterface_RivetInterface_RivetAnalyzer
 #define GeneratorInterface_RivetInterface_RivetAnalyzer
 
-#include "FWCore/Framework/interface/EDAnalyzer.h"
+#include "FWCore/Framework/interface/one/EDAnalyzer.h"
 #include "Rivet/AnalysisHandler.hh"
 
 //DQM services
 #include "DQMServices/Core/interface/DQMStore.h"
-#include "DQMServices/Core/interface/MonitorElement.h"
 
 #include "SimDataFormats/GeneratorProducts/interface/HepMCProduct.h"
 #include "SimDataFormats/GeneratorProducts/interface/GenEventInfoProduct.h"
@@ -18,44 +17,46 @@
 #include <vector>
 #include <string>
 
-class RivetAnalyzer : public edm::EDAnalyzer
-{
-  public:
-  RivetAnalyzer(const edm::ParameterSet&);
+class RivetAnalyzer : public edm::one::EDAnalyzer<edm::one::WatchRuns, edm::one::SharedResources> {
+public:
+  typedef dqm::legacy::DQMStore DQMStore;
+  typedef dqm::legacy::MonitorElement MonitorElement;
 
-  virtual ~RivetAnalyzer();
+  RivetAnalyzer(const edm::ParameterSet &);
 
-  virtual void beginJob() override;
+  ~RivetAnalyzer() override;
 
-  virtual void endJob() override;
+  void beginJob() override;
 
-  virtual void analyze(const edm::Event&, const edm::EventSetup&) override;
+  void endJob() override;
 
-  virtual void beginRun(const edm::Run&, const edm::EventSetup&) override;
+  void analyze(const edm::Event &, const edm::EventSetup &) override;
 
-  virtual void endRun(const edm::Run&, const edm::EventSetup&) override;
-  
-  private:
+  void beginRun(const edm::Run &, const edm::EventSetup &) override;
 
+  void endRun(const edm::Run &, const edm::EventSetup &) override;
+
+private:
   void normalizeTree();
 
   edm::EDGetTokenT<edm::HepMCProduct> _hepmcCollection;
-  bool                     _useExternalWeight;
-  bool                     _useLHEweights;
-  int                      _LHEweightNumber;
+  bool _useExternalWeight;
+  bool _useLHEweights;
+  int _LHEweightNumber;
+  bool _useGENweights;
+  int _GENweightNumber;
   edm::EDGetTokenT<LHEEventProduct> _LHECollection;
   edm::EDGetTokenT<GenEventInfoProduct> _genEventInfoCollection;
-  Rivet::AnalysisHandler   _analysisHandler;   
-  bool                     _isFirstEvent;
-  std::string              _outFileName;
-  bool                     _doFinalize;
-  bool                     _produceDQM;
-  double                   _xsection;     
+  Rivet::AnalysisHandler _analysisHandler;
+  bool _isFirstEvent;
+  std::string _outFileName;
+  bool _doFinalize;
+  bool _produceDQM;
+  double _xsection;
 
   DQMStore *dbe;
   std::vector<MonitorElement *> _mes;
 };
-
 
 /*
 template<class YODATYPE, class ROOTTYPE> 

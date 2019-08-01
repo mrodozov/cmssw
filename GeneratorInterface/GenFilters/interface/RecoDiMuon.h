@@ -24,18 +24,18 @@
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 
 class RecoDiMuon : public edm::EDFilter {
-    public:
-       explicit RecoDiMuon(const edm::ParameterSet&);
-       ~RecoDiMuon();
-       virtual void endJob() ;
+public:
+  explicit RecoDiMuon(const edm::ParameterSet&);
+  ~RecoDiMuon() override;
+  void endJob() override;
 
-       virtual bool filter(edm::Event&, const edm::EventSetup&);
+  bool filter(edm::Event&, const edm::EventSetup&) override;
 
-   private:
-      edm::InputTag muonLabel_;
-      double singleMuonPtMin_;
-      double diMuonPtMin_;
-      unsigned int  nEvents_;
-      unsigned int nAccepted_;
+private:
+  edm::InputTag muonLabel_;
+  double singleMuonPtMin_;
+  double diMuonPtMin_;
+  unsigned int nEvents_;
+  unsigned int nAccepted_;
 };
 #endif

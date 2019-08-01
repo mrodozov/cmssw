@@ -17,44 +17,40 @@ from HLTrigger.Configuration.common import *
 #                     pset.minGoodStripCharge = cms.PSet(refToPSet_ = cms.string('HLTSiStripClusterChargeCutNone'))
 #     return process
 
-# Matching ECAL selective readout in particle flow, need a new input with online Selective Readout Flags
-def customiseFor17794(process):
-     for edproducer in producers_by_type(process, "PFRecHitProducer"):
-          if hasattr(edproducer,'producers'):
-               for pset in edproducer.producers:
-                    if (pset.name == 'PFEBRecHitCreator' or pset.name == 'PFEERecHitCreator'):
-                         if not hasattr(pset,'srFlags'):
-                              pset.srFlags = cms.InputTag('hltEcalDigis')
-     return process
+def customiseFor2017DtUnpacking(process):
+    """Adapt the HLT to run the legacy DT unpacking
+    for pre2018 data/MC workflows as the default"""
 
-
-# Dynamic track algo priority order
-def customiseFor17771(process):
-    if not hasattr(process, "hltTrackAlgoPriorityOrder"):
-        from RecoTracker.FinalTrackSelectors.trackAlgoPriorityOrder_cfi import trackAlgoPriorityOrder
-        process.hltTrackAlgoPriorityOrder = trackAlgoPriorityOrder.clone(
-            ComponentName = "hltTrackAlgoPriorityOrder",
-            algoOrder = [] # HLT iteration order is correct in the hard-coded default
+    if hasattr(process,'hltMuonDTDigis'):
+        process.hltMuonDTDigis = cms.EDProducer( "DTUnpackingModule",
+            useStandardFEDid = cms.bool( True ),
+            maxFEDid = cms.untracked.int32( 779 ),
+            inputLabel = cms.InputTag( "rawDataCollector" ),
+            minFEDid = cms.untracked.int32( 770 ),
+            dataType = cms.string( "DDU" ),
+            readOutParameters = cms.PSet(
+                localDAQ = cms.untracked.bool( False ),
+                debug = cms.untracked.bool( False ),
+                rosParameters = cms.PSet(
+                    localDAQ = cms.untracked.bool( False ),
+                    debug = cms.untracked.bool( False ),
+                    writeSC = cms.untracked.bool( True ),
+                    readDDUIDfromDDU = cms.untracked.bool( True ),
+                    readingDDU = cms.untracked.bool( True ),
+                    performDataIntegrityMonitor = cms.untracked.bool( False )
+                    ),
+                performDataIntegrityMonitor = cms.untracked.bool( False )
+                ),
+            dqmOnly = cms.bool( False )
         )
 
-    for producer in producers_by_type(process, "SimpleTrackListMerger", "TrackCollectionMerger", "TrackListMerger"):
-        if not hasattr(producer, "trackAlgoPriorityOrder"):
-            producer.trackAlgoPriorityOrder = cms.string("hltTrackAlgoPriorityOrder")
     return process
 
-# Add optional SeedStopReason to CkfTrackCandidateMaker
-def customiseFor17792(process):
-    for producer in producers_by_type(process, "CkfTrackCandidateMaker"):
-        if not hasattr(producer, "produceSeedStopReasons"):
-            producer.produceSeedStopReasons = cms.bool(False)
-    return process
 
 # CMSSW version specific customizations
 def customizeHLTforCMSSW(process, menuType="GRun"):
+
     # add call to action function in proper order: newest last!
     # process = customiseFor12718(process)
-    process = customiseFor17771(process)
-    process = customiseFor17792(process)
-    process = customiseFor17794(process)
 
     return process

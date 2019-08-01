@@ -21,6 +21,7 @@ RecoTrackerFEVT = cms.PSet(
         'keep *_dedxTruncated40_*_*',
         'keep *_dedxHitInfo_*_*',
         'keep *_dedxHarmonic2_*_*',
+        'keep *_dedxPixelHarmonic2_*_*',
         'keep *_trackExtrapolator_*_*',
         'keep recoTracks_cosmicDCTracks_*_*',
         'keep recoTrackExtras_cosmicDCTracks_*_*',
@@ -47,6 +48,7 @@ RecoTrackerRECO = cms.PSet(
         'keep *_dedxTruncated40_*_*',
         'keep *_dedxHitInfo_*_*',
         'keep *_dedxHarmonic2_*_*',
+        'keep *_dedxPixelHarmonic2_*_*',
         'keep *_trackExtrapolator_*_*',
         'keep recoTracks_cosmicDCTracks_*_*',
         'keep recoTrackExtras_cosmicDCTracks_*_*',
@@ -61,10 +63,26 @@ RecoTrackerAOD = cms.PSet(
         'keep recoTracks_beamhaloTracks_*_*',
         'keep recoTracks_ctfPixelLess_*_*', 
         'keep *_dedxHarmonic2_*_*',
+        'keep *_dedxPixelHarmonic2_*_*',
         'keep *_dedxHitInfo_*_*',
         'keep *_trackExtrapolator_*_*',
         'keep *_generalTracks_MVAValues_*',
         'keep *_generalTracks_MVAVals_*'
     )
 )
+
+#HI-specific products: needed in AOD, propagate to more inclusive tiers as well
+from Configuration.Eras.Modifier_pp_on_AA_2018_cff import pp_on_AA_2018
+for ec in [RecoTrackerAOD.outputCommands, RecoTrackerRECO.outputCommands, RecoTrackerFEVT.outputCommands]:
+      pp_on_AA_2018.toModify( ec, 
+                        func=lambda outputCommands: outputCommands.extend(['keep recoTracks_hiConformalPixelTracks_*_*',
+                                                                           ])
+                        )
+for ec in [RecoTrackerRECO.outputCommands, RecoTrackerFEVT.outputCommands]:
+      pp_on_AA_2018.toModify( ec, 
+                        func=lambda outputCommands: outputCommands.extend([
+			'keep recoTrackExtras_hiConformalPixelTracks_*_*',
+                        'keep TrackingRecHitsOwned_hiConformalPixelTracks_*_*'
+                                                                           ])
+                        )
 

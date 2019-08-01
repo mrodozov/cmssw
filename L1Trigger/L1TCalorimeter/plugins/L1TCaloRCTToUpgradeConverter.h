@@ -19,7 +19,6 @@
 //
 //
 
-
 // system include files
 #include <memory>
 
@@ -47,29 +46,29 @@ namespace l1t {
   class L1TCaloRCTToUpgradeConverter : public edm::EDProducer {
   public:
     explicit L1TCaloRCTToUpgradeConverter(const edm::ParameterSet& ps);
-    ~L1TCaloRCTToUpgradeConverter();
+    ~L1TCaloRCTToUpgradeConverter() override;
 
-    static void fillDescriptions(edm::ConfigurationDescriptions& descriptions)
-;
+    static void fillDescriptions(edm::ConfigurationDescriptions& descriptions);
+
   private:
-      virtual void beginJob() override;
-      virtual void produce(edm::Event&, const edm::EventSetup&) override;
-      virtual void endJob() override;
+    void beginJob() override;
+    void produce(edm::Event&, const edm::EventSetup&) override;
+    void endJob() override;
 
-      //virtual void beginRun(edm::Run const&, edm::EventSetup const&) override;
-      //virtual void endRun(edm::Run const&, edm::EventSetup const&) override;
-      //virtual void beginLuminosityBlock(edm::LuminosityBlock const&, edm::EventSetup const&) override;
-      //virtual void endLuminosityBlock(edm::LuminosityBlock const&, edm::EventSetup const&) override;
+    //virtual void beginRun(edm::Run const&, edm::EventSetup const&) override;
+    //virtual void endRun(edm::Run const&, edm::EventSetup const&) override;
+    //virtual void beginLuminosityBlock(edm::LuminosityBlock const&, edm::EventSetup const&) override;
+    //virtual void endLuminosityBlock(edm::LuminosityBlock const&, edm::EventSetup const&) override;
 
-      // ----------member data ---------------------------
+    // ----------member data ---------------------------
 
-      edm::EDGetToken rgnToken_;
-      edm::EDGetToken emToken_;
+    edm::EDGetToken rgnToken_;
+    edm::EDGetToken emToken_;
 
-      /* int firstBx_; */
-      /* int lastBx_; */
+    /* int firstBx_; */
+    /* int lastBx_; */
   };
 
-}
+}  // namespace l1t
 
 #endif

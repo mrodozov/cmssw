@@ -14,7 +14,7 @@
 #include <vector>
 #include <string>
 
-class ProduceDropBoxMetadata  : public edm::EDAnalyzer {
+class ProduceDropBoxMetadata : public edm::EDAnalyzer {
 public:
   /// Constructor
   ProduceDropBoxMetadata(const edm::ParameterSet&);
@@ -23,22 +23,18 @@ public:
   virtual ~ProduceDropBoxMetadata();
 
   // Operations
-//   virtual void beginJob();
+  // virtual void beginJob();
   virtual void beginRun(const edm::Run& run, const edm::EventSetup& eSetup);
-  
+
   virtual void analyze(const edm::Event&, const edm::EventSetup&) {}
   virtual void endJob() {}
 
 protected:
-
 private:
-
   bool read;
   bool write;
 
   std::vector<edm::ParameterSet> fToWrite;
   std::vector<std::string> fToRead;
-
 };
 #endif
-

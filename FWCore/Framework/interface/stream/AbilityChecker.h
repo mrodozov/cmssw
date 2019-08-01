@@ -4,7 +4,7 @@
 //
 // Package:     FWCore/Framework
 // Class  :     AbilityChecker
-// 
+//
 /**\class edm::stream::AbilityChecker AbilityChecker.h "FWCore/Framework/interface/stream/AbilityChecker.h"
 
  Description: [one line class summary]
@@ -28,56 +28,66 @@ namespace edm {
   namespace stream {
     namespace impl {
       struct LastCheck {};
-      
-      template<typename T, typename... U>
+
+      template <typename T, typename... U>
       struct HasAbility;
-      
-      template<typename G, typename... U>
+
+      template <typename G, typename... U>
       struct HasAbility<GlobalCache<G>, U...> : public HasAbility<U...> {
         static constexpr bool kGlobalCache = true;
       };
 
-      template<typename R, typename... U>
+      template <typename R, typename... U>
       struct HasAbility<RunCache<R>, U...> : public HasAbility<U...> {
         static constexpr bool kRunCache = true;
       };
 
-      template<typename R, typename... U>
+      template <typename R, typename... U>
       struct HasAbility<LuminosityBlockCache<R>, U...> : public HasAbility<U...> {
         static constexpr bool kLuminosityBlockCache = true;
       };
 
-      template<typename R, typename... U>
+      template <typename R, typename... U>
       struct HasAbility<RunSummaryCache<R>, U...> : public HasAbility<U...> {
         static constexpr bool kRunSummaryCache = true;
       };
-      
-      template<typename R, typename... U>
+
+      template <typename R, typename... U>
       struct HasAbility<LuminosityBlockSummaryCache<R>, U...> : public HasAbility<U...> {
         static constexpr bool kLuminosityBlockSummaryCache = true;
       };
 
-      template<typename... U>
-      struct HasAbility<edm::BeginRunProducer, U...> :public HasAbility<U...> {
+      template <typename... U>
+      struct HasAbility<edm::BeginRunProducer, U...> : public HasAbility<U...> {
         static constexpr bool kBeginRunProducer = true;
       };
-      
-      template<typename... U>
-      struct HasAbility<edm::EndRunProducer, U...> :public HasAbility<U...> {
+
+      template <typename... U>
+      struct HasAbility<edm::EndRunProducer, U...> : public HasAbility<U...> {
         static constexpr bool kEndRunProducer = true;
       };
-      
-      template<typename... U>
-      struct HasAbility<edm::BeginLuminosityBlockProducer, U...> :public HasAbility<U...> {
+
+      template <typename... U>
+      struct HasAbility<edm::BeginLuminosityBlockProducer, U...> : public HasAbility<U...> {
         static constexpr bool kBeginLuminosityBlockProducer = true;
       };
- 
-      template<typename... U>
-      struct HasAbility<edm::EndLuminosityBlockProducer, U...> :public HasAbility<U...> {
+
+      template <typename... U>
+      struct HasAbility<edm::EndLuminosityBlockProducer, U...> : public HasAbility<U...> {
         static constexpr bool kEndLuminosityBlockProducer = true;
       };
-      
-      template<>
+
+      template <typename... U>
+      struct HasAbility<edm::ExternalWork, U...> : public HasAbility<U...> {
+        static constexpr bool kExternalWork = true;
+      };
+
+      template <typename... U>
+      struct HasAbility<edm::Accumulator, U...> : public HasAbility<U...> {
+        static constexpr bool kAccumulator = true;
+      };
+
+      template <>
       struct HasAbility<LastCheck> {
         static constexpr bool kGlobalCache = false;
         static constexpr bool kRunCache = false;
@@ -88,15 +98,13 @@ namespace edm {
         static constexpr bool kEndRunProducer = false;
         static constexpr bool kBeginLuminosityBlockProducer = false;
         static constexpr bool kEndLuminosityBlockProducer = false;
+        static constexpr bool kExternalWork = false;
+        static constexpr bool kAccumulator = false;
       };
-    }
-    template<typename... T>
-    struct AbilityChecker : public impl::HasAbility<T...,impl::LastCheck>
-    {
-    };
-  }
-}
-
+    }  // namespace impl
+    template <typename... T>
+    struct AbilityChecker : public impl::HasAbility<T..., impl::LastCheck> {};
+  }  // namespace stream
+}  // namespace edm
 
 #endif
-

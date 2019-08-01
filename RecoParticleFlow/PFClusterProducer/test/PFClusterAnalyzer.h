@@ -20,41 +20,32 @@
 \brief test analyzer for PFClusters
 */
 
-
-
-
 class PFClusterAnalyzer : public edm::EDAnalyzer {
- public:
-
+public:
   explicit PFClusterAnalyzer(const edm::ParameterSet&);
 
-  ~PFClusterAnalyzer();
-  
-  virtual void analyze(const edm::Event&, const edm::EventSetup&);
+  ~PFClusterAnalyzer() override;
 
-  virtual void beginRun(const edm::Run & r, const edm::EventSetup & c);
+  void analyze(const edm::Event&, const edm::EventSetup&) override;
 
- private:
-  
-  void 
-    fetchCandidateCollection(edm::Handle<reco::PFClusterCollection>& c, 
-			     const edm::InputTag& tag, 
-			     const edm::Event& iSetup) const;
+  void beginRun(const edm::Run& r, const edm::EventSetup& c) override;
 
-/*   void printElementsInBlocks(const reco::PFCluster& cluster, */
-/* 			     std::ostream& out=std::cout) const; */
+private:
+  void fetchCandidateCollection(edm::Handle<reco::PFClusterCollection>& c,
+                                const edm::InputTag& tag,
+                                const edm::Event& iSetup) const;
 
+  /*   void printElementsInBlocks(const reco::PFCluster& cluster, */
+  /* 			     std::ostream& out=std::cout) const; */
 
-  
-  /// PFClusters in which we'll look for pile up particles 
-  edm::InputTag   inputTagPFClusters_;
-  
+  /// PFClusters in which we'll look for pile up particles
+  edm::InputTag inputTagPFClusters_;
+
   /// verbose ?
-  bool   verbose_;
+  bool verbose_;
 
   /// print the blocks associated to a given candidate ?
-  bool   printBlocks_;
-
+  bool printBlocks_;
 };
 
 #endif

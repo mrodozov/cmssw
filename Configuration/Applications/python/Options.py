@@ -351,6 +351,11 @@ expertSettings.add_option("--era",
                           default=None,
                           dest="era")
 
+expertSettings.add_option("--procModifiers",
+                          help="Specify any process Modifiers to include (in Configuration/ProcessModiers) - comma separated list",
+                          default=None,
+                          dest="procModifiers")
+
 expertSettings.add_option("--evt_type",
                           help="specify the gen fragment",
                           default=None,
@@ -382,4 +387,14 @@ expertSettings.add_option("--nThreads",
                           help="How many threads should CMSSW use (default is 1)",
                           default="1",
                           dest='nThreads'
+                          )
+expertSettings.add_option("--nStreams",
+                          help="How many streams should CMSSW use (default is 0 which makes it same as nThreads)",
+                          default="0",
+                          dest='nStreams'
+                          )
+expertSettings.add_option("--nConcurrentLumis",
+                          help="How many concurrent LuminosityBlocks should CMSSW use (default is 1)",
+                          default="1",
+                          dest='nConcurrentLumis'
                           )

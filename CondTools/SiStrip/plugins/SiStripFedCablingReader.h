@@ -7,23 +7,19 @@
 #include "FWCore/Framework/interface/EventSetup.h"
 
 class SiStripFedCablingReader : public edm::EDAnalyzer {
+public:
+  SiStripFedCablingReader(const edm::ParameterSet&);
 
- public:
-  
-  SiStripFedCablingReader( const edm::ParameterSet& );
-  
-  ~SiStripFedCablingReader() {;}
+  ~SiStripFedCablingReader() override { ; }
 
-  void beginRun( const edm::Run&, const edm::EventSetup& );
+  void beginRun(const edm::Run&, const edm::EventSetup&) override;
 
-  void analyze(const edm::Event&, const edm::EventSetup&){;}
-  
- private:
+  void analyze(const edm::Event&, const edm::EventSetup&) override { ; }
 
+private:
   bool printFecCabling_;
   bool printDetCabling_;
   bool printRegionCabling_;
-
 };
 
-#endif // CondTools_SiStrip_FedCablingReader_H
+#endif  // CondTools_SiStrip_FedCablingReader_H

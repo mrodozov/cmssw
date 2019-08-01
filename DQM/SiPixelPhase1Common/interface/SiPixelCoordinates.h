@@ -3,7 +3,7 @@
 // -*- C++ -*-
 //
 // Class:      SiPixelCoordinates
-// 
+//
 // This class provides floating point numbers for
 // digis, clusters and hits that can be used to
 // easily plot various geometry related histograms
@@ -31,11 +31,8 @@
 
 #include "CondFormats/SiPixelObjects/interface/SiPixelFedCablingMap.h"
 
-
 class SiPixelCoordinates {
-
- public:
-
+public:
   SiPixelCoordinates();
   SiPixelCoordinates(int);
   virtual ~SiPixelCoordinates();
@@ -162,36 +159,36 @@ class SiPixelCoordinates {
   float signed_shifted_blade_panel_coord(const SiPixelRecHit*);
   float signed_shifted_blade_panel_coord(const TrackingRecHit*);
 
- private:
+private:
   int phase_;
 
-  const TrackerTopology*      tTopo_;
-  const TrackerGeometry*      tGeom_;
+  const TrackerTopology* tTopo_;
+  const TrackerGeometry* tGeom_;
   const SiPixelFedCablingMap* cablingMap_;
 
   // Internal containers for optimal speed
   // - only calculate things once per DetId
-  std::map<uint32_t, int> quadrant_;
-  std::map<uint32_t, int> side_;
-  std::map<uint32_t, int> module_;
-  std::map<uint32_t, int> layer_;
-  std::map<uint32_t, int> sector_;
-  std::map<uint32_t, int> ladder_;
-  std::map<uint32_t, int> signed_ladder_;
-  std::map<uint32_t, int> signed_module_;
-  std::map<uint32_t, int> half_;
-  std::map<uint32_t, int> outer_;
-  std::map<uint32_t, int> flipped_;
-  std::map<uint32_t, int> disk_;
-  std::map<uint32_t, int> signed_disk_;
-  std::map<uint32_t, int> panel_;
-  std::map<uint32_t, int> ring_;
-  std::map<uint32_t, int> blade_;
-  std::map<uint32_t, int> signed_blade_;
+  std::unordered_map<uint32_t, int> quadrant_;
+  std::unordered_map<uint32_t, int> side_;
+  std::unordered_map<uint32_t, int> module_;
+  std::unordered_map<uint32_t, int> layer_;
+  std::unordered_map<uint32_t, int> sector_;
+  std::unordered_map<uint32_t, int> ladder_;
+  std::unordered_map<uint32_t, int> signed_ladder_;
+  std::unordered_map<uint32_t, int> signed_module_;
+  std::unordered_map<uint32_t, int> half_;
+  std::unordered_map<uint32_t, int> outer_;
+  std::unordered_map<uint32_t, int> flipped_;
+  std::unordered_map<uint32_t, int> disk_;
+  std::unordered_map<uint32_t, int> signed_disk_;
+  std::unordered_map<uint32_t, int> panel_;
+  std::unordered_map<uint32_t, int> ring_;
+  std::unordered_map<uint32_t, int> blade_;
+  std::unordered_map<uint32_t, int> signed_blade_;
 
-  std::map<uint32_t, unsigned int> fedid_;
-  std::map<uint64_t, unsigned int> channel_;
-  std::map<uint64_t, unsigned int> roc_;
+  std::unordered_map<uint32_t, unsigned int> fedid_;
+  std::unordered_map<uint64_t, unsigned int> channel_;
+  std::unordered_map<uint64_t, unsigned int> roc_;
 
   // Internal methods used for pixel coordinates
   bool isPixel_(const DetId&);
@@ -202,7 +199,6 @@ class SiPixelCoordinates {
   std::pair<int, int> pixel_(const SiPixelRecHit*);
   float xcoord_on_module_(const DetId&, const std::pair<int, int>&);
   float ycoord_on_module_(const DetId&, const std::pair<int, int>&);
-
 };
 
 #endif

@@ -25,7 +25,6 @@
 #include "CondFormats/L1TObjects/interface/L1MuTriggerPtScale.h"
 #include "CondFormats/DataRecord/interface/L1MuTriggerPtScaleRcd.h"
 
-
 //
 // class declaration
 //
@@ -33,14 +32,14 @@
 class L1MuTriggerPtScaleProducer : public edm::ESProducer {
 public:
   L1MuTriggerPtScaleProducer(const edm::ParameterSet&);
-  ~L1MuTriggerPtScaleProducer();
-  
+  ~L1MuTriggerPtScaleProducer() override;
+
   std::unique_ptr<L1MuTriggerPtScale> produceL1MuTriggerPtScale(const L1MuTriggerPtScaleRcd&);
 
 private:
   // ----------member data ---------------------------
-  
-  L1MuTriggerPtScale m_scales ;
+
+  L1MuTriggerPtScale m_scales;
 };
 
 #endif

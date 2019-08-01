@@ -18,7 +18,7 @@ from DQMOffline.L1Trigger.L1TriggerDqmOffline_cff import *
 DQMOfflineHeavyIonsPreDPG = cms.Sequence( dqmDcsInfo *
                                           l1TriggerDqmOffline * # L1 emulator is run within this sequence for real data
                                           ecal_dqm_source_offline *
-                                          #hcalOfflineSourceSequence *
+                                          hcalOfflineSourceSequence *
                                           SiStripDQMTier0_hi *
                                           siPixelOfflineDQM_heavyions_source *
                                           dtSources *
@@ -54,6 +54,7 @@ triggerOfflineDQMSource.remove(higgsMonitorHLT)
 triggerOfflineDQMSource.remove(smpMonitorHLT)
 triggerOfflineDQMSource.remove(topMonitorHLT)
 triggerOfflineDQMSource.remove(btagMonitorHLT)
+triggerOfflineDQMSource.remove(egammaMonitorHLT)
 
 #egammaDQMOffline.remove(electronAnalyzerSequence)
 egammaDQMOffline.remove(zmumugammaAnalysis)
@@ -85,12 +86,13 @@ hltResults.RecHitsEBTag = cms.untracked.InputTag("ecalRecHit", "EcalRecHitsEB")
 hltResults.RecHitsEETag = cms.untracked.InputTag("ecalRecHit", "EcalRecHitsEE")
 
 
-globalAnalyzer.inputTags.offlinePVs = cms.InputTag("hiSelectedVertex")
-trackerAnalyzer.inputTags.offlinePVs = cms.InputTag("hiSelectedVertex")
-tightAnalyzer.inputTags.offlinePVs = cms.InputTag("hiSelectedVertex")
-looseAnalyzer.inputTags.offlinePVs = cms.InputTag("hiSelectedVertex")
+globalAnalyzerTnP.inputTags.offlinePVs = cms.InputTag("hiSelectedVertex")
+trackerAnalyzerTnP.inputTags.offlinePVs = cms.InputTag("hiSelectedVertex")
+tightAnalyzerTnP.inputTags.offlinePVs = cms.InputTag("hiSelectedVertex")
+looseAnalyzerTnP.inputTags.offlinePVs = cms.InputTag("hiSelectedVertex")
 
 pvMonitor.vertexLabel = cms.InputTag("hiSelectedVertex")
+
 
 
 DQMOfflineHeavyIonsPrePOG = cms.Sequence( muonMonitors
@@ -113,6 +115,9 @@ DQMOfflineHeavyIons = cms.Sequence( DQMOfflineHeavyIonsPreDPG *
                                     DQMOfflineHeavyIonsPrePOG *
                                     DQMMessageLogger )
 
+DQMOfflineHeavyIonsFakeHLT = cms.Sequence( DQMOfflineHeavyIons )
+DQMOfflineHeavyIonsFakeHLT.remove( triggerOfflineDQMSource )
+
 #this is needed to have a light sequence for T0 processing
 liteDQMOfflineHeavyIons = cms.Sequence ( DQMOfflineHeavyIons )
 liteDQMOfflineHeavyIons.remove( SiStripMonitorCluster )
@@ -120,3 +125,5 @@ liteDQMOfflineHeavyIons.remove( jetMETDQMOfflineSource )
 
 
 #DQMOfflineHeavyIonsPhysics = cms.Sequence( dqmPhysics )
+
+PostDQMOfflineHI = cms.Sequence()

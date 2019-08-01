@@ -1,5 +1,6 @@
 import FWCore.ParameterSet.Config as cms
-materialDumperAnalyzer = cms.EDAnalyzer("TrackingRecoMaterialAnalyser",
+from DQMServices.Core.DQMEDAnalyzer import DQMEDAnalyzer
+materialDumperAnalyzer = DQMEDAnalyzer('TrackingRecoMaterialAnalyser',
                                         folder = cms.string('Tracking/RecoMaterial/'),
                                         tracks = cms.InputTag("generalTracks"),
                                         beamspot = cms.InputTag("offlineBeamSpot"),
@@ -10,6 +11,7 @@ materialDumperAnalyzer = cms.EDAnalyzer("TrackingRecoMaterialAnalyser",
                                         TrackerRecHitBuilder = cms.string('WithAngleAndTemplate'),
                                         Smoother = cms.string('KFSmootherForRefitInsideOut'),
                                         MuonRecHitBuilder = cms.string('MuonRecHitBuilder'),
+                                        MTDRecHitBuilder = cms.string('MTDRecHitBuilder'),
                                         RefitDirection = cms.string('alongMomentum'),
                                         RefitRPCHits = cms.bool(True),
                                         Propagator = cms.string('SmartPropagatorAnyRKOpposite'),

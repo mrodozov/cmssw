@@ -1,7 +1,7 @@
 #ifndef PixelToFEDAssociateFromAsciiESProducer_H
 #define PixelToFEDAssociateFromAsciiESProducer_H
 
-#include  "FWCore/Framework/interface/ESProducer.h"
+#include "FWCore/Framework/interface/ESProducer.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 #include <memory>
 
@@ -10,13 +10,12 @@
 
 class PixelToFEDAssociateFromAsciiESProducer : public edm::ESProducer {
 public:
-  PixelToFEDAssociateFromAsciiESProducer(const edm::ParameterSet & p);
-  virtual ~PixelToFEDAssociateFromAsciiESProducer();
-  std::shared_ptr<PixelToFEDAssociate> produce(const TrackerDigiGeometryRecord&);
+  PixelToFEDAssociateFromAsciiESProducer(const edm::ParameterSet& p);
+  ~PixelToFEDAssociateFromAsciiESProducer() override;
+  std::unique_ptr<PixelToFEDAssociate> produce(const TrackerDigiGeometryRecord&);
+
 private:
-  std::shared_ptr<PixelToFEDAssociate> theAssociator;
   edm::ParameterSet theConfig;
 };
 
 #endif
-

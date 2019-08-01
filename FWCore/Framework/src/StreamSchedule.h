@@ -84,6 +84,7 @@
 #include "FWCore/Utilities/interface/Exception.h"
 #include "FWCore/Utilities/interface/StreamID.h"
 #include "FWCore/Utilities/interface/get_underlying_safe.h"
+#include "FWCore/Utilities/interface/propagate_const.h"
 
 #include <map>
 #include <memory>
@@ -97,14 +98,17 @@ namespace edm {
 
   class ActivityRegistry;
   class BranchIDListHelper;
-  class EventSetup;
+  class EventSetupImpl;
   class ExceptionCollector;
+  class ExceptionToActionTable;
   class OutputModuleCommunicator;
   class ProcessContext;
   class UnscheduledCallProducer;
   class WorkerInPath;
   class ModuleRegistry;
   class TriggerResultInserter;
+  class PathStatusInserter;
+  class EndPathStatusInserter;
   class PreallocationConfiguration;
   class WaitingTaskHolder;
 
@@ -116,30 +120,33 @@ namespace edm {
     template <typename T>
     class StreamScheduleSignalSentry {
     public:
-      StreamScheduleSignalSentry(ActivityRegistry* a, typename T::Context const* context) :
-        a_(a), context_(context), allowThrow_(false) {
-        if (a_) T::preScheduleSignal(a_, context_);
+      StreamScheduleSignalSentry(ActivityRegistry* a, typename T::Context const* context)
+          : a_(a), context_(context), allowThrow_(false) {
+        if (a_)
+          T::preScheduleSignal(a_, context_);
       }
       ~StreamScheduleSignalSentry() noexcept(false) {
         try {
-          if (a_) { T::postScheduleSignal(a_, context_); }
-        } catch(...) {
-          if(allowThrow_) {throw;}
+          if (a_) {
+            T::postScheduleSignal(a_, context_);
+          }
+        } catch (...) {
+          if (allowThrow_) {
+            throw;
+          }
         }
       }
-      
-      void allowThrow() {
-        allowThrow_ = true;
-      }
+
+      void allowThrow() { allowThrow_ = true; }
 
     private:
       // We own none of these resources.
-      ActivityRegistry* a_; // We do not use propagate_const because the registry itself is mutable.
+      ActivityRegistry* a_;  // We do not use propagate_const because the registry itself is mutable.
       typename T::Context const* context_;
       bool allowThrow_;
     };
-  }
-  
+  }  // namespace
+
   class StreamSchedule {
   public:
     typedef std::vector<std::string> vstring;
@@ -155,9 +162,11 @@ namespace edm {
     typedef std::vector<WorkerInPath> PathWorkers;
 
     StreamSchedule(std::shared_ptr<TriggerResultInserter> inserter,
+                   std::vector<edm::propagate_const<std::shared_ptr<PathStatusInserter>>>& pathStatusInserters,
+                   std::vector<edm::propagate_const<std::shared_ptr<EndPathStatusInserter>>>& endPathStatusInserters,
                    std::shared_ptr<ModuleRegistry>,
                    ParameterSet& proc_pset,
-                   service::TriggerNamesService& tns,
+                   service::TriggerNamesService const& tns,
                    PreallocationConfiguration const& prealloc,
                    ProductRegistry& pregistry,
                    BranchIDListHelper& branchIDListHelper,
@@ -167,29 +176,28 @@ namespace edm {
                    bool allowEarlyDelete,
                    StreamID streamID,
                    ProcessContext const* processContext);
-    
+
     StreamSchedule(StreamSchedule const&) = delete;
 
-    void processOneEventAsync(WaitingTaskHolder iTask,
-                              EventPrincipal& ep,
-                              EventSetup const& es);
-
-    template <typename T>
-    void processOneStream(typename T::MyPrincipal& principal,
-                          EventSetup const& eventSetup,
-                          bool cleaningUpAfterException = false);
+    void processOneEventAsync(
+        WaitingTaskHolder iTask,
+        EventPrincipal& ep,
+        EventSetupImpl const& es,
+        ServiceToken const& token,
+        std::vector<edm::propagate_const<std::shared_ptr<PathStatusInserter>>>& pathStatusInserters);
 
     template <typename T>
     void processOneStreamAsync(WaitingTaskHolder iTask,
                                typename T::MyPrincipal& principal,
-                               EventSetup const& eventSetup,
+                               EventSetupImpl const& eventSetup,
+                               ServiceToken const& token,
                                bool cleaningUpAfterException = false);
 
     void beginStream();
     void endStream();
 
     StreamID streamID() const { return streamID_; }
-    
+
     /// Return a vector allowing const access to all the
     /// ModuleDescriptions for this StreamSchedule.
 
@@ -201,17 +209,8 @@ namespace edm {
     ///adds to oLabelsToFill the labels for all paths in the process
     void availablePaths(std::vector<std::string>& oLabelsToFill) const;
 
-    ///adds to oLabelsToFill the labels for all trigger paths in the process
-    ///this is different from availablePaths because it includes the
-    ///empty paths so matches the entries in TriggerResults exactly.
-    void triggerPaths(std::vector<std::string>& oLabelsToFill) const;
-
-    ///adds to oLabelsToFill the labels for all end paths in the process
-    void endPaths(std::vector<std::string>& oLabelsToFill) const;
-
     ///adds to oLabelsToFill in execution order the labels of all modules in path iPathLabel
-    void modulesInPath(std::string const& iPathLabel,
-                       std::vector<std::string>& oLabelsToFill) const;
+    void modulesInPath(std::string const& iPathLabel, std::vector<std::string>& oLabelsToFill) const;
 
     void moduleDescriptionsInPath(std::string const& iPathLabel,
                                   std::vector<ModuleDescription const*>& descriptions,
@@ -224,21 +223,15 @@ namespace edm {
     /// Return the number of events this StreamSchedule has tried to process
     /// (inclues both successes and failures, including failures due
     /// to exceptions during processing).
-    int totalEvents() const {
-      return total_events_;
-    }
+    int totalEvents() const { return total_events_; }
 
     /// Return the number of events which have been passed by one or
     /// more trigger paths.
-    int totalEventsPassed() const {
-      return total_passed_;
-    }
+    int totalEventsPassed() const { return total_passed_; }
 
     /// Return the number of events that have not passed any trigger.
     /// (N.B. totalEventsFailed() + totalEventsPassed() == totalEvents()
-    int totalEventsFailed() const {
-      return totalEvents() - totalEventsPassed();
-    }
+    int totalEventsFailed() const { return totalEvents() - totalEventsPassed(); }
 
     /// Turn end_paths "off" if "active" is false;
     /// turn end_paths "on" if "active" is true.
@@ -259,15 +252,12 @@ namespace edm {
     void replaceModule(maker::ModuleHolder* iMod, std::string const& iLabel);
 
     /// returns the collection of pointers to workers
-    AllWorkers const& allWorkers() const {
-      return workerManager_.allWorkers();
-    }
-    
-    unsigned int numberOfUnscheduledModules() const {
-      return number_of_unscheduled_modules_;
-    }
-    
-    StreamContext const& context() const { return streamContext_;}
+    AllWorkers const& allWorkers() const { return workerManager_.allWorkers(); }
+
+    unsigned int numberOfUnscheduledModules() const { return number_of_unscheduled_modules_; }
+
+    StreamContext const& context() const { return streamContext_; }
+
   private:
     //Sentry class to only send a signal if an
     // exception occurs. An exception is identified
@@ -275,39 +265,30 @@ namespace edm {
     // calling completedSuccessfully().
     class SendTerminationSignalIfException {
     public:
-      SendTerminationSignalIfException(edm::ActivityRegistry* iReg, edm::StreamContext const* iContext):
-      reg_(iReg),
-      context_(iContext){}
+      SendTerminationSignalIfException(edm::ActivityRegistry* iReg, edm::StreamContext const* iContext)
+          : reg_(iReg), context_(iContext) {}
       ~SendTerminationSignalIfException() {
-        if(reg_) {
-          reg_->preStreamEarlyTerminationSignal_(*context_,TerminationOrigin::ExceptionFromThisContext);
+        if (reg_) {
+          reg_->preStreamEarlyTerminationSignal_(*context_, TerminationOrigin::ExceptionFromThisContext);
         }
       }
-      void completedSuccessfully() {
-        reg_ = nullptr;
-      }
+      void completedSuccessfully() { reg_ = nullptr; }
+
     private:
-      edm::ActivityRegistry* reg_; // We do not use propagate_const because the registry itself is mutable.
+      edm::ActivityRegistry* reg_;  // We do not use propagate_const because the registry itself is mutable.
       StreamContext const* context_;
     };
 
     /// returns the action table
-    ExceptionToActionTable const& actionTable() const {
-      return workerManager_.actionTable();
-    }
-    
+    ExceptionToActionTable const& actionTable() const { return workerManager_.actionTable(); }
 
     void resetAll();
 
-    void finishedPaths(std::exception_ptr, WaitingTaskHolder,
-                       EventPrincipal& ep, EventSetup const& es);
+    void finishedPaths(std::atomic<std::exception_ptr*>&,
+                       WaitingTaskHolder,
+                       EventPrincipal& ep,
+                       EventSetupImpl const& es);
     std::exception_ptr finishProcessOneEvent(std::exception_ptr);
-    
-    template <typename T>
-    bool runTriggerPaths(typename T::MyPrincipal const&, EventSetup const&, typename T::Context const*);
-
-    template <typename T>
-    void runEndPaths(typename T::MyPrincipal const&, EventSetup const&, typename T::Context const*);
 
     void reportSkipped(EventPrincipal const& ep) const;
 
@@ -315,44 +296,55 @@ namespace edm {
                      ProductRegistry& preg,
                      PreallocationConfiguration const* prealloc,
                      std::shared_ptr<ProcessConfiguration const> processConfiguration,
-                     std::string const& name, bool ignoreFilters, PathWorkers& out,
-                     vstring* labelsOnPaths);
+                     std::string const& name,
+                     bool ignoreFilters,
+                     PathWorkers& out,
+                     std::vector<std::string> const& endPathNames);
     void fillTrigPath(ParameterSet& proc_pset,
                       ProductRegistry& preg,
                       PreallocationConfiguration const* prealloc,
                       std::shared_ptr<ProcessConfiguration const> processConfiguration,
-                      int bitpos, std::string const& name, TrigResPtr,
-                      vstring* labelsOnTriggerPaths);
+                      int bitpos,
+                      std::string const& name,
+                      TrigResPtr,
+                      std::vector<std::string> const& endPathNames);
     void fillEndPath(ParameterSet& proc_pset,
                      ProductRegistry& preg,
                      PreallocationConfiguration const* prealloc,
                      std::shared_ptr<ProcessConfiguration const> processConfiguration,
-                     int bitpos, std::string const& name);
+                     int bitpos,
+                     std::string const& name,
+                     std::vector<std::string> const& endPathNames);
 
     void addToAllWorkers(Worker* w);
-    
+
     void resetEarlyDelete();
-    void initializeEarlyDelete(ModuleRegistry & modReg,
+    void initializeEarlyDelete(ModuleRegistry& modReg,
                                edm::ParameterSet const& opts,
-                               edm::ProductRegistry const& preg, 
+                               edm::ProductRegistry const& preg,
                                bool allowEarlyDelete);
 
-    TrigResConstPtr results() const {return get_underlying_safe(results_);}
-    TrigResPtr& results() {return get_underlying_safe(results_);}
+    TrigResConstPtr results() const { return get_underlying_safe(results_); }
+    TrigResPtr& results() { return get_underlying_safe(results_); }
 
-    WorkerManager            workerManager_;
-    std::shared_ptr<ActivityRegistry> actReg_; // We do not use propagate_const because the registry itself is mutable.
+    void makePathStatusInserters(
+        std::vector<edm::propagate_const<std::shared_ptr<PathStatusInserter>>>& pathStatusInserters,
+        std::vector<edm::propagate_const<std::shared_ptr<EndPathStatusInserter>>>& endPathStatusInserters,
+        ExceptionToActionTable const& actions);
 
-    vstring                  trig_name_list_;
-    vstring                  end_path_name_list_;
+    WorkerManager workerManager_;
+    std::shared_ptr<ActivityRegistry> actReg_;  // We do not use propagate_const because the registry itself is mutable.
 
     edm::propagate_const<TrigResPtr> results_;
 
     edm::propagate_const<WorkerPtr> results_inserter_;
-    TrigPaths                trig_paths_;
-    TrigPaths                end_paths_;
-    std::vector<int>         empty_trig_paths_;
-    vstring                  empty_trig_path_names_;
+    std::vector<edm::propagate_const<WorkerPtr>> pathStatusInserterWorkers_;
+    std::vector<edm::propagate_const<WorkerPtr>> endPathStatusInserterWorkers_;
+
+    TrigPaths trig_paths_;
+    TrigPaths end_paths_;
+    std::vector<int> empty_trig_paths_;
+    std::vector<int> empty_end_paths_;
 
     //For each branch that has been marked for early deletion
     // keep track of how many modules are left that read this data but have
@@ -362,158 +354,105 @@ namespace edm {
     // but putting it into one vector makes for better allocation as well as
     // faster iteration when used to reset the earlyDeleteBranchToCount_
     // Each EarlyDeleteHelper hold a begin and end range into this vector. The values
-    // of this vector correspond to indexes into earlyDeleteBranchToCount_ so 
+    // of this vector correspond to indexes into earlyDeleteBranchToCount_ so
     // tell which EarlyDeleteHelper is associated with which BranchIDs.
     std::vector<unsigned int> earlyDeleteHelperToBranchIndicies_;
     //There is one EarlyDeleteHelper per Module which are reading data that
     // has been marked for early deletion
     std::vector<EarlyDeleteHelper> earlyDeleteHelpers_;
 
-    int                            total_events_;
-    int                            total_passed_;
-    unsigned int                   number_of_unscheduled_modules_;
-    
-    StreamID                streamID_;
-    StreamContext           streamContext_;
-    volatile bool           endpathsAreActive_;
-    std::atomic<bool>       skippingEvent_;
+    int total_events_;
+    int total_passed_;
+    unsigned int number_of_unscheduled_modules_;
+
+    StreamID streamID_;
+    StreamContext streamContext_;
+    volatile bool endpathsAreActive_;
+    std::atomic<bool> skippingEvent_;
   };
 
-  void
-  inline
-  StreamSchedule::reportSkipped(EventPrincipal const& ep) const {
+  void inline StreamSchedule::reportSkipped(EventPrincipal const& ep) const {
     Service<JobReport> reportSvc;
     reportSvc->reportSkippedEvent(ep.id().run(), ep.id().event());
   }
 
   template <typename T>
-  void StreamSchedule::processOneStream(typename T::MyPrincipal& ep,
-                                  EventSetup const& es,
-                                  bool cleaningUpAfterException) {
-    this->resetAll();
-
-    T::setStreamContext(streamContext_, ep);
-    StreamScheduleSignalSentry<T> sentry(actReg_.get(), &streamContext_);
-
-    SendTerminationSignalIfException terminationSentry(actReg_.get(), &streamContext_);
-
-    // This call takes care of the unscheduled processing.
-    workerManager_.processOneOccurrence<T>(ep, es, streamID_, &streamContext_, &streamContext_, cleaningUpAfterException);
-
-    try {
-      convertException::wrap([&]() {
-        runTriggerPaths<T>(ep, es, &streamContext_);
-
-        if (endpathsAreActive_) runEndPaths<T>(ep, es, &streamContext_);
-      });
-    }
-    catch(cms::Exception& ex) {
-      if (ex.context().empty()) {
-        addContextAndPrintException("Calling function StreamSchedule::processOneStream", ex, cleaningUpAfterException);
-      } else {
-        addContextAndPrintException("", ex, cleaningUpAfterException);
-      }
-      throw;
-    }
-    terminationSentry.completedSuccessfully();
-
-    //If we got here no other exception has happened so we can propogate any Service related exceptions
-    sentry.allowThrow();
-  }
-
-  template <typename T>
   void StreamSchedule::processOneStreamAsync(WaitingTaskHolder iHolder,
                                              typename T::MyPrincipal& ep,
-                                             EventSetup const& es,
+                                             EventSetupImpl const& es,
+                                             ServiceToken const& token,
                                              bool cleaningUpAfterException) {
-    ServiceToken token = ServiceRegistry::instance().presentToken();
-
     T::setStreamContext(streamContext_, ep);
 
     auto id = ep.id();
-    auto doneTask = make_waiting_task(tbb::task::allocate_root(),
-                                      [this,iHolder, id,cleaningUpAfterException,token](std::exception_ptr const* iPtr) mutable
-    {
-      ServiceRegistry::Operate op(token);
-      std::exception_ptr excpt;
-      if(iPtr) {
-        excpt = *iPtr;
-        //add context information to the exception and print message
-        try {
-          convertException::wrap([&]() {
-            std::rethrow_exception(excpt);
-          });
-        } catch(cms::Exception& ex) {
-          //TODO: should add the transition type info
-          std::ostringstream ost;
-          if(ex.context().empty()) {
-            ost<<"Processing "<<T::transitionName()<<" "<<id;
+    auto doneTask = make_waiting_task(
+        tbb::task::allocate_root(),
+        [this, iHolder, id, cleaningUpAfterException, token](std::exception_ptr const* iPtr) mutable {
+          std::exception_ptr excpt;
+          if (iPtr) {
+            excpt = *iPtr;
+            //add context information to the exception and print message
+            try {
+              convertException::wrap([&]() { std::rethrow_exception(excpt); });
+            } catch (cms::Exception& ex) {
+              //TODO: should add the transition type info
+              std::ostringstream ost;
+              if (ex.context().empty()) {
+                ost << "Processing " << T::transitionName() << " " << id;
+              }
+              ServiceRegistry::Operate op(token);
+              addContextAndPrintException(ost.str().c_str(), ex, cleaningUpAfterException);
+              excpt = std::current_exception();
+            }
+
+            ServiceRegistry::Operate op(token);
+            actReg_->preStreamEarlyTerminationSignal_(streamContext_, TerminationOrigin::ExceptionFromThisContext);
           }
-          addContextAndPrintException(ost.str().c_str(), ex, cleaningUpAfterException);
-          excpt = std::current_exception();
-        }
-        
-        actReg_->preStreamEarlyTerminationSignal_(streamContext_,TerminationOrigin::ExceptionFromThisContext);
-      }
-      
-      try {
-        T::postScheduleSignal(actReg_.get(), &streamContext_);
-      } catch(...) {
-        if(not excpt) {
-          excpt = std::current_exception();
-        }
-      }
-      iHolder.doneWaiting(excpt);
-      
-    });
-    
-    auto task = make_functor_task(tbb::task::allocate_root(), [this,doneTask,&ep,&es,cleaningUpAfterException,token] () mutable {
-      ServiceRegistry::Operate op(token);
-      T::preScheduleSignal(actReg_.get(), &streamContext_);
-      WaitingTaskHolder h(doneTask);
 
-      workerManager_.resetAll();
-      for(auto& p : end_paths_) {
-        p.runAllModulesAsync<T>(doneTask, ep, es, streamID_, &streamContext_);
-      }
+          try {
+            ServiceRegistry::Operate op(token);
+            T::postScheduleSignal(actReg_.get(), &streamContext_);
+          } catch (...) {
+            if (not excpt) {
+              excpt = std::current_exception();
+            }
+          }
+          iHolder.doneWaiting(excpt);
+        });
 
-      for(auto& p : trig_paths_) {
-        p.runAllModulesAsync<T>(doneTask, ep, es, streamID_, &streamContext_);
-      }
-      
-      workerManager_.processOneOccurrenceAsync<T>(doneTask,
-                                                  ep, es, streamID_, &streamContext_, &streamContext_);
-    });
-    
-    if(streamID_.value() == 0) {
+    auto task = make_functor_task(tbb::task::allocate_root(),
+                                  [this, doneTask, h = WaitingTaskHolder(doneTask), &ep, &es, token]() mutable {
+                                    ServiceRegistry::Operate op(token);
+                                    try {
+                                      T::preScheduleSignal(actReg_.get(), &streamContext_);
+
+                                      workerManager_.resetAll();
+                                    } catch (...) {
+                                      h.doneWaiting(std::current_exception());
+                                      return;
+                                    }
+
+                                    for (auto& p : end_paths_) {
+                                      p.runAllModulesAsync<T>(doneTask, ep, es, token, streamID_, &streamContext_);
+                                    }
+
+                                    for (auto& p : trig_paths_) {
+                                      p.runAllModulesAsync<T>(doneTask, ep, es, token, streamID_, &streamContext_);
+                                    }
+
+                                    workerManager_.processOneOccurrenceAsync<T>(
+                                        doneTask, ep, es, token, streamID_, &streamContext_, &streamContext_);
+                                  });
+
+    if (streamID_.value() == 0) {
       //Enqueueing will start another thread if there is only
       // one thread in the job. Having stream == 0 use spawn
       // avoids starting up another thread when there is only one stream.
-      tbb::task::spawn( *task);
+      tbb::task::spawn(*task);
     } else {
-      tbb::task::enqueue( *task);
+      tbb::task::enqueue(*task);
     }
   }
-  
-  
-  template <typename T>
-  bool
-  StreamSchedule::runTriggerPaths(typename T::MyPrincipal const& ep, EventSetup const& es, typename T::Context const* context) {
-    for(auto& p : trig_paths_) {
-      p.processOneOccurrence<T>(ep, es, streamID_, context);
-    }
-    return results_->accept();
-  }
-
-  template <typename T>
-  void
-  StreamSchedule::runEndPaths(typename T::MyPrincipal const& ep, EventSetup const& es, typename T::Context const* context) {
-    // Note there is no state-checking safety controlling the
-    // activation/deactivation of endpaths.
-    for(auto& p : end_paths_) {
-      p.processOneOccurrence<T>(ep, es, streamID_, context);
-    }
-  }
-}
+}  // namespace edm
 
 #endif

@@ -5,7 +5,7 @@
 //
 // Package:    TreeSplitter
 // Class:      TreeSplitter
-// 
+//
 /**\class TreeSplitter TreeSplitter.cc MuonAnalysis/MomentumScaleCalibration/plugins/TreeSplitter.cc
 
  Description: <one line class summary>
@@ -25,15 +25,14 @@
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 #include <MuonAnalysis/MomentumScaleCalibration/interface/RootTreeHandler.h>
 
-class TreeSplitter : public edm::EDAnalyzer
-{
+class TreeSplitter : public edm::EDAnalyzer {
 public:
   explicit TreeSplitter(const edm::ParameterSet&);
-  ~TreeSplitter();
+  ~TreeSplitter() override;
 
 private:
-  virtual void analyze(const edm::Event&, const edm::EventSetup&) {};
-  virtual void endJob();
+  void analyze(const edm::Event&, const edm::EventSetup&) override{};
+  void endJob() override;
 
   TString treeFileName_;
   TString outputFileName_;
@@ -42,4 +41,4 @@ private:
   uint32_t subSampleMaxEvents_;
 };
 
-#endif // TREESPLITTER_HH
+#endif  // TREESPLITTER_HH

@@ -7,5 +7,4 @@
 #include "FWCore/Framework/interface/ESProducer.h"
 #include "FWCore/Utilities/interface/typelookup.h"
 
-
 DEFINE_FWK_EVENTSETUP_MODULE(MeasurementTrackerESProducer);

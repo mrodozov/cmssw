@@ -1,6 +1,7 @@
 import FWCore.ParameterSet.Config as cms
 
-dtTriggerEfficiencyMonitor = cms.EDAnalyzer("DTTriggerEfficiencyTask",
+from DQMServices.Core.DQMEDAnalyzer import DQMEDAnalyzer
+dtTriggerEfficiencyMonitor = DQMEDAnalyzer('DTTriggerEfficiencyTask',
     # label for muons
     inputTagMuons = cms.untracked.InputTag('muons'),
 
@@ -17,7 +18,8 @@ dtTriggerEfficiencyMonitor = cms.EDAnalyzer("DTTriggerEfficiencyTask",
     minBXDDU = cms.untracked.int32(7),  # min BX for DDU eff computation
     maxBXDDU = cms.untracked.int32(15), # max BX for DDU eff computation
 
-    checkRPCtriggers = cms.untracked.bool(False), #  Not needed any longer. Switches below for Eras do not work...
+    checkRPCtriggers = cms.untracked.bool(False), #  Not needed any longer. Swittches below for 2016 Eras and onwards
+
     nMinHitsPhi = cms.untracked.int32(5),
     phiAccRange = cms.untracked.double(30.),
 

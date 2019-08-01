@@ -10,11 +10,11 @@
  *   Def for Location information
  */
 class MonVersionDef : public IDef {
-  public:
+public:
   friend class EcalCondDBInterface;
-  
+
   MonVersionDef();
-  virtual ~MonVersionDef();
+  ~MonVersionDef() override;
 
   // Methods for user data
   std::string getMonitoringVersion() const;
@@ -23,19 +23,19 @@ class MonVersionDef : public IDef {
   std::string getDescription() const;
 
   // Methods from IUniqueDBObject
-  int fetchID() noexcept(false);
-  void setByID(int id) noexcept(false);
+  int fetchID() noexcept(false) override;
+  void setByID(int id) noexcept(false) override;
 
   // Operators
   inline bool operator==(const MonVersionDef &d) const { return m_monVer == d.m_monVer; }
   inline bool operator!=(const MonVersionDef &d) const { return m_monVer != d.m_monVer; }
 
- protected:
+protected:
   // User data for this def
   std::string m_monVer;
   std::string m_desc;
 
-  void fetchAllDefs( std::vector<MonVersionDef>* fillVec) noexcept(false);
+  void fetchAllDefs(std::vector<MonVersionDef> *fillVec) noexcept(false);
 };
 
 #endif

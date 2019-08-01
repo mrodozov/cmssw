@@ -13,18 +13,15 @@
 #include "CLHEP/Random/RandFlat.h"
 #include "CLHEP/Random/RandGauss.h"
 
-
 class SiStripPedestalsBuilder : public edm::EDAnalyzer {
+public:
+  explicit SiStripPedestalsBuilder(const edm::ParameterSet& iConfig);
 
- public:
+  ~SiStripPedestalsBuilder() override{};
 
-  explicit SiStripPedestalsBuilder( const edm::ParameterSet& iConfig);
+  void analyze(const edm::Event&, const edm::EventSetup&) override;
 
-  ~SiStripPedestalsBuilder(){};
-
-  virtual void analyze(const edm::Event& , const edm::EventSetup& );
-
- private:
+private:
   edm::FileInPath fp_;
   uint32_t printdebug_;
 };

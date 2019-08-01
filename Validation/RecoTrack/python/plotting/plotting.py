@@ -1,3 +1,7 @@
+from __future__ import print_function
+from __future__ import absolute_import
+from builtins import range
+import os
 import sys
 import math
 import copy
@@ -5,11 +9,12 @@ import array
 import difflib
 import collections
 
+import six
 import ROOT
 ROOT.gROOT.SetBatch(True)
 ROOT.PyConfig.IgnoreCommandLineOptions = True
 
-import html
+from . import html
 
 verbose=False
 _ratioYTitle = "Ratio"
@@ -46,7 +51,7 @@ def _getObject(tdirectory, name):
     obj = tdirectory.Get(name)
     if not obj:
         if verbose:
-            print "Did not find {obj} from {dir}".format(obj=name, dir=tdirectory.GetPath())
+            print("Did not find {obj} from {dir}".format(obj=name, dir=tdirectory.GetPath()))
         return None
     return obj
 
@@ -80,14 +85,14 @@ def _getDirectoryDetailed(tfile, possibleDirs, subDir=None):
                     return d
                 else:
                     if verbose:
-                        print "Did not find subdirectory '%s' from directory '%s' in file %s" % (subDir, pdf, tfile.GetName())
+                        print("Did not find subdirectory '%s' from directory '%s' in file %s" % (subDir, pdf, tfile.GetName()))
 #                        if "Step" in subDir:
 #                            raise Exception("Foo")
                     return GetDirectoryCode.SubDirNotExist
             else:
                 return d
     if verbose:
-        print "Did not find any of directories '%s' from file %s" % (",".join(possibleDirs), tfile.GetName())
+        print("Did not find any of directories '%s' from file %s" % (",".join(possibleDirs), tfile.GetName()))
     return GetDirectoryCode.PossibleDirsNotExist
 
 def _getDirectory(*args, **kwargs):
@@ -95,7 +100,7 @@ def _getDirectory(*args, **kwargs):
 
 def _th1ToOrderedDict(th1, renameBin=None):
     values = collections.OrderedDict()
-    for i in xrange(1, th1.GetNbinsX()+1):
+    for i in range(1, th1.GetNbinsX()+1):
         binLabel = th1.GetXaxis().GetBinLabel(i)
         if renameBin is not None:
             binLabel = renameBin(binLabel)
@@ -194,7 +199,7 @@ def _calculateRatios(histos, ratioUncertainty=False):
             xaxis = th1.GetXaxis()
             xaxis_arr = xaxis.GetXbins()
             if xaxis_arr.GetSize() > 0: # unequal binning
-                lst = [xaxis_arr[i] for i in xrange(0, xaxis_arr.GetSize())]
+                lst = [xaxis_arr[i] for i in range(0, xaxis_arr.GetSize())]
                 arr = array.array("d", lst)
                 self._ratio = ROOT.TH1F("foo", "foo", xaxis.GetNbins(), arr)
             else:
@@ -316,11 +321,11 @@ def _calculateRatios(histos, ratioUncertainty=False):
     ref = wrappers[0]
 
     wrappers_bins = []
-    ref_bins = [ref.xvalues(b) for b in xrange(ref.begin(), ref.end())]
+    ref_bins = [ref.xvalues(b) for b in range(ref.begin(), ref.end())]
     for w in wrappers:
         wrappers_bins.append(findBins(w, ref_bins))
 
-    for i, bin in enumerate(xrange(ref.begin(), ref.end())):
+    for i, bin in enumerate(range(ref.begin(), ref.end())):
         (scale, ylow, yhigh) = ref.yvalues(bin)
         for w, bins in zip(wrappers, wrappers_bins):
             if bins[i] is None:
@@ -337,7 +342,7 @@ def _getXmin(obj, limitToNonZeroContent=False):
     if isinstance(obj, ROOT.TH1):
         xaxis = obj.GetXaxis()
         if limitToNonZeroContent:
-            for i in xrange(1, obj.GetNbinsX()+1):
+            for i in range(1, obj.GetNbinsX()+1):
                 if obj.GetBinContent(i) != 0:
                     return xaxis.GetBinLowEdge(i)
             # None for all bins being zero
@@ -345,7 +350,7 @@ def _getXmin(obj, limitToNonZeroContent=False):
         else:
             return xaxis.GetBinLowEdge(xaxis.GetFirst())
     elif isinstance(obj, ROOT.TGraph) or isinstance(obj, ROOT.TGraph2D):
-        m = min([obj.GetX()[i] for i in xrange(0, obj.GetN())])
+        m = min([obj.GetX()[i] for i in range(0, obj.GetN())])
         return m*0.9 if m > 0 else m*1.1
     raise Exception("Unsupported type %s" % str(obj))
 
@@ -353,7 +358,7 @@ def _getXmax(obj, limitToNonZeroContent=False):
     if isinstance(obj, ROOT.TH1):
         xaxis = obj.GetXaxis()
         if limitToNonZeroContent:
-            for i in xrange(obj.GetNbinsX(), 0, -1):
+            for i in range(obj.GetNbinsX(), 0, -1):
                 if obj.GetBinContent(i) != 0:
                     return xaxis.GetBinUpEdge(i)
             # None for all bins being zero
@@ -361,7 +366,7 @@ def _getXmax(obj, limitToNonZeroContent=False):
         else:
             return xaxis.GetBinUpEdge(xaxis.GetLast())
     elif isinstance(obj, ROOT.TGraph) or isinstance(obj, ROOT.TGraph2D):
-        m = max([obj.GetX()[i] for i in xrange(0, obj.GetN())])
+        m = max([obj.GetX()[i] for i in range(0, obj.GetN())])
         return m*1.1 if m > 0 else m*0.9
     raise Exception("Unsupported type %s" % str(obj))
 
@@ -371,12 +376,12 @@ def _getYmin(obj, limitToNonZeroContent=False):
         return yaxis.GetBinLowEdge(yaxis.GetFirst())
     elif isinstance(obj, ROOT.TH1):
         if limitToNonZeroContent:
-            lst = [obj.GetBinContent(i) for i in xrange(1, obj.GetNbinsX()+1) if obj.GetBinContent(i) != 0 ]
+            lst = [obj.GetBinContent(i) for i in range(1, obj.GetNbinsX()+1) if obj.GetBinContent(i) != 0 ]
             return min(lst) if len(lst) != 0 else 0
         else:
             return obj.GetMinimum()
     elif isinstance(obj, ROOT.TGraph) or isinstance(obj, ROOT.TGraph2D):
-        m = min([obj.GetY()[i] for i in xrange(0, obj.GetN())])
+        m = min([obj.GetY()[i] for i in range(0, obj.GetN())])
         return m*0.9 if m > 0 else m*1.1
     raise Exception("Unsupported type %s" % str(obj))
 
@@ -386,21 +391,20 @@ def _getYmax(obj, limitToNonZeroContent=False):
         return yaxis.GetBinUpEdge(yaxis.GetLast())
     elif isinstance(obj, ROOT.TH1):
         if limitToNonZeroContent:
-            lst = [obj.GetBinContent(i) for i in xrange(1, obj.GetNbinsX()+1) if obj.GetBinContent(i) != 0 ]
+            lst = [obj.GetBinContent(i) for i in range(1, obj.GetNbinsX()+1) if obj.GetBinContent(i) != 0 ]
             return max(lst) if len(lst) != 0 else 0
         else:
             return obj.GetMaximum()
     elif isinstance(obj, ROOT.TGraph) or isinstance(obj, ROOT.TGraph2D):
-        m = max([obj.GetY()[i] for i in xrange(0, obj.GetN())])
+        m = max([obj.GetY()[i] for i in range(0, obj.GetN())])
         return m*1.1 if m > 0 else m*0.9
     raise Exception("Unsupported type %s" % str(obj))
 
 def _getYmaxWithError(th1):
-    return max([th1.GetBinContent(i)+th1.GetBinError(i) for i in xrange(1, th1.GetNbinsX()+1)])
+    return max([th1.GetBinContent(i)+th1.GetBinError(i) for i in range(1, th1.GetNbinsX()+1)])
 
 def _getYminIgnoreOutlier(th1):
-    yvals = filter(lambda n: n>0, [th1.GetBinContent(i) for i in xrange(1, th1.GetNbinsX()+1)])
-    yvals.sort()
+    yvals = sorted([n for n in [th1.GetBinContent(i) for i in range(1, th1.GetNbinsX()+1)] if n>0])
     if len(yvals) == 0:
         return th1.GetMinimum()
     if len(yvals) == 1:
@@ -409,7 +413,7 @@ def _getYminIgnoreOutlier(th1):
     # Define outlier as being x10 less than minimum of the 95 % of the non-zero largest values
     ind_min = len(yvals)-1 - int(len(yvals)*0.95)
     min_val = yvals[ind_min]
-    for i in xrange(0, ind_min):
+    for i in range(0, ind_min):
         if yvals[i] > 0.1*min_val:
             return yvals[i]
 
@@ -423,10 +427,10 @@ def _getYminMaxAroundMedian(obj, coverage, coverageRange=None):
         inRange2 = lambda xmin,xmax: coverageRange[0] <= xmin and xmax <= coverageRange[1]
 
     if isinstance(obj, ROOT.TH1):
-        yvals = [obj.GetBinContent(i) for i in xrange(1, obj.GetNbinsX()+1) if inRange2(obj.GetXaxis().GetBinLowEdge(i), obj.GetXaxis().GetBinUpEdge(i))]
-        yvals = filter(lambda x: x != 0, yvals)
+        yvals = [obj.GetBinContent(i) for i in range(1, obj.GetNbinsX()+1) if inRange2(obj.GetXaxis().GetBinLowEdge(i), obj.GetXaxis().GetBinUpEdge(i))]
+        yvals = [x for x in yvals if x != 0]
     elif isinstance(obj, ROOT.TGraph) or isinstance(obj, ROOT.TGraph2D):
-        yvals = [obj.GetY()[i] for i in xrange(0, obj.GetN()) if inRange(obj.GetX()[i])]
+        yvals = [obj.GetY()[i] for i in range(0, obj.GetN()) if inRange(obj.GetX()[i])]
     else:
         raise Exception("Unsupported type %s" % str(obj))
     if len(yvals) == 0:
@@ -475,8 +479,8 @@ def _findBounds(th1s, ylog, xmin=None, xmax=None, ymin=None, ymax=None):
             xmaxs.append(_getXmax(th1, limitToNonZeroContent=isinstance(xmax, list)))
 
         # Filter out cases where histograms have zero content
-        xmins = filter(lambda h: h is not None, xmins)
-        xmaxs = filter(lambda h: h is not None, xmaxs)
+        xmins = [h for h in xmins if h is not None]
+        xmaxs = [h for h in xmaxs if h is not None]
 
         if xmin is None:
             xmin = min(xmins)
@@ -484,15 +488,15 @@ def _findBounds(th1s, ylog, xmin=None, xmax=None, ymin=None, ymax=None):
             if len(xmins) == 0: # all histograms zero
                 xmin = min(xmin)
                 if verbose:
-                    print "Histogram is zero, using the smallest given value for xmin from", str(xmin)
+                    print("Histogram is zero, using the smallest given value for xmin from", str(xmin))
             else:
                 xm = min(xmins)
-                xmins_below = filter(lambda x: x<=xm, xmin)
+                xmins_below = [x for x in xmin if x<=xm]
                 if len(xmins_below) == 0:
                     xmin = min(xmin)
                     if xm < xmin:
                         if verbose:
-                            print "Histogram minimum x %f is below all given xmin values %s, using the smallest one" % (xm, str(xmin))
+                            print("Histogram minimum x %f is below all given xmin values %s, using the smallest one" % (xm, str(xmin)))
                 else:
                     xmin = max(xmins_below)
 
@@ -502,15 +506,15 @@ def _findBounds(th1s, ylog, xmin=None, xmax=None, ymin=None, ymax=None):
             if len(xmaxs) == 0: # all histograms zero
                 xmax = max(xmax)
                 if verbose:
-                    print "Histogram is zero, using the smallest given value for xmax from", str(xmin)
+                    print("Histogram is zero, using the smallest given value for xmax from", str(xmin))
             else:
                 xm = max(xmaxs)
-                xmaxs_above = filter(lambda x: x>xm, xmax)
+                xmaxs_above = [x for x in xmax if x>xm]
                 if len(xmaxs_above) == 0:
                     xmax = max(xmax)
                     if xm > xmax:
                         if verbose:
-                            print "Histogram maximum x %f is above all given xmax values %s, using the maximum one" % (xm, str(xmax))
+                            print("Histogram maximum x %f is above all given xmax values %s, using the maximum one" % (xm, str(xmax)))
                 else:
                     xmax = min(xmaxs_above)
 
@@ -530,12 +534,14 @@ def _findBoundsY(th1s, ylog, ymin=None, ymax=None, coverage=None, coverageRange=
     ymin -- Minimum y value; if None, take the minimum of TH1s
     ymax -- Maximum y value; if None, take the maximum of TH1s
     coverage -- If set, use only values within the 'coverage' part around the median are used for min/max (useful for ratio)
-    coverageRange -- If coverage and this are set, use only the x axis specified by an (xmin,xmax) pair for the coverage 
+    coverageRange -- If coverage and this are set, use only the x axis specified by an (xmin,xmax) pair for the coverage
     """
-    if coverage is not None:
+    if coverage is not None or isinstance(th1s[0], ROOT.TH2):
         # the only use case for coverage for now is ratio, for which
         # the scalings are not needed (actually harmful), so let's
         # just ignore them if 'coverage' is set
+        #
+        # Also for TH2 do not adjust automatic y bounds
         y_scale_max = lambda y: y
         y_scale_min = lambda y: y
     else:
@@ -567,12 +573,12 @@ def _findBoundsY(th1s, ylog, ymin=None, ymax=None, coverage=None, coverageRange=
         elif isinstance(ymin, list):
             ym_unscaled = min(ymins)
             ym = y_scale_min(ym_unscaled)
-            ymins_below = filter(lambda y: y<=ym, ymin)
+            ymins_below = [y for y in ymin if y<=ym]
             if len(ymins_below) == 0:
                 ymin = min(ymin)
                 if ym_unscaled < ymin:
                     if verbose:
-                        print "Histogram minimum y %f is below all given ymin values %s, using the smallest one" % (ym, str(ymin))
+                        print("Histogram minimum y %f is below all given ymin values %s, using the smallest one" % (ym, str(ymin)))
             else:
                 ymin = max(ymins_below)
 
@@ -583,12 +589,12 @@ def _findBoundsY(th1s, ylog, ymin=None, ymax=None, coverage=None, coverageRange=
         elif isinstance(ymax, list):
             ym_unscaled = max(ymaxs)
             ym = y_scale_max(ym_unscaled)
-            ymaxs_above = filter(lambda y: y>ym, ymax)
+            ymaxs_above = [y for y in ymax if y>ym]
             if len(ymaxs_above) == 0:
                 ymax = max(ymax)
                 if ym_unscaled > ymax:
                     if verbose:
-                        print "Histogram maximum y %f is above all given ymax values %s, using the maximum one" % (ym_unscaled, str(ymax))
+                        print("Histogram maximum y %f is above all given ymax values %s, using the maximum one" % (ym_unscaled, str(ymax)))
             else:
                 ymax = min(ymaxs_above)
 
@@ -596,6 +602,160 @@ def _findBoundsY(th1s, ylog, ymin=None, ymax=None, coverage=None, coverageRange=
         th1.GetYaxis().SetRangeUser(ymin, ymax)
 
     return (ymin, ymax)
+
+def _th1RemoveEmptyBins(histos, xbinlabels):
+    binsToRemove = set()
+    for b in range(1, histos[0].GetNbinsX()+1):
+        binEmpty = True
+        for h in histos:
+            if h.GetBinContent(b) > 0:
+                binEmpty = False
+                break
+        if binEmpty:
+            binsToRemove.add(b)
+
+    if len(binsToRemove) > 0:
+        # filter xbinlabels
+        xbinlab_new = []
+        for i in range(len(xbinlabels)):
+            if (i+1) not in binsToRemove:
+                xbinlab_new.append(xbinlabels[i])
+        xbinlabels = xbinlab_new
+
+        # filter histogram bins
+        histos_new = []
+        for h in histos:
+            values = []
+            for b in range(1, h.GetNbinsX()+1):
+                if b not in binsToRemove:
+                    values.append( (h.GetXaxis().GetBinLabel(b), h.GetBinContent(b), h.GetBinError(b)) )
+
+            if len(values) > 0:
+                h_new = h.Clone(h.GetName()+"_empty")
+                h_new.SetBins(len(values), h.GetBinLowEdge(1), h.GetBinLowEdge(1)+len(values))
+                for b, (l, v, e) in enumerate(values):
+                    h_new.GetXaxis().SetBinLabel(b+1, l)
+                    h_new.SetBinContent(b+1, v)
+                    h_new.SetBinError(b+1, e)
+
+                histos_new.append(h_new)
+        histos = histos_new
+
+    return (histos, xbinlabels)
+
+def _th2RemoveEmptyBins(histos, xbinlabels, ybinlabels):
+    xbinsToRemove = set()
+    ybinsToRemove = set()
+    for ih, h in enumerate(histos):
+        for bx in range(1, h.GetNbinsX()+1):
+            binEmpty = True
+            for by in range(1, h.GetNbinsY()+1):
+                if h.GetBinContent(bx, by) > 0:
+                    binEmpty = False
+                    break
+            if binEmpty:
+                xbinsToRemove.add(bx)
+            elif ih > 0:
+                xbinsToRemove.discard(bx)
+
+        for by in range(1, h.GetNbinsY()+1):
+            binEmpty = True
+            for bx in range(1, h.GetNbinsX()+1):
+                if h.GetBinContent(bx, by) > 0:
+                    binEmpty = False
+                    break
+            if binEmpty:
+                ybinsToRemove.add(by)
+            elif ih > 0:
+                ybinsToRemove.discard(by)
+
+    if len(xbinsToRemove) > 0 or len(ybinsToRemove) > 0:
+        xbinlabels_new = []
+        xbins = []
+        for b in range(1, len(xbinlabels)+1):
+            if b not in xbinsToRemove:
+                xbinlabels_new.append(histos[0].GetXaxis().GetBinLabel(b))
+                xbins.append(b)
+        xbinlabels = xbinlabels_new
+        ybinlabels_new = []
+        ybins = []
+        for b in range(1, len(ybinlabels)+1):
+            if b not in ybinsToRemove:
+                ybinlabels.append(histos[0].GetYaxis().GetBinLabel(b))
+                ybins.append(b)
+        ybinlabels = xbinlabels_new
+
+        histos_new = []
+        if len(xbinlabels) == 0 or len(ybinlabels) == 0:
+            return (histos_new, xbinlabels, ybinlabels)
+        for h in histos:
+            h_new = ROOT.TH2F(h.GetName()+"_empty", h.GetTitle(), len(xbinlabels),0,len(xbinlabels), len(ybinlabels),0,len(ybinlabels))
+            for b, l in enumerate(xbinlabels):
+                h_new.GetXaxis().SetBinLabel(b+1, l)
+            for b, l in enumerate(ybinlabels):
+                h_new.GetYaxis().SetBinLabel(b+1, l)
+
+            for ix, bx in enumerate(xbins):
+                for iy, by in enumerate(ybins):
+                    h_new.SetBinContent(ix+1, iy+1, h.GetBinContent(bx, by))
+                    h_new.SetBinError(ix+1, iy+1, h.GetBinError(bx, by))
+            histos_new.append(h_new)
+        histos = histos_new
+    return (histos, xbinlabels, ybinlabels)
+
+def _mergeBinLabelsX(histos):
+    return _mergeBinLabels([[h.GetXaxis().GetBinLabel(i) for i in range(1, h.GetNbinsX()+1)] for h in histos])
+
+def _mergeBinLabelsY(histos):
+    return _mergeBinLabels([[h.GetYaxis().GetBinLabel(i) for i in range(1, h.GetNbinsY()+1)] for h in histos])
+
+def _mergeBinLabels(labelsAll):
+    labels_merged = labelsAll[0]
+    for labels in labelsAll[1:]:
+        diff = difflib.unified_diff(labels_merged, labels, n=max(len(labels_merged), len(labels)))
+        labels_merged = []
+        operation = []
+        for item in diff: # skip the "header" lines
+            if item[:2] == "@@":
+                break
+        for item in diff:
+            operation.append(item[0])
+            lab = item[1:]
+            if lab in labels_merged:
+                # pick the last addition of the bin
+                ind = labels_merged.index(lab)
+                if operation[ind] == "-" and operation[-1] == "+":
+                    labels_merged.remove(lab)
+                    del operation[ind] # to keep xbinlabels and operation indices in sync
+                elif operation[ind] == "+" and operation[-1] == "-":
+                    del operation[-1] # to keep xbinlabels and operation indices in sync
+                    continue
+                else:
+                    raise Exception("This should never happen")
+            labels_merged.append(lab)
+        # unified_diff returns empty diff if labels_merged and labels are equal
+        # so if labels_merged is empty here, it can be just set to labels
+        if len(labels_merged) == 0:
+            labels_merged = labels
+
+    return labels_merged
+
+def _th1IncludeOnlyBins(histos, xbinlabels):
+    histos_new = []
+    for h in histos:
+        h_new = h.Clone(h.GetName()+"_xbinlabels")
+        h_new.SetBins(len(xbinlabels), h.GetBinLowEdge(1), h.GetBinLowEdge(1)+len(xbinlabels))
+        for i, label in enumerate(xbinlabels):
+            bin = h.GetXaxis().FindFixBin(label)
+            if bin >= 0:
+                h_new.SetBinContent(i+1, h.GetBinContent(bin))
+                h_new.SetBinError(i+1, h.GetBinError(bin))
+            else:
+                h_new.SetBinContent(i+1, 0)
+                h_new.SetBinError(i+1, 0)
+        histos_new.append(h_new)
+    return histos_new
+
 
 class Subtract:
     """Class for subtracting two histograms"""
@@ -638,7 +798,7 @@ class Subtract:
         # effects downstream
         ret.SetCanExtend(False)
 
-        for i in xrange(0, histoA.GetNbinsX()+2): # include under- and overflow too
+        for i in range(0, histoA.GetNbinsX()+2): # include under- and overflow too
             val = histoA.GetBinContent(i)-histoB.GetBinContent(i)
             ret.SetBinContent(i, val)
             ret.SetBinError(i, math.sqrt(val))
@@ -678,7 +838,7 @@ class Transform:
         # effects downstream
         ret.SetCanExtend(False)
 
-        for i in xrange(0, histo.GetNbinsX()+2):
+        for i in range(0, histo.GetNbinsX()+2):
             ret.SetBinContent(i, self._func(histo.GetBinContent(i)))
         return ret
 
@@ -722,7 +882,7 @@ class FakeDuplicate:
         hfakedup = hreco.Clone(self._name)
         hfakedup.SetTitle(self._title)
 
-        for i in xrange(1, hassoc.GetNbinsX()+1):
+        for i in range(1, hassoc.GetNbinsX()+1):
             numerVal = hassoc.GetBinContent(i) - hdup.GetBinContent(i)
             denomVal = hreco.GetBinContent(i)
 
@@ -776,7 +936,7 @@ class CutEfficiency:
         ret.SetTitle(self._title)
 
         # calculate efficiency
-        for i in xrange(1, histo.GetNbinsX()+1):
+        for i in range(1, histo.GetNbinsX()+1):
             n = histo.GetBinContent(i)
             val = n/n_tot
             errVal = math.sqrt(val*(1-val)/n_tot)
@@ -786,7 +946,7 @@ class CutEfficiency:
 
 class AggregateBins:
     """Class to create a histogram by aggregating bins of another histogram to a bin of the resulting histogram."""
-    def __init__(self, name, histoName, mapping, normalizeTo=None, scale=None, renameBin=None, ignoreMissingBins=False, minExistingBins=None, originalOrder=False):
+    def __init__(self, name, histoName, mapping, normalizeTo=None, scale=None, renameBin=None, ignoreMissingBins=False, minExistingBins=None, originalOrder=False, reorder=None):
         """Constructor.
 
         Arguments:
@@ -799,6 +959,7 @@ class AggregateBins:
         scale       -- Optional number for scaling the histogram (passed to ROOT.TH1.Scale())
         renameBin   -- Optional function (string -> string) to rename the bins of the input histogram
         originalOrder -- Boolean for using the order of bins in the histogram (default False)
+        reorder     -- Optional function to reorder the bins
 
         Mapping structure (mapping):
 
@@ -815,6 +976,9 @@ class AggregateBins:
         self._ignoreMissingBins = ignoreMissingBins
         self._minExistingBins = minExistingBins
         self._originalOrder = originalOrder
+        self._reorder = reorder
+        if self._originalOrder and self._reorder is not None:
+            raise Exception("reorder is not None and originalOrder is True, please set only one of them")
 
     def __str__(self):
         """String representation, returns the name"""
@@ -833,7 +997,7 @@ class AggregateBins:
         values = _th1ToOrderedDict(th1, self._renameBin)
 
         binIndexOrder = [] # for reordering bins if self._originalOrder is True
-        for i, (key, labels) in enumerate(self._mapping.iteritems()):
+        for i, (key, labels) in enumerate(six.iteritems(self._mapping)):
             sumTime = 0.
             sumErrorSq = 0.
             nsum = 0
@@ -863,12 +1027,16 @@ class AggregateBins:
             binIndexOrder.sort(key=lambda t: t[0])
             tmpVal = []
             tmpLab = []
-            for i in xrange(0, len(binValues)):
+            for i in range(0, len(binValues)):
                 fromIndex = binIndexOrder[i][1]
                 tmpVal.append(binValues[fromIndex])
                 tmpLab.append(binLabels[fromIndex])
             binValues = tmpVal
             binLabels = tmpLab
+        if self._reorder is not None:
+            order = self._reorder(tdirectory, binLabels)
+            binValues = [binValues[i] for i in order]
+            binLabels = [binLabels[i] for i in order]
 
         if self._minExistingBins is not None and (len(binValues)-binValues.count(None)) < self._minExistingBins:
             return None
@@ -877,8 +1045,8 @@ class AggregateBins:
             for i, val in enumerate(binValues):
                 if val is None:
                     binLabels[i] = None
-            binValues = filter(lambda v: v is not None, binValues)
-            binLabels = filter(lambda v: v is not None, binLabels)
+            binValues = [v for v in binValues if v is not None]
+            binLabels = [v for v in binLabels if v is not None]
             if len(binValues) == 0:
                 return None
 
@@ -892,7 +1060,7 @@ class AggregateBins:
         if self._normalizeTo is not None:
             bin = th1.GetXaxis().FindBin(self._normalizeTo)
             if bin <= 0:
-                print "Trying to normalize {name} to {binlabel}, which does not exist".format(name=self._name, binlabel=self._normalizeTo)
+                print("Trying to normalize {name} to {binlabel}, which does not exist".format(name=self._name, binlabel=self._normalizeTo))
                 sys.exit(1)
             value = th1.GetBinContent(bin)
             if value != 0:
@@ -926,7 +1094,7 @@ class AggregateHistos:
     def create(self, tdirectory):
         """Create and return the histogram from a TDirectory"""
         result = []
-        for key, histoName in self._mapping.iteritems():
+        for key, histoName in six.iteritems(self._mapping):
             th1 = _getObject(tdirectory, histoName)
             if th1 is None:
                 continue
@@ -986,7 +1154,7 @@ class ROC:
         yerrdown = []
         z = []
 
-        for i in xrange(1, xhisto.GetNbinsX()+1):
+        for i in range(1, xhisto.GetNbinsX()+1):
             x.append(xhisto.GetBinContent(i))
             xerrup.append(xhisto.GetBinError(i))
             xerrdown.append(xhisto.GetBinError(i))
@@ -1015,7 +1183,7 @@ class ROC:
 _plotStylesColor = [4, 2, ROOT.kBlack, ROOT.kOrange+7, ROOT.kMagenta-3]
 _plotStylesMarker = [21, 20, 22, 34, 33]
 
-def _drawFrame(pad, bounds, xbinlabels=None, xbinlabelsize=None, xbinlabeloption=None, suffix=""):
+def _drawFrame(pad, bounds, zmax=None, xbinlabels=None, xbinlabelsize=None, xbinlabeloption=None, ybinlabels=None, suffix=""):
     """Function to draw a frame
 
     Arguments:
@@ -1023,45 +1191,64 @@ def _drawFrame(pad, bounds, xbinlabels=None, xbinlabelsize=None, xbinlabeloption
     bounds -- List or 4-tuple for (xmin, ymin, xmax, ymax)
 
     Keyword arguments:
+    zmax            -- Maximum Z, needed for TH2 histograms
     xbinlabels      -- Optional list of strings for x axis bin labels
     xbinlabelsize   -- Optional number for the x axis bin label size
     xbinlabeloption -- Optional string for the x axis bin options (passed to ROOT.TH1.LabelsOption())
     suffix          -- Optional string for a postfix of the frame name
     """
-    if xbinlabels is None:
+    if xbinlabels is None and ybinlabels is None:
         frame = pad.DrawFrame(*bounds)
     else:
         # Special form needed if want to set x axis bin labels
         nbins = len(xbinlabels)
-        frame = ROOT.TH1F("hframe"+suffix, "", nbins, bounds[0], bounds[2])
+        if ybinlabels is None:
+            frame = ROOT.TH1F("hframe"+suffix, "", nbins, bounds[0], bounds[2])
+            frame.SetMinimum(bounds[1])
+            frame.SetMaximum(bounds[3])
+            frame.GetYaxis().SetLimits(bounds[1], bounds[3])
+        else:
+            ybins = len(ybinlabels)
+            frame = ROOT.TH2F("hframe"+suffix, "", nbins,bounds[0],bounds[2], ybins,bounds[1],bounds[3])
+            frame.SetMaximum(zmax)
+
         frame.SetBit(ROOT.TH1.kNoStats)
         frame.SetBit(ROOT.kCanDelete)
-        frame.SetMinimum(bounds[1])
-        frame.SetMaximum(bounds[3])
-        frame.GetYaxis().SetLimits(bounds[1], bounds[3])
         frame.Draw("")
 
         xaxis = frame.GetXaxis()
-        for i in xrange(nbins):
+        for i in range(nbins):
             xaxis.SetBinLabel(i+1, xbinlabels[i])
         if xbinlabelsize is not None:
             xaxis.SetLabelSize(xbinlabelsize)
         if xbinlabeloption is not None:
             frame.LabelsOption(xbinlabeloption)
 
+        if ybinlabels is not None:
+            yaxis = frame.GetYaxis()
+            for i, lab in enumerate(ybinlabels):
+                yaxis.SetBinLabel(i+1, lab)
+            if xbinlabelsize is not None:
+                yaxis.SetLabelSize(xbinlabelsize)
+            if xbinlabeloption is not None:
+                frame.LabelsOption(xbinlabeloption, "Y")
+
     return frame
 
 class Frame:
     """Class for creating and managing a frame for a simple, one-pad plot"""
-    def __init__(self, pad, bounds, nrows, xbinlabels=None, xbinlabelsize=None, xbinlabeloption=None):
+    def __init__(self, pad, bounds, zmax, nrows, xbinlabels=None, xbinlabelsize=None, xbinlabeloption=None, ybinlabels=None):
         self._pad = pad
-        self._frame = _drawFrame(pad, bounds, xbinlabels, xbinlabelsize, xbinlabeloption)
+        self._frame = _drawFrame(pad, bounds, zmax, xbinlabels, xbinlabelsize, xbinlabeloption, ybinlabels)
 
         yoffsetFactor = 1
         xoffsetFactor = 1
         if nrows == 2:
             yoffsetFactor *= 2
             xoffsetFactor *= 2
+        elif nrows >= 5:
+            yoffsetFactor *= 1.5
+            xoffsetFactor *= 1.5
         elif nrows >= 3:
             yoffsetFactor *= 4
             xoffsetFactor *= 3
@@ -1123,15 +1310,15 @@ class Frame:
 
 class FrameRatio:
     """Class for creating and managing a frame for a ratio plot with two subpads"""
-    def __init__(self, pad, bounds, ratioBounds, ratioFactor, nrows, xbinlabels=None, xbinlabelsize=None, xbinlabeloption=None, ratioYTitle=_ratioYTitle):
+    def __init__(self, pad, bounds, zmax, ratioBounds, ratioFactor, nrows, xbinlabels=None, xbinlabelsize=None, xbinlabeloption=None, ratioYTitle=_ratioYTitle):
         self._parentPad = pad
         self._pad = pad.cd(1)
         if xbinlabels is not None:
-            self._frame = _drawFrame(self._pad, bounds, [""]*len(xbinlabels))
+            self._frame = _drawFrame(self._pad, bounds, zmax, [""]*len(xbinlabels))
         else:
-            self._frame = _drawFrame(self._pad, bounds)
+            self._frame = _drawFrame(self._pad, bounds, zmax)
         self._padRatio = pad.cd(2)
-        self._frameRatio = _drawFrame(self._padRatio, ratioBounds, xbinlabels, xbinlabelsize, xbinlabeloption)
+        self._frameRatio = _drawFrame(self._padRatio, ratioBounds, zmax, xbinlabels, xbinlabelsize, xbinlabeloption)
 
         self._frame.GetXaxis().SetLabelSize(0)
         self._frame.GetXaxis().SetTitleSize(0)
@@ -1264,11 +1451,6 @@ class FrameTGraph2D:
             self._pad.SetTopMargin(topMarginNew)
             self._pad.SetBottomMargin(bottomMarginNew)
 
-        self._view = ROOT.TView.CreateView()
-        self._view.SetRange(bounds[0], bounds[1], 0, bounds[2], bounds[3], 20) # 20 is from Harrison-Stetson, may need tuning?
-        self._view.Top()
-        self._view.ShowAxis()
-
         self._xtitleoffset = 1.8
         self._ytitleoffset = 2.3
 
@@ -1325,28 +1507,26 @@ class FrameTGraph2D:
         self._firstHisto.GetZaxis().SetTitleOffset(offset)
 
     def redrawAxis(self):
-        # Disabling and enabled the 3D rulers somehow magically moves the axes to their proper places
-        ROOT.TAxis3D.ToggleRulers()
-        ROOT.TAxis3D.ToggleRulers()
-        axis = ROOT.TAxis3D.GetPadAxis()
-        axis.SetLabelColor(ROOT.kBlack);
-        axis.SetAxisColor(ROOT.kBlack);
+        # set top view
+        epsilon = 1e-7
+        self._pad.SetPhi(epsilon)
+        self._pad.SetTheta(90+epsilon)
 
-        axis.GetXaxis().SetTitleOffset(self._xtitleoffset)
-        axis.GetYaxis().SetTitleOffset(self._ytitleoffset)
+        self._firstHisto.GetXaxis().SetTitleOffset(self._xtitleoffset)
+        self._firstHisto.GetYaxis().SetTitleOffset(self._ytitleoffset)
 
         if hasattr(self, "_xtitle"):
-            axis.GetXaxis().SetTitle(self._xtitle)
+            self._firstHisto.GetXaxis().SetTitle(self._xtitle)
         if hasattr(self, "_xtitlesize"):
-            axis.GetXaxis().SetTitleSize(self._xtitlesize)
+            self._firstHisto.GetXaxis().SetTitleSize(self._xtitlesize)
         if hasattr(self, "_xlabelsize"):
-            axis.GetXaxis().SetLabelSize(self._labelsize)
+            self._firstHisto.GetXaxis().SetLabelSize(self._labelsize)
         if hasattr(self, "_ytitle"):
-            axis.GetYaxis().SetTitle(self._ytitle)
+            self._firstHisto.GetYaxis().SetTitle(self._ytitle)
         if hasattr(self, "_ytitlesize"):
-            axis.GetYaxis().SetTitleSize(self._ytitlesize)
+            self._firstHisto.GetYaxis().SetTitleSize(self._ytitlesize)
         if hasattr(self, "_ytitleoffset"):
-            axis.GetYaxis().SetTitleOffset(self._ytitleoffset)
+            self._firstHisto.GetYaxis().SetTitleOffset(self._ytitleoffset)
 
 class PlotText:
     """Abstraction on top of TLatex"""
@@ -1375,7 +1555,7 @@ class PlotText:
             self._l.SetTextFont(font)
         if size is not None:
             self._l.SetTextSize(size)
-        if isinstance(align, basestring):
+        if isinstance(align, str):
             if align.lower() == "left":
                 self._l.SetTextAlign(11)
             elif align.lower() == "center":
@@ -1491,6 +1671,26 @@ def _copyStyle(src, dst):
     for prop in properties:
         getattr(dst, "Set"+prop)(getattr(src, "Get"+prop)())
 
+class PlotEmpty:
+    """Denotes an empty place in a group."""
+    def __init__(self):
+        pass
+
+    def getName(self):
+        return None
+
+    def drawRatioUncertainty(self):
+        return False
+
+    def create(self, *args, **kwargs):
+        pass
+
+    def isEmpty(self):
+        return True
+
+    def getNumberOfHistograms(self):
+        return 0
+
 class Plot:
     """Represents one plot, comparing one or more histograms."""
     def __init__(self, name, **kwargs):
@@ -1544,6 +1744,7 @@ class Plot:
         legendDw     -- Float for changing TLegend width for separate=True (default None)
         legendDh     -- Float for changing TLegend height for separate=True (default None)
         legend       -- Bool to enable/disable legend (default True)
+        adjustMarginLeft  -- Float for adjusting left margin (default None)
         adjustMarginRight  -- Float for adjusting right margin (default None)
         ratio        -- Possibility to disable ratio for this particular plot (default None)
         ratioYmin    -- Float for y axis minimum in ratio pad (default: list of values)
@@ -1612,6 +1813,7 @@ class Plot:
         _set("legendDh", None)
         _set("legend", True)
 
+        _set("adjustMarginLeft", None)
         _set("adjustMarginRight", None)
 
         _set("ratio", None)
@@ -1626,7 +1828,7 @@ class Plot:
         self._histograms = []
 
     def setProperties(self, **kwargs):
-        for name, value in kwargs.iteritems():
+        for name, value in six.iteritems(kwargs):
             if not hasattr(self, "_"+name):
                 raise Exception("No attribute '%s'" % name)
             setattr(self, "_"+name, value)
@@ -1640,7 +1842,7 @@ class Plot:
 
     def getNumberOfHistograms(self):
         """Return number of existing histograms."""
-        return len(filter(lambda h: h is not None, self._histograms))
+        return len([h for h in self._histograms if h is not None])
 
     def isEmpty(self):
         """Return true if there are no histograms created for the plot"""
@@ -1689,7 +1891,7 @@ class Plot:
 
         if self._fallback is not None:
             profileX = [self._profileX]*len(self._histograms)
-            for i in xrange(0, len(self._histograms)):
+            for i in range(0, len(self._histograms)):
                 if self._histograms[i] is None:
                     self._histograms[i] = self._createOne(self._fallback["name"], i, tdirNEvents[i][0], tdirNEvents[i][1])
                     profileX[i] = self._fallback.get("profileX", self._profileX)
@@ -1835,123 +2037,57 @@ class Plot:
             histos.append(h)
         if len(histos) == 0:
             if verbose:
-                print "No histograms for plot {name}".format(name=self.getName())
+                print("No histograms for plot {name}".format(name=self.getName()))
             return
 
         # Extract x bin labels, make sure that only bins with same
         # label are compared with each other
         histosHaveBinLabels = len(histos[0].GetXaxis().GetBinLabel(1)) > 0
         xbinlabels = self._xbinlabels
+        ybinlabels = None
         if xbinlabels is None:
             if histosHaveBinLabels:
-                xbinlabels = [histos[0].GetXaxis().GetBinLabel(i) for i in xrange(1, histos[0].GetNbinsX()+1)]
-                # Merge bin labels with difflib
-                for h in histos[1:]:
-                    labels = [h.GetXaxis().GetBinLabel(i) for i in xrange(1, h.GetNbinsX()+1)]
-                    diff = difflib.unified_diff(xbinlabels, labels, n=max(len(xbinlabels), len(labels)))
-                    xbinlabels = []
-                    operation = []
-                    for item in diff: # skip the "header" lines
-                        if item[:2] == "@@":
-                            break
-                    for item in diff:
-                        operation.append(item[0])
-                        lab = item[1:]
-                        if lab in xbinlabels:
-                            # pick the last addition of the bin
-                            ind = xbinlabels.index(lab)
-                            if operation[ind] == "-" and operation[-1] == "+":
-                                xbinlabels.remove(lab)
-                                del operation[ind] # to keep xbinlabels and operation indices in sync
-                            elif operation[ind] == "+" and operation[-1] == "-":
-                                del operation[-1] # to keep xbinlabels and operation indices in sync
-                                continue
-                            else:
-                                raise Exception("This should never happen")
-                        xbinlabels.append(lab)
-                    # unified_diff returns empty diff if xbinlabels and labels are equal
-                    # so if xbinlabels is empty here, it can be just set to labels
-                    if len(xbinlabels) == 0:
-                        xbinlabels = labels
+                xbinlabels = _mergeBinLabelsX(histos)
+                if isinstance(histos[0], ROOT.TH2):
+                    ybinlabels = _mergeBinLabelsY(histos)
 
-                histos_new = []
-                for h in histos:
-                    h_new = h.Clone(h.GetName()+"_xbinlabels")
-                    h_new.SetBins(len(xbinlabels), h.GetBinLowEdge(1), h.GetBinLowEdge(1)+len(xbinlabels))
-                    for i, label in enumerate(xbinlabels):
-                        bin = h.GetXaxis().FindFixBin(label)
-                        if bin >= 0:
-                            h_new.SetBinContent(i+1, h.GetBinContent(bin))
-                            h_new.SetBinError(i+1, h.GetBinError(bin))
-                        else:
-                            h_new.SetBinContent(i+1, 0)
-                            h_new.SetBinError(i+1, 0)
-                    histos_new.append(h_new)
-                self._tmp_histos = histos_new # need to keep these in memory too ...
-                histos = histos_new
+                if len(histos) > 1: # don't bother if only one histogram
+                    # doing this for TH2 is pending for use case, for now there is only 1 histogram/plot for TH2
+                    histos = _th1IncludeOnlyBins(histos, xbinlabels)
+                    self._tmp_histos = histos # need to keep these in memory too ...
 
         # Remove empty bins, but only if histograms have bin labels
         if self._removeEmptyBins and histosHaveBinLabels:
             # at this point, all histograms have been "equalized" by their x binning and labels
             # therefore remove bins which are empty in all histograms
-            binsToRemove = set()
-            for b in xrange(1, histos[0].GetNbinsX()+1):
-                binEmpty = True
-                for h in histos:
-                    if h.GetBinContent(b) > 0:
-                        binEmpty = False
-                        break
-                if binEmpty:
-                    binsToRemove.add(b)
-
-            if len(binsToRemove) > 0:
-                # filter xbinlabels
-                xbinlab_new = []
-                for i in xrange(len(xbinlabels)):
-                    if (i+1) not in binsToRemove:
-                        xbinlab_new.append(xbinlabels[i])
-                xbinlabels = xbinlab_new
-
-                # filter histogram bins
-                histos_new = []
-                for h in histos:
-                    values = []
-                    for b in xrange(1, h.GetNbinsX()+1):
-                        if b not in binsToRemove:
-                            values.append( (h.GetXaxis().GetBinLabel(b), h.GetBinContent(b), h.GetBinError(b)) )
-
-                    if len(values) > 0:
-                        h_new = h.Clone(h.GetName()+"_empty")
-                        h_new.SetBins(len(values), h.GetBinLowEdge(1), h.GetBinLowEdge(1)+len(values))
-                        for b, (l, v, e) in enumerate(values):
-                            h_new.GetXaxis().SetBinLabel(b+1, l)
-                            h_new.SetBinContent(b+1, v)
-                            h_new.SetBinError(b+1, e)
-
-                        histos_new.append(h_new)
-
-                self._tmp_histos = histos_new # need to keep these in memory too ...
-                histos = histos_new
-                if len(histos) == 0:
-                    if verbose:
-                        print "No histograms with non-empty bins for plot {name}".format(name=self.getName())
-                    return
+            if isinstance(histos[0], ROOT.TH2):
+                (histos, xbinlabels, ybinlabels) = _th2RemoveEmptyBins(histos, xbinlabels, ybinlabels)
+            else:
+                (histos, xbinlabels) = _th1RemoveEmptyBins(histos, xbinlabels)
+            self._tmp_histos = histos # need to keep these in memory too ...
+            if len(histos) == 0:
+                if verbose:
+                    print("No histograms with non-empty bins for plot {name}".format(name=self.getName()))
+                return
 
         if self._printBins and histosHaveBinLabels:
-            print "####################"
-            print self._name
+            print("####################")
+            print(self._name)
             width = max([len(l) for l in xbinlabels])
             tmp = "%%-%ds " % width
-            for b in xrange(1, histos[0].GetNbinsX()+1):
+            for b in range(1, histos[0].GetNbinsX()+1):
                 s = tmp % xbinlabels[b-1]
                 for h in histos:
                     s += "%.3f " % h.GetBinContent(b)
-                print s
-            print
+                print(s)
+            print()
 
         bounds = _findBounds(histos, self._ylog,
                              xmin=self._xmin, xmax=self._xmax,
                              ymin=self._ymin, ymax=self._ymax)
+        zmax = None
+        if isinstance(histos[0], ROOT.TH2):
+            zmax = max([h.GetMaximum() for h in histos])
 
         # need to keep these in memory
         self._mainAdditional = []
@@ -1959,7 +2095,7 @@ class Plot:
 
         if ratio:
             self._ratios = _calculateRatios(histos, self._ratioUncertainty) # need to keep these in memory too ...
-            ratioHistos = filter(lambda h: h is not None, [r.getRatio() for r in self._ratios[1:]])
+            ratioHistos = [h for h in [r.getRatio() for r in self._ratios[1:]] if h is not None]
 
             if len(ratioHistos) > 0:
                 ratioBoundsY = _findBoundsY(ratioHistos, ylog=False, ymin=self._ratioYmin, ymax=self._ratioYmax, coverage=0.68, coverageRange=self._ratioCoverageXrange)
@@ -2000,9 +2136,9 @@ class Plot:
         else:
             if ratio:
                 ratioBounds = (bounds[0], ratioBoundsY[0], bounds[2], ratioBoundsY[1])
-                frame = FrameRatio(pad, bounds, ratioBounds, ratioFactor, nrows, xbinlabels, self._xbinlabelsize, self._xbinlabeloption)
+                frame = FrameRatio(pad, bounds, zmax, ratioBounds, ratioFactor, nrows, xbinlabels, self._xbinlabelsize, self._xbinlabeloption)
             else:
-                frame = Frame(pad, bounds, nrows, xbinlabels, self._xbinlabelsize, self._xbinlabeloption)
+                frame = Frame(pad, bounds, zmax, nrows, xbinlabels, self._xbinlabelsize, self._xbinlabeloption, ybinlabels=ybinlabels)
 
         # Set log and grid
         frame.setLogx(self._xlog)
@@ -2022,7 +2158,9 @@ class Plot:
 
         # Set properties of frame
         frame.setTitle(histos[0].GetTitle())
-        if self._xtitle is not None:
+        if self._xtitle == 'Default':
+            frame.setXTitle( histos[0].GetXaxis().GetTitle() )
+        elif self._xtitle is not None:
             frame.setXTitle(self._xtitle)
         if self._xtitlesize is not None:
             frame.setXTitleSize(self._xtitlesize)
@@ -2030,7 +2168,9 @@ class Plot:
             frame.setXTitleOffset(self._xtitleoffset)
         if self._xlabelsize is not None:
             frame.setXLabelSize(self._xlabelsize)
-        if self._ytitle is not None:
+        if self._ytitle == 'Default':
+            frame.setYTitle( histos[0].GetYaxis().GetTitle() )
+        elif self._ytitle is not None:
             frame.setYTitle(self._ytitle)
         if self._ytitlesize is not None:
             frame.setYTitleSize(self._ytitlesize)
@@ -2040,6 +2180,8 @@ class Plot:
             frame.setZTitle(self._ztitle)
         if self._ztitleoffset is not None:
             frame.setZTitleOffset(self._ztitleoffset)
+        if self._adjustMarginLeft is not None:
+            frame.adjustMarginLeft(self._adjustMarginLeft)
         if self._adjustMarginRight is not None:
             frame.adjustMarginRight(self._adjustMarginRight)
         elif "z" in opt:
@@ -2050,8 +2192,11 @@ class Plot:
         if ratio:
             frame._pad.cd()
 
-        for h in histos:
-            h.Draw(opt)
+        for i, h in enumerate(histos):
+            o = opt
+            if isTGraph2D and i == 0:
+                o = o.replace("sames", "")
+            h.Draw(o)
 
         for addl in self._mainAdditional:
             addl.Draw("same")
@@ -2098,7 +2243,7 @@ class Plot:
             else:
                 legend.AddEntry(h, label, "LP")
 
-class PlotGroup:
+class PlotGroup(object):
     """Group of plots, results a TCanvas"""
     def __init__(self, name, plots, **kwargs):
         """Constructor.
@@ -2117,6 +2262,8 @@ class PlotGroup:
         overrideLegendLabels -- List of strings for legend labels, if given, these are used instead of the ones coming from Plotter (default None)
         onlyForPileup  -- Plots this group only for pileup samples
         """
+        super(PlotGroup, self).__init__()
+
         self._name = name
         self._plots = plots
 
@@ -2138,7 +2285,7 @@ class PlotGroup:
         self._ratioFactor = 1.25
 
     def setProperties(self, **kwargs):
-        for name, value in kwargs.iteritems():
+        for name, value in six.iteritems(kwargs):
             if not hasattr(self, "_"+name):
                 raise Exception("No attribute '%s'" % name)
             setattr(self, "_"+name, value)
@@ -2182,7 +2329,7 @@ class PlotGroup:
         for plot in self._plots:
             plot.create(tdirectoryNEvents, requireAllHistograms)
 
-    def draw(self, legendLabels, prefix=None, separate=False, saveFormat=".pdf", ratio=True):
+    def draw(self, legendLabels, prefix=None, separate=False, saveFormat=".pdf", ratio=True, directory=""):
         """Draw the histograms using values for a given algorithm.
 
         Arguments:
@@ -2191,6 +2338,7 @@ class PlotGroup:
         separate      -- Save the plots of a group to separate files instead of a file per group (default False)
         saveFormat   -- String specifying the plot format (default '.pdf')
         ratio        -- Add ratio to the plot (default True)
+        directory     -- Directory where to save the file (default "")
         """
 
         if self._overrideLegendLabels is not None:
@@ -2206,7 +2354,7 @@ class PlotGroup:
             return []
 
         if separate:
-            return self._drawSeparate(legendLabels, prefix, saveFormat, ratio)
+            return self._drawSeparate(legendLabels, prefix, saveFormat, ratio, directory)
 
         cwidth = 500*self._ncols
         nrows = int((len(self._plots)+self._ncols-1)/self._ncols) # this should work also for odd n
@@ -2256,9 +2404,9 @@ class PlotGroup:
         legend = self._createLegend(plot, legendLabels, lx1, ly1, lx2, ly2,
                                     denomUncertainty=(ratio and denomUnc))
 
-        return self._save(canvas, saveFormat, prefix=prefix)
+        return self._save(canvas, saveFormat, prefix=prefix, directory=directory)
 
-    def _drawSeparate(self, legendLabels, prefix, saveFormat, ratio):
+    def _drawSeparate(self, legendLabels, prefix, saveFormat, ratio, directory):
         """Internal method to do the drawing to separate files per Plot instead of a file per PlotGroup"""
         width = 500
         height = 500
@@ -2317,7 +2465,7 @@ class PlotGroup:
                 legend = self._createLegend(plot, legendLabels, lx1, ly1, lx2, ly2, textSize=0.03,
                                             denomUncertainty=(ratioForThisPlot and plot.drawRatioUncertainty))
 
-            ret.extend(self._save(c, saveFormat, prefix=prefix, postfix="_"+plot.getName(), single=True))
+            ret.extend(self._save(c, saveFormat, prefix=prefix, postfix="_"+plot.getName(), single=True, directory=directory))
         return ret
 
     def _modifyPadForRatio(self, pad):
@@ -2340,13 +2488,14 @@ class PlotGroup:
         l.Draw()
         return l
 
-    def _save(self, canvas, saveFormat, prefix=None, postfix=None, single=False):
+    def _save(self, canvas, saveFormat, prefix=None, postfix=None, single=False, directory=""):
         # Save the canvas to file and clear
         name = self._name
         if prefix is not None:
             name = prefix+name
         if postfix is not None:
             name = name+postfix
+        name = os.path.join(directory, name)
 
         if not verbose: # silence saved file printout
             backup = ROOT.gErrorIgnoreLevel
@@ -2364,7 +2513,35 @@ class PlotGroup:
 
         return [name+saveFormat]
 
+class PlotOnSideGroup(PlotGroup):
+    """Resembles DQM GUI's "On side" layout.
+
+    Like PlotGroup, but has only a description of a single plot. The
+    plot is drawn separately for each file. Useful for 2D histograms."""
+
+    def __init__(self, name, plot, ncols=2, onlyForPileup=False):
+        super(PlotOnSideGroup, self).__init__(name, [], ncols=ncols, legend=False, onlyForPileup=onlyForPileup)
+        self._plot = plot
+        self._plot.setProperties(ratio=False)
+
+    def append(self, *args, **kwargs):
+        raise Exception("PlotOnSideGroup.append() is not implemented")
+
+    def create(self, tdirectoryNEvents, requireAllHistograms=False):
+        self._plots = []
+        for element in tdirectoryNEvents:
+            pl = self._plot.clone()
+            pl.create([element], requireAllHistograms)
+            self._plots.append(pl)
+
+    def draw(self, *args, **kwargs):
+        kargs = copy.copy(kwargs)
+        kargs["ratio"] = False
+        kargs["separate"] = False
+        return super(PlotOnSideGroup, self).draw(*args, **kargs)
+
 class PlotFolder:
+
     """Represents a collection of PlotGroups, produced from a single folder in a DQM file"""
     def __init__(self, *plotGroups, **kwargs):
         """Constructor.
@@ -2377,6 +2554,7 @@ class PlotFolder:
         onlyForPileup  -- Plots this folder only for pileup samples
         onlyForElectron -- Plots this folder only for electron samples
         onlyForConversion -- Plots this folder only for conversion samples
+        onlyForBHadron -- Plots this folder only for B-hadron samples
         purpose        -- html.PlotPurpose member class for the purpose of the folder, used for grouping of the plots to the HTML pages
         page           -- Optional string for the page in HTML generatin
         section        -- Optional string for the section within a page in HTML generation
@@ -2387,6 +2565,7 @@ class PlotFolder:
         self._onlyForPileup = kwargs.pop("onlyForPileup", False)
         self._onlyForElectron = kwargs.pop("onlyForElectron", False)
         self._onlyForConversion = kwargs.pop("onlyForConversion", False)
+        self._onlyForBHadron = kwargs.pop("onlyForBHadron", False)
         self._purpose = kwargs.pop("purpose", None)
         self._page = kwargs.pop("page", None)
         self._section = kwargs.pop("section", None)
@@ -2407,6 +2586,9 @@ class PlotFolder:
 
     def onlyForConversion(self):
         return self._onlyForConversion
+
+    def onlyForBHadron(self):
+        return self._onlyForBHadron
 
     def getPurpose(self):
         return self._purpose
@@ -2455,7 +2637,7 @@ class PlotFolder:
                 continue
             pg.create(dirsNEvents, requireAllHistograms)
 
-    def draw(self, prefix=None, separate=False, saveFormat=".pdf", ratio=True):
+    def draw(self, prefix=None, separate=False, saveFormat=".pdf", ratio=True, directory=""):
         """Draw and save all plots using settings of a given algorithm.
 
         Arguments:
@@ -2463,11 +2645,12 @@ class PlotFolder:
         separate -- Save the plots of a group to separate files instead of a file per group (default False)
         saveFormat   -- String specifying the plot format (default '.pdf')
         ratio    -- Add ratio to the plot (default True)
+        directory -- Directory where to save the file (default "")
         """
         ret = []
 
         for pg in self._plotGroups:
-            ret.extend(pg.draw(self._labels, prefix=prefix, separate=separate, saveFormat=saveFormat, ratio=ratio))
+            ret.extend(pg.draw(self._labels, prefix=prefix, separate=separate, saveFormat=saveFormat, ratio=ratio, directory=directory))
         return ret
 
 
@@ -2495,7 +2678,7 @@ class PlotFolder:
         """Return True if this subfolder should be processed
 
         Arguments:
-        limitOnlyTo            -- List/set/similar containing the translatedDqmSubFolder 
+        limitOnlyTo            -- List/set/similar containing the translatedDqmSubFolder
         translatedDqmSubFolder -- Return value of translateSubFolder
         """
         return translatedDqmSubFolder in limitOnlyTo
@@ -2574,6 +2757,9 @@ class PlotterFolder:
     def onlyForConversion(self):
         return self._plotFolder.onlyForConversion()
 
+    def onlyForBHadron(self):
+        return self._plotFolder.onlyForBHadron()
+
     def getPossibleDQMFolders(self):
         return self._possibleDqmFolders
 
@@ -2590,7 +2776,7 @@ class PlotterFolder:
         if limitOnlyTo is None:
             return self._dqmSubFolders
 
-        return filter(lambda s: self._plotFolder.limitSubFolder(limitOnlyTo, s.translated), self._dqmSubFolders)
+        return [s for s in self._dqmSubFolders if self._plotFolder.limitSubFolder(limitOnlyTo, s.translated)]
 
     def getTableCreators(self):
         return self._tableCreators
@@ -2646,7 +2832,7 @@ class PlotterFolder:
 class PlotterInstance:
     """Instance of plotter that knows the directory content, holds many folders."""
     def __init__(self, folders):
-        self._plotterFolders = filter(lambda f: f is not None, folders)
+        self._plotterFolders = [f for f in folders if f is not None]
 
     def iterFolders(self, limitSubFoldersOnlyTo=None):
         for plotterFolder in self._plotterFolders:
@@ -2766,7 +2952,7 @@ class PlotterTableItem:
             return None
 
         # Replace all None columns with lists of column length
-        for i in xrange(len(tbl)):
+        for i in range(len(tbl)):
             if tbl[i] is None:
                 tbl[i] = [None]*colLen
 

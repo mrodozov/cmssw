@@ -17,7 +17,7 @@ namespace edm {
   class ParameterSet;
   class Event;
   class EventSetup;
-}
+}  // namespace edm
 
 class DTT0;
 class DTDeadFlag;
@@ -28,22 +28,20 @@ public:
   DTTPDeadWriter(const edm::ParameterSet& pset);
 
   /// Destructor
-  virtual ~DTTPDeadWriter();
+  ~DTTPDeadWriter() override;
 
   // Operations
 
   ///Read t0 map from event
-  virtual void beginRun(const edm::Run&, const edm::EventSetup& setup);
+  void beginRun(const edm::Run&, const edm::EventSetup& setup) override;
 
   /// Compute the ttrig by fiting the TB rising edge
-  virtual void analyze(const edm::Event & event, const edm::EventSetup& eventSetup);
+  void analyze(const edm::Event& event, const edm::EventSetup& eventSetup) override;
 
   /// Write ttrig in the DB
-  virtual void endJob();
+  void endJob() override;
 
- 
 protected:
-
 private:
   // Debug flag
   bool debug;
@@ -53,7 +51,7 @@ private:
 
   // The object to be written to DB
   DTDeadFlag* tpDeadList;
- 
+
   //The DTGeometry
   edm::ESHandle<DTGeometry> muonGeom;
 };

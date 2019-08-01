@@ -17,7 +17,7 @@ namespace edm {
   class ParameterSet;
   class Event;
   class EventSetup;
-}
+}  // namespace edm
 
 class DTRecHitBaseAlgo;
 
@@ -27,10 +27,10 @@ public:
   DTRecHitProducer(const edm::ParameterSet&);
 
   /// Destructor
-  virtual ~DTRecHitProducer();
+  ~DTRecHitProducer() override;
 
   /// The method which produces the rechits
-  virtual void produce(edm::Event& event, const edm::EventSetup& setup);
+  void produce(edm::Event& event, const edm::EventSetup& setup) override;
 
 private:
   // Switch on verbosity
@@ -38,9 +38,6 @@ private:
   // The label to be used to retrieve DT digis from the event
   edm::EDGetTokenT<DTDigiCollection> DTDigiToken_;
   // The reconstruction algorithm
-  DTRecHitBaseAlgo *theAlgo;
-//   static string theAlgoName;
-
+  std::unique_ptr<DTRecHitBaseAlgo> theAlgo;
 };
 #endif
-

@@ -27,29 +27,25 @@
 
 class FWHistSliceSelector;
 
-class FWPFCandidateTowerProxyBuilder : public FWCaloDataHistProxyBuilder
-{
+class FWPFCandidateTowerProxyBuilder : public FWCaloDataHistProxyBuilder {
 public:
-   FWPFCandidateTowerProxyBuilder();
-   virtual ~FWPFCandidateTowerProxyBuilder();
+  FWPFCandidateTowerProxyBuilder();
+  ~FWPFCandidateTowerProxyBuilder() override;
 
-   virtual double getEt(const reco::PFCandidate&) const = 0;
+  virtual double getEt(const reco::PFCandidate&) const = 0;
 
 protected:
-   virtual void fillCaloData();
-   virtual FWHistSliceSelector* instantiateSliceSelector();
-   virtual void build(const FWEventItem* iItem, TEveElementList* product, const FWViewContext*);
+  void fillCaloData() override;
+  FWHistSliceSelector* instantiateSliceSelector() override;
+  void build(const FWEventItem* iItem, TEveElementList* product, const FWViewContext*) override;
 
 private:
-   FWPFCandidateTowerProxyBuilder(const FWPFCandidateTowerProxyBuilder&); // stop default
-   const FWPFCandidateTowerProxyBuilder& operator=(const FWPFCandidateTowerProxyBuilder&); // stop default
-  
-   // ---------- member data --------------------------------
-   const reco::PFCandidateCollection* m_towers;
+  FWPFCandidateTowerProxyBuilder(const FWPFCandidateTowerProxyBuilder&) = delete;                   // stop default
+  const FWPFCandidateTowerProxyBuilder& operator=(const FWPFCandidateTowerProxyBuilder&) = delete;  // stop default
+
+  // ---------- member data --------------------------------
+  const reco::PFCandidateCollection* m_towers;
 };
-
-
-
 
 //
 // Ecal
@@ -57,23 +53,21 @@ private:
 
 class FWECalPFCandidateProxyBuilder : public FWPFCandidateTowerProxyBuilder {
 public:
-   FWECalPFCandidateProxyBuilder() {
-   }
-   virtual ~FWECalPFCandidateProxyBuilder() {
-   }
+  FWECalPFCandidateProxyBuilder() {}
+  ~FWECalPFCandidateProxyBuilder() override {}
 
-   // ---------- const member functions ---------------------
+  // ---------- const member functions ---------------------
 
-   virtual double getEt(const reco::PFCandidate& iTower) const {
-      return iTower.ecalEnergy()* TMath::Sin(iTower.theta());
-   }
+  double getEt(const reco::PFCandidate& iTower) const override {
+    return iTower.ecalEnergy() * TMath::Sin(iTower.theta());
+  }
 
-   REGISTER_PROXYBUILDER_METHODS();
+  REGISTER_PROXYBUILDER_METHODS();
+
 private:
-   FWECalPFCandidateProxyBuilder(const FWECalPFCandidateProxyBuilder&); // stop default
-   const FWECalPFCandidateProxyBuilder& operator=(const FWECalPFCandidateProxyBuilder&); // stop default
+  FWECalPFCandidateProxyBuilder(const FWECalPFCandidateProxyBuilder&) = delete;                   // stop default
+  const FWECalPFCandidateProxyBuilder& operator=(const FWECalPFCandidateProxyBuilder&) = delete;  // stop default
 };
-
 
 //
 // Hcal
@@ -81,22 +75,21 @@ private:
 
 class FWHCalPFCandidateProxyBuilder : public FWPFCandidateTowerProxyBuilder {
 public:
-   FWHCalPFCandidateProxyBuilder() {
-   }
-   virtual ~FWHCalPFCandidateProxyBuilder(){
-   }
+  FWHCalPFCandidateProxyBuilder() {}
+  ~FWHCalPFCandidateProxyBuilder() override {}
 
-   // ---------- const member functions ---------------------
+  // ---------- const member functions ---------------------
 
-   virtual double getEt(const reco::PFCandidate& iTower) const {
-      return iTower.hcalEnergy() * TMath::Sin(iTower.theta());
-   }
+  double getEt(const reco::PFCandidate& iTower) const override {
+    return iTower.hcalEnergy() * TMath::Sin(iTower.theta());
+  }
 
-   REGISTER_PROXYBUILDER_METHODS();
+  REGISTER_PROXYBUILDER_METHODS();
+
 private:
-   FWHCalPFCandidateProxyBuilder(const FWHCalPFCandidateProxyBuilder&); // stop default
+  FWHCalPFCandidateProxyBuilder(const FWHCalPFCandidateProxyBuilder&) = delete;  // stop default
 
-   const FWHCalPFCandidateProxyBuilder& operator=(const FWHCalPFCandidateProxyBuilder&); // stop default
+  const FWHCalPFCandidateProxyBuilder& operator=(const FWHCalPFCandidateProxyBuilder&) = delete;  // stop default
 };
 
 #endif

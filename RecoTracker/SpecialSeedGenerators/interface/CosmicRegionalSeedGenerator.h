@@ -19,7 +19,7 @@
 
 #include "RecoTracker/TkTrackingRegions/interface/TrackingRegionProducer.h"
 #include "RecoTracker/TkTrackingRegions/interface/GlobalTrackingRegion.h"
-#include "../interface/CosmicTrackingRegion.h"
+#include "RecoTracker/SpecialSeedGenerators/interface/CosmicTrackingRegion.h"
 
 #include "DataFormats/HLTReco/interface/TriggerObject.h"
 #include "FWCore/Common/interface/TriggerNames.h"
@@ -35,7 +35,7 @@
 //Geometry
 #include "Geometry/TrackerGeometryBuilder/interface/TrackerGeometry.h"
 #include "Geometry/Records/interface/TrackerDigiGeometryRecord.h"
-#include "Geometry/CommonDetUnit/interface/GeomDetUnit.h"
+#include "Geometry/CommonDetUnit/interface/GeomDet.h"
 #include "Geometry/TrackerGeometryBuilder/interface/PixelGeomDetUnit.h"
 #include "Geometry/TrackerGeometryBuilder/interface/StripGeomDetUnit.h"
 #include "DataFormats/TrackerCommon/interface/TrackerTopology.h"
@@ -46,17 +46,16 @@
 #include "DataFormats/MuonReco/interface/MuonFwd.h"
 #include "DataFormats/JetReco/interface/CaloJetCollection.h"
 
-class CosmicRegionalSeedGenerator : public TrackingRegionProducer { 
- 
+class CosmicRegionalSeedGenerator : public TrackingRegionProducer {
+public:
+  explicit CosmicRegionalSeedGenerator(const edm::ParameterSet& conf, edm::ConsumesCollector&& iC);
 
- public:
-  explicit CosmicRegionalSeedGenerator(const edm::ParameterSet& conf, edm::ConsumesCollector && iC);
+  ~CosmicRegionalSeedGenerator() override {}
 
-  virtual ~CosmicRegionalSeedGenerator() {}
-  
-  virtual std::vector<std::unique_ptr<TrackingRegion> > regions(const edm::Event& event, const edm::EventSetup& es) const override;
+  std::vector<std::unique_ptr<TrackingRegion> > regions(const edm::Event& event,
+                                                        const edm::EventSetup& es) const override;
 
- private:
+private:
   edm::ParameterSet conf_;
   edm::ParameterSet regionPSet;
 
@@ -72,18 +71,16 @@ class CosmicRegionalSeedGenerator : public TrackingRegionProducer {
   edm::InputTag recoMuonsCollection_;
   edm::InputTag recoTrackMuonsCollection_;
   edm::InputTag recoL2MuonsCollection_;
-  edm::EDGetTokenT<reco::CaloJetCollection>	 recoCaloJetsToken_	; 
-  edm::EDGetTokenT<reco::MuonCollection>	 recoMuonsToken_	; 
-  edm::EDGetTokenT<reco::TrackCollection>	 recoTrackMuonsToken_	; 
-  edm::EDGetTokenT<reco::RecoChargedCandidateCollection> recoL2MuonsToken_	; 
-  edm::EDGetTokenT<MeasurementTrackerEvent> measurementTrackerEventToken_	;
+  edm::EDGetTokenT<reco::CaloJetCollection> recoCaloJetsToken_;
+  edm::EDGetTokenT<reco::MuonCollection> recoMuonsToken_;
+  edm::EDGetTokenT<reco::TrackCollection> recoTrackMuonsToken_;
+  edm::EDGetTokenT<reco::RecoChargedCandidateCollection> recoL2MuonsToken_;
+  edm::EDGetTokenT<MeasurementTrackerEvent> measurementTrackerEventToken_;
 
-  
-  bool   doJetsExclusionCheck_;
+  bool doJetsExclusionCheck_;
   double deltaRExclusionSize_;
   double jetsPtMin_;
   edm::InputTag recoCaloJetsCollection_;
-
 };
 
 #endif

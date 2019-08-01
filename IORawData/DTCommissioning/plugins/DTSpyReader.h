@@ -22,48 +22,42 @@
 #include <boost/cstdint.hpp>
 
 class DTSpyReader : public edm::EDProducer {
- public:
+public:
   /// Constructor
   DTSpyReader(const edm::ParameterSet& pset);
 
   /// Destructor
-  virtual ~DTSpyReader();
+  ~DTSpyReader() override;
 
   /// Generate and fill FED raw data for a full event
   virtual int fillRawData(edm::Event& e,
-//			  edm::Timestamp& tstamp, 
-			  FEDRawDataCollection*& data);
+                          //			  edm::Timestamp& tstamp,
+                          FEDRawDataCollection*& data);
 
-  virtual void produce(edm::Event&, edm::EventSetup const&);
+  void produce(edm::Event&, edm::EventSetup const&) override;
 
   /// check for a 64 bits word to be a DDU header
   bool isHeader(uint64_t word, bool dataTag);
 
   /// check for a 64 bits word to be a DDU trailer
-  bool isTrailer(uint64_t word, bool dataTag, int wordCount);
+  bool isTrailer(uint64_t word, bool dataTag, unsigned int wordCount);
 
   /// pre-unpack the data if read via DMA
   //  std::pair<uint64_t,bool> dmaUnpack();
-  uint64_t dmaUnpack(const uint32_t *dmaData ,bool & isData);
+  uint64_t dmaUnpack(const uint32_t* dmaData, bool& isData);
 
   /// swapping the lsBits with the msBits
-  void swap(uint64_t & word);
- 
+  void swap(uint64_t& word);
 
- private:
-
-  DTSpy * mySpy;
+private:
+  DTSpy* mySpy;
 
   edm::RunNumber_t runNumber;
   edm::EventNumber_t eventNumber;
 
   bool debug;
-  int dduID; 
+  int dduID;
 
   static const int dduWordLength = 8;
-
 };
 #endif
-
-
-

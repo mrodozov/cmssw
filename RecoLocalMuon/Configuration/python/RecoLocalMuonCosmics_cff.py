@@ -41,3 +41,41 @@ muonlocalreco = cms.Sequence(dtlocalreco+csclocalreco+rpcRecHits)
 muonlocalrecoT0Seg = cms.Sequence(dtlocalrecoT0Seg+csclocalreco+rpcRecHits)
 # all sequences to be used for GR
 muonLocalRecoGR = cms.Sequence(muonlocalreco+muonlocalrecoT0Seg)
+
+from RecoLocalMuon.GEMRecHit.gemLocalReco_cff import *
+from RecoLocalMuon.GEMRecHit.me0LocalReco_cff import *
+
+_run2_GEM_2017_muonlocalreco = muonlocalreco.copy()
+_run2_GEM_2017_muonlocalreco += gemLocalReco
+
+_run3_muonlocalreco = muonlocalreco.copy()
+_run3_muonlocalreco += gemLocalReco
+
+_phase2_muonlocalreco = _run3_muonlocalreco.copy()
+_phase2_muonlocalreco += me0LocalReco
+
+from Configuration.Eras.Modifier_run2_GEM_2017_cff import run2_GEM_2017
+run2_GEM_2017.toReplaceWith( muonlocalreco , _run2_GEM_2017_muonlocalreco )
+from Configuration.Eras.Modifier_run3_GEM_cff import run3_GEM
+run3_GEM.toReplaceWith( muonlocalreco , _run3_muonlocalreco )
+from Configuration.Eras.Modifier_phase2_muon_cff import phase2_muon
+phase2_muon.toReplaceWith( muonlocalreco , _phase2_muonlocalreco )
+
+
+# RPC New Readout Validation
+from Configuration.Eras.Modifier_stage2L1Trigger_2017_cff import stage2L1Trigger_2017
+_rpc_NewReadoutVal_muonlocalreco_with_2DSegments = muonlocalreco_with_2DSegments.copy()
+_rpc_NewReadoutVal_muonlocalreco = muonlocalreco.copy()
+_rpc_NewReadoutVal_muonlocalrecoT0Seg = muonlocalrecoT0Seg.copy()
+_rpc_NewReadoutVal_muonlocalreco_with_2DSegments += rpcNewRecHits
+_rpc_NewReadoutVal_muonlocalreco += rpcNewRecHits
+_rpc_NewReadoutVal_muonlocalrecoT0Seg += rpcNewRecHits
+stage2L1Trigger_2017.toReplaceWith(muonlocalreco_with_2DSegments, _rpc_NewReadoutVal_muonlocalreco_with_2DSegments)
+stage2L1Trigger_2017.toReplaceWith(muonlocalreco, _rpc_NewReadoutVal_muonlocalreco)
+stage2L1Trigger_2017.toReplaceWith(muonlocalrecoT0Seg, _rpc_NewReadoutVal_muonlocalrecoT0Seg)
+
+from Configuration.Eras.Modifier_fastSim_cff import fastSim
+fastSim.toReplaceWith(muonlocalreco_with_2DSegments, muonlocalreco_with_2DSegments.copyAndExclude([rpcNewRecHits]))
+fastSim.toReplaceWith(muonlocalreco, muonlocalreco.copyAndExclude([rpcNewRecHits]))
+fastSim.toReplaceWith(muonlocalrecoT0Seg, muonlocalrecoT0Seg.copyAndExclude([rpcNewRecHits]))
+

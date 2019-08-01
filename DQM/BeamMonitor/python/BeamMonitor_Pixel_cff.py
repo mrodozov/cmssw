@@ -1,6 +1,7 @@
 import FWCore.ParameterSet.Config as cms
+from DQMServices.Core.DQMEDAnalyzer import DQMEDAnalyzer
 
-dqmBeamMonitor = cms.EDAnalyzer("BeamMonitor",
+dqmBeamMonitor = DQMEDAnalyzer("BeamMonitor",
                               monitorName = cms.untracked.string('BeamMonitor'),
                               beamSpot = cms.untracked.InputTag('offlineBeamSpot'), ## hltOfflineBeamSpot for HLTMON
                               primaryVertex = cms.untracked.InputTag('pixelVertices'),
@@ -37,7 +38,7 @@ dqmBeamMonitor = cms.EDAnalyzer("BeamMonitor",
                                 FractionOfFittedTrks = cms.untracked.double(0.9),
                                 MinimumInputTracks = cms.untracked.int32(150),
                                 deltaSignificanceCut = cms.untracked.double(10)
-                              ),
+                                ),
                               PVFitter = cms.PSet(
                                 Debug = cms.untracked.bool(False),
                                 Apply3DFit = cms.untracked.bool(True),
@@ -59,7 +60,7 @@ dqmBeamMonitor = cms.EDAnalyzer("BeamMonitor",
                                 FitPerBunchCrossing = cms.untracked.bool(False),
                                 useOnlyFirstPV = cms.untracked.bool(False),
                                 minSumPt = cms.untracked.double(0.)
-                              ),
+                                ),
                               dxBin = cms.int32(200),
                               dxMin = cms.double(-1.0),
                               dxMax = cms.double(1.0),

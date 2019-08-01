@@ -16,6 +16,7 @@
 #include "DataFormats/TestObjects/interface/ToyProducts.h"
 #include "FWCore/Framework/interface/EDAnalyzer.h"
 #include "FWCore/Framework/interface/Event.h"
+#include "FWCore/Framework/interface/getProducerParameterSet.h"
 #include "FWCore/Framework/interface/MakerMacros.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 #include "FWCore/Utilities/interface/Exception.h"
@@ -27,7 +28,6 @@
 namespace edmtest {
   class TestFindProduct : public edm::EDAnalyzer {
   public:
-
     explicit TestFindProduct(edm::ParameterSet const& pset);
     virtual ~TestFindProduct();
 
@@ -35,31 +35,31 @@ namespace edmtest {
     virtual void endJob();
 
   private:
-
     std::vector<edm::InputTag> inputTags_;
     int expectedSum_;
     int sum_;
     std::vector<edm::InputTag> inputTagsNotFound_;
     bool getByTokenFirst_;
     std::vector<edm::InputTag> inputTagsView_;
+    bool runProducerParameterCheck_;
 
     std::vector<edm::EDGetTokenT<IntProduct> > tokens_;
     std::vector<edm::EDGetTokenT<IntProduct> > tokensNotFound_;
     std::vector<edm::EDGetTokenT<edm::View<int> > > tokensView_;
-  }; // class TestFindProduct
+  };  // class TestFindProduct
 
   //--------------------------------------------------------------------
   //
   // Implementation details
 
-  TestFindProduct::TestFindProduct(edm::ParameterSet const& pset) :
-    inputTags_(pset.getUntrackedParameter<std::vector<edm::InputTag> >("inputTags")),
-    expectedSum_(pset.getUntrackedParameter<int>("expectedSum", 0)),
-    sum_(0),
-    inputTagsNotFound_(),
-    getByTokenFirst_(pset.getUntrackedParameter<bool>("getByTokenFirst", false)),
-    inputTagsView_()
-  {
+  TestFindProduct::TestFindProduct(edm::ParameterSet const& pset)
+      : inputTags_(pset.getUntrackedParameter<std::vector<edm::InputTag> >("inputTags")),
+        expectedSum_(pset.getUntrackedParameter<int>("expectedSum", 0)),
+        sum_(0),
+        inputTagsNotFound_(),
+        getByTokenFirst_(pset.getUntrackedParameter<bool>("getByTokenFirst", false)),
+        inputTagsView_(),
+        runProducerParameterCheck_(pset.getUntrackedParameter<bool>("runProducerParameterCheck", false)) {
     std::vector<edm::InputTag> emptyTagVector;
     inputTagsNotFound_ = pset.getUntrackedParameter<std::vector<edm::InputTag> >("inputTagsNotFound", emptyTagVector);
     inputTagsView_ = pset.getUntrackedParameter<std::vector<edm::InputTag> >("inputTagsView", emptyTagVector);
@@ -77,21 +77,16 @@ namespace edmtest {
 
   TestFindProduct::~TestFindProduct() {}
 
-  void
-  TestFindProduct::analyze(edm::Event const& e, edm::EventSetup const&) {
-
+  void TestFindProduct::analyze(edm::Event const& e, edm::EventSetup const&) {
     edm::Handle<IntProduct> h;
     edm::Handle<IntProduct> hToken;
     edm::Handle<edm::View<int> > hView;
     edm::Handle<edm::View<int> > hViewToken;
 
     std::vector<edm::EDGetTokenT<IntProduct> >::const_iterator iToken = tokens_.begin();
-    for(std::vector<edm::InputTag>::const_iterator iter = inputTags_.begin(),
-         iEnd = inputTags_.end();
-         iter != iEnd;
-        ++iter, ++iToken) {
-
-      if(getByTokenFirst_) {
+    for (std::vector<edm::InputTag>::const_iterator iter = inputTags_.begin(), iEnd = inputTags_.end(); iter != iEnd;
+         ++iter, ++iToken) {
+      if (getByTokenFirst_) {
         e.getByToken(*iToken, hToken);
         *hToken;
       }
@@ -102,35 +97,51 @@ namespace edmtest {
       e.getByToken(*iToken, hToken);
       if (h->value != hToken->value) {
         std::cerr << "TestFindProduct::analyze getByLabel and getByToken return inconsistent results " << std::endl;
-        abort();    
+        abort();
+      }
+
+      if (runProducerParameterCheck_) {
+        edm::ParameterSet const* producerPset = edm::getProducerParameterSet(*hToken.provenance());
+        int par = producerPset->getParameter<int>("ivalue");
+        // These expected values are just from knowing the values in the
+        // configuration files for this test.
+        int expectedParameterValue = 3;
+        if (!iter->process().empty()) {
+          if (e.run() == 1) {
+            expectedParameterValue = 1;
+          } else {
+            expectedParameterValue = 2;
+          }
+        }
+        if (par != expectedParameterValue) {
+          std::cerr << "TestFindProduct::analyze unexpected value from producer parameter set" << std::endl;
+          abort();
+        }
       }
     }
     iToken = tokensNotFound_.begin();
-    for(std::vector<edm::InputTag>::const_iterator iter = inputTagsNotFound_.begin(),
-         iEnd = inputTagsNotFound_.end();
+    for (std::vector<edm::InputTag>::const_iterator iter = inputTagsNotFound_.begin(), iEnd = inputTagsNotFound_.end();
          iter != iEnd;
-        ++iter, ++iToken) {
+         ++iter, ++iToken) {
       e.getByLabel(*iter, h);
       if (h.isValid()) {
         std::cerr << "TestFindProduct::analyze: getByLabel found a product that should not be found "
                   << h.provenance()->moduleLabel() << std::endl;
-        abort();    
+        abort();
       }
 
       e.getByToken(*iToken, hToken);
       if (hToken.isValid()) {
         std::cerr << "TestFindProduct::analyze: getByToken found a product that should not be found "
                   << hToken.provenance()->moduleLabel() << std::endl;
-        abort();    
+        abort();
       }
     }
     std::vector<edm::EDGetTokenT<edm::View<int> > >::const_iterator iTokenView = tokensView_.begin();
-    for(std::vector<edm::InputTag>::const_iterator iter = inputTagsView_.begin(),
-         iEnd = inputTagsView_.end();
+    for (std::vector<edm::InputTag>::const_iterator iter = inputTagsView_.begin(), iEnd = inputTagsView_.end();
          iter != iEnd;
-        ++iter, ++iTokenView) {
-
-      if(getByTokenFirst_) {
+         ++iter, ++iTokenView) {
+      if (getByTokenFirst_) {
         e.getByToken(*iTokenView, hViewToken);
         *hViewToken;
       }
@@ -141,20 +152,19 @@ namespace edmtest {
       e.getByToken(*iTokenView, hViewToken);
       if (hView->at(0) != hViewToken->at(0)) {
         std::cerr << "TestFindProduct::analyze getByLabel and getByToken return inconsistent results " << std::endl;
-        abort();    
+        abort();
       }
     }
   }
 
-  void
-  TestFindProduct::endJob() {
+  void TestFindProduct::endJob() {
     std::cout << "TestFindProduct sum = " << sum_ << std::endl;
-    if(expectedSum_ != 0 && sum_ != expectedSum_) {
+    if (expectedSum_ != 0 && sum_ != expectedSum_) {
       throw cms::Exception("TestFail")
-        << "TestFindProduct::endJob - Sum of test object values does not equal expected value";
+          << "TestFindProduct::endJob - Sum of test object values does not equal expected value";
     }
   }
-} // namespace edmtest
+}  // namespace edmtest
 
 using edmtest::TestFindProduct;
 DEFINE_FWK_MODULE(TestFindProduct);

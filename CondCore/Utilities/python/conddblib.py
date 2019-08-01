@@ -21,7 +21,7 @@ schema_name = 'CMS_CONDITIONS'
 dbuser_name = 'cms_conditions'
 dbreader_user_name = 'cms_cond_general_r'
 dbwriter_user_name = 'cms_cond_general_w'
-devdbwriter_user_name = 'cms_test_conditions'
+devdbwriter_user_name = 'cms_cond_general_w'
 logger = logging.getLogger(__name__)
 
 # frontier services
@@ -240,7 +240,7 @@ def make_dbtype( backendName, schemaName, baseType ):
                 nullable = (True if v[1]==_Col.nullable else False)
                 members[k] = sqlalchemy.Column(v[0],nullable=nullable)
     dbType = type(dbtype_name,(_Base,),members)
-    
+
     if backendName not in db_models.keys():
         db_models[backendName] = {}
     db_models[backendName][baseType.__name__] = dbType
@@ -263,6 +263,12 @@ class Tag:
                             'insertion_time':(sqlalchemy.TIMESTAMP,_Col.notNull),
                             'modification_time':(sqlalchemy.TIMESTAMP,_Col.notNull) }
 
+class TagMetadata:
+    __tablename__       = 'TAG_METADATA'
+    columns             = { 'tag_name': (DbRef(Tag,'name'),_Col.pk), 
+                            'min_serialization_v': (sqlalchemy.String(20),_Col.notNull),
+                            'min_since': (sqlalchemy.BIGINT,_Col.notNull),
+                            'modification_time':(sqlalchemy.TIMESTAMP,_Col.notNull) }
 
 class Payload:
     __tablename__       = 'PAYLOAD'
@@ -316,6 +322,11 @@ class RunInfo:
                             'start_time':(sqlalchemy.TIMESTAMP,_Col.notNull),
                             'end_time':(sqlalchemy.TIMESTAMP,_Col.notNull) }
 
+class BoostRunMap:
+    __tablename__       = 'BOOST_RUN_MAP'
+    columns             = { 'run_number':(sqlalchemy.BIGINT,_Col.pk),
+                            'run_start_time':(sqlalchemy.TIMESTAMP,_Col.notNull),
+                            'boost_version': (sqlalchemy.String(20),_Col.notNull) }
 
 # CondDB object
 class Connection(object):
@@ -370,6 +381,9 @@ class Connection(object):
         self.get_dbtype(GlobalTag)
         self.get_dbtype(GlobalTagMap)
         self.get_dbtype(RunInfo)
+        if not self._is_sqlite:
+            self.get_dbtype(TagMetadata)
+            self.get_dbtype(BoostRunMap)
         self._is_valid = self.is_valid()
 
     def get_dbtype(self,theType):
@@ -383,6 +397,7 @@ class Connection(object):
         s = self._session()
         s.get_dbtype = self.get_dbtype
         s._is_sqlite = self._is_sqlite
+        s.is_oracle = self.is_oracle
         s._url = self._url
         return s
 
@@ -577,7 +592,7 @@ def _exists(session, primary_key, value):
     ret = None
     try: 
         ret = session.query(primary_key).\
-    	    filter(primary_key == value).\
+            filter(primary_key == value).\
             count() != 0
     except sqlalchemy.exc.OperationalError:
         pass
@@ -604,10 +619,10 @@ def listObject(session, name, snapshot=None):
     if is_tag:
         result['type'] = 'Tag'
         result['name'] = session.query(Tag).get(name).name
-	result['timeType'] = session.query(Tag.time_type).\
-				     filter(Tag.name == name).\
-            			     scalar()
-    
+        result['timeType'] = session.query(Tag.time_type).\
+                                     filter(Tag.name == name).\
+                                     scalar()
+
         result['iovs'] = session.query(IOV.since, IOV.insertion_time, IOV.payload_hash, Payload.object_type).\
                 join(IOV.payload).\
                 filter(
@@ -623,11 +638,11 @@ def listObject(session, name, snapshot=None):
         is_global_tag = _exists(session, GlobalTag.name, name)
         if is_global_tag:
             result['type'] = 'GlobalTag'
-	    result['name'] = session.query(GlobalTag).get(name)
+            result['name'] = session.query(GlobalTag).get(name)
             result['tags'] = session.query(GlobalTagMap.record, GlobalTagMap.label, GlobalTagMap.tag_name).\
                                      filter(GlobalTagMap.global_tag_name == name).\
-                    		     order_by(GlobalTagMap.record, GlobalTagMap.label).\
-                    		     all()
+                                     order_by(GlobalTagMap.record, GlobalTagMap.label).\
+                                     all()
     except sqlalchemy.exc.OperationalError:
         sys.stderr.write("No table for GlobalTags found in DB.\n\n")
 

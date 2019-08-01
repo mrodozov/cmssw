@@ -23,16 +23,16 @@
 
 // used as a mixin for Analyzer and Harvester.
 class HistogramManagerHolder {
-  public:
+public:
   HistogramManagerHolder(const edm::ParameterSet& iConfig)
-    : geometryInterface(iConfig.getParameter<edm::ParameterSet>("geometry")) {
+      : geometryInterface(iConfig.getParameter<edm::ParameterSet>("geometry")) {
     auto histograms = iConfig.getParameter<edm::VParameterSet>("histograms");
     for (auto histoconf : histograms) {
       histo.emplace_back(HistogramManager(histoconf, geometryInterface));
     }
   };
 
-  protected:
+protected:
   std::vector<HistogramManager> histo;
   GeometryInterface geometryInterface;
 };
@@ -40,25 +40,28 @@ class HistogramManagerHolder {
 // This is the base class your plugin may derive from. You are not required to
 // use it but if you just need some normal HistogramManager this should be perfect.
 class SiPixelPhase1Base : public DQMEDAnalyzer, public HistogramManagerHolder {
-  public:
+public:
   SiPixelPhase1Base(const edm::ParameterSet& iConfig);
 
   // You should analyze something, and call histoman.fill(...). Setting to pure virtual function
-  void analyze(edm::Event const& e, edm::EventSetup const& eSetup) = 0;
+  void analyze(edm::Event const& e, edm::EventSetup const& eSetup) override = 0;
 
   // This booking is usually fine.
   // Also used to store the required triggers
-  void bookHistograms(DQMStore::IBooker& iBooker, edm::Run const& run, edm::EventSetup const& iSetup);
+  void bookHistograms(DQMStore::IBooker& iBooker, edm::Run const& run, edm::EventSetup const& iSetup) override;
 
-  virtual ~SiPixelPhase1Base() {};
+  ~SiPixelPhase1Base() override{};
 
-  protected:
+protected:
   // Returns a value of whether the trigger stored at position "trgidx" is properly fired.
-  bool checktrigger( const edm::Event& iEvent, const edm::EventSetup& iSetup, const unsigned trgidx ) const;
+  bool checktrigger(const edm::Event& iEvent, const edm::EventSetup& iSetup, const unsigned trgidx) const;
 
-  private:
+  // must match order in TriggerEventFlag_cfi.py
+  enum { DCS };
+
+private:
   // Storing the trigger objects per plugin instance
-  std::vector<std::unique_ptr<GenericTriggerEventFlag>>   triggerlist;
+  std::vector<std::unique_ptr<GenericTriggerEventFlag>> triggerlist;
 };
 
 // This wraps the Histogram Managers into a DQMEDHarvester. It
@@ -67,11 +70,13 @@ class SiPixelPhase1Base : public DQMEDAnalyzer, public HistogramManagerHolder {
 // to get the Harvesting done.
 // For custom harvesting, you have to derive from this.
 class SiPixelPhase1Harvester : public DQMEDHarvester, public HistogramManagerHolder {
-  public:
-  SiPixelPhase1Harvester(const edm::ParameterSet& iConfig)
-    : DQMEDHarvester(), HistogramManagerHolder(iConfig) {};
+public:
+  SiPixelPhase1Harvester(const edm::ParameterSet& iConfig) : DQMEDHarvester(), HistogramManagerHolder(iConfig){};
 
-  void dqmEndLuminosityBlock(DQMStore::IBooker& iBooker, DQMStore::IGetter& iGetter, edm::LuminosityBlock const& lumiBlock, edm::EventSetup const& eSetup) ;
-  void dqmEndJob(DQMStore::IBooker& iBooker, DQMStore::IGetter& iGetter);
+  void dqmEndLuminosityBlock(DQMStore::IBooker& iBooker,
+                             DQMStore::IGetter& iGetter,
+                             edm::LuminosityBlock const& lumiBlock,
+                             edm::EventSetup const& eSetup) override;
+  void dqmEndJob(DQMStore::IBooker& iBooker, DQMStore::IGetter& iGetter) override;
 };
 #endif

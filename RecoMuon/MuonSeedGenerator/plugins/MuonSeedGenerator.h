@@ -16,29 +16,31 @@
 class MuonSeedVFinder;
 class MuonSeedVPatternRecognition;
 class MuonSeedVCleaner;
+namespace edm {
+  class ConfigurationDescriptions;
+}
 
-class MuonSeedGenerator: public edm::stream::EDProducer<> {
- public:
-
+class MuonSeedGenerator : public edm::stream::EDProducer<> {
+public:
   /// Constructor
   MuonSeedGenerator(const edm::ParameterSet&);
-  
+
   /// Destructor
-  virtual ~MuonSeedGenerator();
-  
+  ~MuonSeedGenerator() override;
+
   // Operations
 
   /// reconstruct muon's seeds
-  virtual void produce(edm::Event&, const edm::EventSetup&) override;
+  void produce(edm::Event&, const edm::EventSetup&) override;
 
- protected:
+  static void fillDescriptions(edm::ConfigurationDescriptions& descriptions);
 
-  MuonSeedVPatternRecognition * thePatternRecognition;
-  MuonSeedVFinder * theSeedFinder;
-  MuonSeedVCleaner * theSeedCleaner;
+protected:
+  MuonSeedVPatternRecognition* thePatternRecognition;
+  MuonSeedVFinder* theSeedFinder;
+  MuonSeedVCleaner* theSeedCleaner;
 
   edm::InputTag theBeamSpotTag;
   edm::EDGetTokenT<reco::BeamSpot> beamspotToken;
 };
 #endif
-

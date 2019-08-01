@@ -17,9 +17,11 @@ class GenEventInfoProduct {
 	GenEventInfoProduct();
 	GenEventInfoProduct(const HepMC::GenEvent *evt);
 	GenEventInfoProduct(const GenEventInfoProduct &other);
+	GenEventInfoProduct(GenEventInfoProduct&& other);
 	virtual ~GenEventInfoProduct();
 
 	GenEventInfoProduct &operator = (const GenEventInfoProduct &other);
+	GenEventInfoProduct &operator = (GenEventInfoProduct &&other);
 
 	typedef gen::PdfInfo PDF;
 
@@ -39,7 +41,7 @@ class GenEventInfoProduct {
 	double alphaQED() const { return alphaQED_; }
 
 	const PDF *pdf() const { return pdf_.get(); }
-	bool hasPDF() const { return pdf() != 0; }
+	bool hasPDF() const { return pdf() != nullptr; }
 
 	const std::vector<double> &binningValues() const { return binningValues_; }
 	bool hasBinningValues() const { return !binningValues_.empty(); }
@@ -62,7 +64,7 @@ class GenEventInfoProduct {
 	void setScales(double q = -1., double qcd = -1., double qed = -1.)
 	{ qScale_ = q, alphaQCD_ = qcd, alphaQED_ = qed; }
 
-	void setPDF(const PDF *pdf) { pdf_.reset(pdf ? new PDF(*pdf) : 0); }
+	void setPDF(const PDF *pdf) { pdf_.reset(pdf ? new PDF(*pdf) : nullptr); }
 
 	void setBinningValues(const std::vector<double> &values)
 	{ binningValues_ = values; }

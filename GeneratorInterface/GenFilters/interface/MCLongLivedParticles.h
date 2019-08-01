@@ -4,7 +4,7 @@
 //
 // Package:    MCLongLivedParticles
 // Class:      MCLongLivedParticles
-// 
+//
 /* 
 
  Description: filter events based on the Pythia ProcessID and the Pt_hat
@@ -17,7 +17,6 @@
 //         Created:  Mon Sept 11 10:57:54 CET 2006
 //
 //
-
 
 // system include files
 #include <memory>
@@ -32,7 +31,6 @@
 
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 
-
 //
 // class decleration
 //
@@ -40,13 +38,13 @@
 class MCLongLivedParticles : public edm::EDFilter {
 public:
   explicit MCLongLivedParticles(const edm::ParameterSet&);
-  ~MCLongLivedParticles();
-  
+  ~MCLongLivedParticles() override;
 
-  virtual bool filter(edm::Event&, const edm::EventSetup&);
+  bool filter(edm::Event&, const edm::EventSetup&) override;
+
 private:
   // ----------member data ---------------------------
-  
+
   float theCut;
   edm::InputTag hepMCProductTag_;
 };

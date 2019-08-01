@@ -11,43 +11,31 @@
 #include "CondCore/DBOutputService/interface/PoolDBOutputService.h"
 #include "CondFormats/BTauObjects/interface/BTagCalibration.h"
 
-class BTagCalibrationDbCreator : public edm::EDAnalyzer
-{
+class BTagCalibrationDbCreator : public edm::EDAnalyzer {
 public:
   BTagCalibrationDbCreator(const edm::ParameterSet&);
-  virtual void beginJob() override;
-  virtual void analyze(const edm::Event&, const edm::EventSetup&) override {}
-  virtual void endJob() override {}
-  ~BTagCalibrationDbCreator() {}
+  void beginJob() override;
+  void analyze(const edm::Event&, const edm::EventSetup&) override {}
+  void endJob() override {}
+  ~BTagCalibrationDbCreator() override {}
 
 private:
   std::string csvFile_;
   std::string tagger_;
 };
 
-BTagCalibrationDbCreator::BTagCalibrationDbCreator(const edm::ParameterSet& p):
-  csvFile_(p.getUntrackedParameter<std::string>("csvFile")),
-  tagger_ (p.getUntrackedParameter<std::string>("tagger" ))
-{}
+BTagCalibrationDbCreator::BTagCalibrationDbCreator(const edm::ParameterSet& p)
+    : csvFile_(p.getUntrackedParameter<std::string>("csvFile")),
+      tagger_(p.getUntrackedParameter<std::string>("tagger")) {}
 
-void BTagCalibrationDbCreator::beginJob()
-{
+void BTagCalibrationDbCreator::beginJob() {
   auto calib = new BTagCalibration(tagger_, csvFile_);
   edm::Service<cond::service::PoolDBOutputService> s;
   if (s.isAvailable()) {
     if (s->isNewTagRequest(tagger_)) {
-      s->createNewIOV<BTagCalibration>(
-        calib,
-        s->beginOfTime(),
-        s->endOfTime(),
-        tagger_
-      );
+      s->createNewIOV<BTagCalibration>(calib, s->beginOfTime(), s->endOfTime(), tagger_);
     } else {
-      s->appendSinceTime<BTagCalibration>(
-        calib,
-        111,
-        tagger_
-      );
+      s->appendSinceTime<BTagCalibration>(calib, 111, tagger_);
     }
   } else {
     std::cout << "ERROR: DB service not available" << std::endl;

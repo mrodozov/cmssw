@@ -10,18 +10,30 @@ particleFlowEGamma.vertexCollection = cms.InputTag("hiSelectedVertex")
 gedGsfElectronCores.ctfTracks = cms.InputTag("hiGeneralTracks")
 gedGsfElectronsTmp.ctfTracksTag = cms.InputTag("hiGeneralTracks")
 gedGsfElectronsTmp.vtxTag = cms.InputTag("hiSelectedVertex")
-gedGsfElectronsTmp.minSCEtBarrel = cms.double(15.0)
-gedGsfElectronsTmp.minSCEtEndcaps = cms.double(15.0)
+gedGsfElectronsTmp.preselection.minSCEtBarrel = cms.double(15.0)
+gedGsfElectronsTmp.preselection.minSCEtEndcaps = cms.double(15.0)
+gedGsfElectronsTmp.fillConvVtxFitProb = cms.bool(False)
+
 gedPhotonsTmp.primaryVertexProducer = cms.InputTag("hiSelectedVertex")
 gedPhotonsTmp.isolationSumsCalculatorSet.trackProducer = cms.InputTag("hiGeneralTracks")
+gedPhotons.primaryVertexProducer = cms.InputTag("hiSelectedVertex")
+gedPhotons.isolationSumsCalculatorSet.trackProducer = cms.InputTag("hiGeneralTracks")
+photonIDValueMaps.vertices = cms.InputTag("hiSelectedVertex")
 from RecoHI.HiEgammaAlgos.photonIsolationHIProducer_cfi import photonIsolationHIProducer
 photonIsolationHIProducerGED = photonIsolationHIProducer.clone(photonProducer=cms.InputTag("gedPhotonsTmp"))
 
 #These are set for consistency w/ HiElectronSequence, but these cuts need to be studied
-gedGsfElectronsTmp.maxHOverEBarrel = cms.double(0.25)
-gedGsfElectronsTmp.maxHOverEEndcaps = cms.double(0.25)
-gedGsfElectronsTmp.maxEOverPBarrel = cms.double(2.)
-gedGsfElectronsTmp.maxEOverPEndcaps = cms.double(2.)
+gedGsfElectronsTmp.preselection.maxHOverEBarrelCone = cms.double(0.25)
+gedGsfElectronsTmp.preselection.maxHOverEEndcapsCone = cms.double(0.25)
+gedGsfElectronsTmp.preselection.maxHOverEBarrelTower = cms.double(0.0)
+gedGsfElectronsTmp.preselection.maxHOverEEndcapsTower = cms.double(0.0)
+gedGsfElectronsTmp.preselection.maxEOverPBarrel = cms.double(2.)
+gedGsfElectronsTmp.preselection.maxEOverPEndcaps = cms.double(2.)
+
+ootPhotonsTmp.primaryVertexProducer = cms.InputTag("hiSelectedVertex")
+ootPhotonsTmp.isolationSumsCalculatorSet.trackProducer = cms.InputTag("hiGeneralTracks")
+ootPhotons.primaryVertexProducer = cms.InputTag("hiSelectedVertex")
+ootPhotons.isolationSumsCalculatorSet.trackProducer = cms.InputTag("hiGeneralTracks")
 
 from RecoParticleFlow.Configuration.RecoParticleFlow_cff import *
 
@@ -68,22 +80,31 @@ particleFlowBlock.elementImporters = cms.VPSet(
 
 particleFlowTmp.postMuonCleaning = cms.bool(False)
 particleFlowTmp.vertexCollection = cms.InputTag("hiSelectedVertex")
-particleFlowTmp.usePFElectrons = cms.bool(True)
 particleFlowTmp.muons = cms.InputTag("hiMuons1stStep")
 particleFlowTmp.usePFConversions = cms.bool(False)
 
+pfNoPileUpIso.enable = False
+pfPileUpIso.Enable = False
+pfNoPileUp.enable = False
+pfPileUp.Enable = False
+particleFlow.Muons = cms.InputTag("muons","hiMuons1stStep2muonsMap")
 
-from RecoHI.HiJetAlgos.HiRecoPFJets_cff import *
 
 # local reco must run before electrons (RecoHI/HiEgammaAlgos), due to PF integration
 hiParticleFlowLocalReco = cms.Sequence(particleFlowCluster)
 
+particleFlowTmpSeq = cms.Sequence(particleFlowTmp)
 
 #PF Reco runs after electrons
 hiParticleFlowReco = cms.Sequence( pfGsfElectronMVASelectionSequence
                                    * particleFlowBlock
                                    * particleFlowEGammaFull
                                    * photonIsolationHIProducerGED
-                                   * particleFlowTmp
-                                   * hiRecoPFJets
+                                   * particleFlowTmpSeq
+                                   * fixedGridRhoFastjetAllTmp
+                                   * particleFlowTmpPtrs
+                                   * particleFlowEGammaFinal
+                                   * pfParticleSelectionSequence
                                    )
+
+particleFlowLinks = cms.Sequence( particleFlow*particleFlowPtrs*chargedHadronPFTrackIsolation*particleBasedIsolationSequence)

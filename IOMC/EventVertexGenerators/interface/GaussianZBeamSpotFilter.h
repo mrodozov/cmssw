@@ -1,7 +1,7 @@
 #ifndef GaussianZBeamSpotFilter_h
 #define GaussianZBeamSpotFilter_h
 
-// Filter to select events with a gaussian Z beam spot shape 
+// Filter to select events with a gaussian Z beam spot shape
 // narrower than the original one
 
 // system include files
@@ -14,14 +14,13 @@
 #include "FWCore/Framework/interface/MakerMacros.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 
-class GaussianZBeamSpotFilter : public edm::EDFilter 
-{
-  public:
+class GaussianZBeamSpotFilter : public edm::EDFilter {
+public:
   explicit GaussianZBeamSpotFilter(const edm::ParameterSet&);
-  ~GaussianZBeamSpotFilter();
+  ~GaussianZBeamSpotFilter() override;
 
-  private:
-  virtual bool filter(edm::Event&, const edm::EventSetup&) override;
+private:
+  bool filter(edm::Event&, const edm::EventSetup&) override;
 
   // ----------member data ---------------------------
 

@@ -11,12 +11,12 @@
  *   Tag for Run information
  */
 class RunTag : public ITag {
- public:
+public:
   friend class RunIOV;  // needs permission to write
   friend class EcalCondDBInterface;
 
   RunTag();
-  ~RunTag();
+  ~RunTag() override;
 
   // Methods for user data
   std::string getGeneralTag() const;
@@ -29,20 +29,17 @@ class RunTag : public ITag {
   void setRunTypeDef(const RunTypeDef& runTypeDef);
 
   // Methods using ID
-  int fetchID() noexcept(false);
-  void setByID(int id) noexcept(false);
+  int fetchID() noexcept(false) override;
+  void setByID(int id) noexcept(false) override;
 
   // operators
-  inline bool operator==(const RunTag& t) const
-    {
-      return (m_genTag == t.m_genTag &&
-	      m_locDef == t.m_locDef &&
-	      m_runTypeDef == t.m_runTypeDef);
-    }
-  
+  inline bool operator==(const RunTag& t) const {
+    return (m_genTag == t.m_genTag && m_locDef == t.m_locDef && m_runTypeDef == t.m_runTypeDef);
+  }
+
   inline bool operator!=(const RunTag& t) const { return !(*this == t); }
 
- private:
+private:
   // User data for this tag
   std::string m_genTag;
   LocationDef m_locDef;
@@ -53,8 +50,7 @@ class RunTag : public ITag {
   void fetchParentIDs(int* locId, int* runTypeID) noexcept(false);
 
   // Public access methods
-  void fetchAllTags( std::vector<RunTag>* fillVec) noexcept(false);
-
+  void fetchAllTags(std::vector<RunTag>* fillVec) noexcept(false);
 };
 
 #endif

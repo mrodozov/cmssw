@@ -7,37 +7,35 @@
 #include "CondFormats/JetMETObjects/interface/JetCorrectorParameters.h"
 
 //----- classes declaration -----------------------------------
-namespace edm 
-{
+namespace edm {
   class ParameterSet;
 }
 class FactorizedJetCorrector;
 //----- LXXXCorrector interface -------------------------------
-class LXXXCorrector : public JetCorrector 
-{
-  public:
-    //----- constructors---------------------------------------
-    LXXXCorrector(const JetCorrectorParameters& fConfig, const edm::ParameterSet& fParameters);   
+class LXXXCorrector : public JetCorrector {
+public:
+  //----- constructors---------------------------------------
+  LXXXCorrector(const JetCorrectorParameters& fConfig, const edm::ParameterSet& fParameters);
 
-    //----- destructor ----------------------------------------
-    virtual ~LXXXCorrector();
+  //----- destructor ----------------------------------------
+  ~LXXXCorrector() override;
 
-    //----- apply correction using Jet information only -------
-    virtual double correction(const LorentzVector& fJet) const;
+  //----- apply correction using Jet information only -------
+  double correction(const LorentzVector& fJet) const override;
 
-    //----- apply correction using Jet information only -------
-    virtual double correction(const reco::Jet& fJet) const;
+  //----- apply correction using Jet information only -------
+  double correction(const reco::Jet& fJet) const override;
 
-    //----- if correction needs event information -------------
-    virtual bool eventRequired() const {return false;} 
+  //----- if correction needs event information -------------
+  bool eventRequired() const override { return false; }
 
-    //----- if correction needs a jet reference -------------
-    virtual bool refRequired() const { return false; }
+  //----- if correction needs a jet reference -------------
+  bool refRequired() const override { return false; }
 
-  private:
-    //----- member data ---------------------------------------
-    unsigned mLevel;
-    FactorizedJetCorrectorCalculator* mCorrector;
+private:
+  //----- member data ---------------------------------------
+  unsigned mLevel;
+  FactorizedJetCorrectorCalculator* mCorrector;
 };
 
 #endif

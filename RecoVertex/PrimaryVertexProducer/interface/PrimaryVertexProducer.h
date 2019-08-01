@@ -2,7 +2,7 @@
 //
 // Package:    PrimaryVertexProducer
 // Class:      PrimaryVertexProducer
-// 
+//
 /**\class PrimaryVertexProducer PrimaryVertexProducer.cc RecoVertex/PrimaryVertexProducer/src/PrimaryVertexProducer.cc
 
  Description: steers tracker primary vertex reconstruction and storage
@@ -15,7 +15,6 @@
 //         Created:  Tue Feb 28 11:06:34 CET 2006
 //
 //
-
 
 // system include files
 #include <memory>
@@ -34,12 +33,12 @@
 #include "RecoVertex/PrimaryVertexProducer/interface/TrackFilterForPVFindingBase.h"
 #include "RecoVertex/PrimaryVertexProducer/interface/TrackClusterizerInZ.h"
 #include "RecoVertex/PrimaryVertexProducer/interface/DAClusterizerInZ_vect.h"
+#include "RecoVertex/PrimaryVertexProducer/interface/DAClusterizerInZT_vect.h"
 
 #include "RecoVertex/PrimaryVertexProducer/interface/TrackFilterForPVFinding.h"
 #include "RecoVertex/PrimaryVertexProducer/interface/HITrackFilterForPVFinding.h"
 #include "RecoVertex/PrimaryVertexProducer/interface/GapClusterizerInZ.h"
 #include "RecoVertex/PrimaryVertexProducer/interface/DAClusterizerInZ.h"
-#include "RecoVertex/PrimaryVertexProducer/interface/DAClusterizerInZT.h"
 #include "RecoVertex/KalmanVertexFit/interface/KalmanVertexFitter.h"
 #include "RecoVertex/AdaptiveVertexFit/interface/AdaptiveVertexFitter.h"
 //#include "RecoVertex/VertexTools/interface/VertexDistanceXY.h"
@@ -54,29 +53,29 @@
 
 class PrimaryVertexProducer : public edm::stream::EDProducer<> {
 public:
-  explicit PrimaryVertexProducer(const edm::ParameterSet&);
-  ~PrimaryVertexProducer();
-  
-  virtual void produce(edm::Event&, const edm::EventSetup&);
+  PrimaryVertexProducer(const edm::ParameterSet&);
+  ~PrimaryVertexProducer() override;
+
+  void produce(edm::Event&, const edm::EventSetup&) override;
 
   // access to config
   edm::ParameterSet config() const { return theConfig; }
-  
+
 private:
   // ----------member data ---------------------------
-  TrackFilterForPVFindingBase* theTrackFilter; 
+  TrackFilterForPVFindingBase* theTrackFilter;
   TrackClusterizerInZ* theTrackClusterizer;
 
   // vtx fitting algorithms
   struct algo {
-    VertexFitter<5> * fitter;
-    VertexCompatibleWithBeam * vertexSelector;
-    std::string  label;
+    VertexFitter<5>* fitter;
+    VertexCompatibleWithBeam* vertexSelector;
+    std::string label;
     bool useBeamConstraint;
     double minNdof;
   };
 
-  std::vector< algo > algorithms;
+  std::vector<algo> algorithms;
 
   edm::ParameterSet theConfig;
   bool fVerbose;

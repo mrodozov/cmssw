@@ -9,32 +9,27 @@ class DavixFile : public Storage {
 public:
   DavixFile(void);
   DavixFile(const char *name, int flags = IOFlags::OpenRead, int perms = 0666);
-  DavixFile(const std::string &name, int flags = IOFlags::OpenRead,
-            int perms = 0666);
-  ~DavixFile(void);
+  DavixFile(const std::string &name, int flags = IOFlags::OpenRead, int perms = 0666);
+  ~DavixFile(void) override;
   static void configureDavixLogLevel();
 
-  virtual void create(const char *name, bool exclusive = false,
-                      int perms = 0666);
-  virtual void create(const std::string &name, bool exclusive = false,
-                      int perms = 0666);
-  virtual void open(const char *name, int flags = IOFlags::OpenRead,
-                    int perms = 0666);
-  virtual void open(const std::string &name, int flags = IOFlags::OpenRead,
-                    int perms = 0666);
+  virtual void create(const char *name, bool exclusive = false, int perms = 0666);
+  virtual void create(const std::string &name, bool exclusive = false, int perms = 0666);
+  virtual void open(const char *name, int flags = IOFlags::OpenRead, int perms = 0666);
+  virtual void open(const std::string &name, int flags = IOFlags::OpenRead, int perms = 0666);
 
+  using Storage::position;
   using Storage::read;
   using Storage::write;
-  using Storage::position;
 
-  virtual IOSize read(void *into, IOSize n) override;
-  virtual IOSize readv(IOBuffer *into, IOSize buffers) override;
-  virtual IOSize readv(IOPosBuffer *into, IOSize buffers) override;
-  virtual IOSize write(const void *from, IOSize n) override;
-  virtual IOOffset position(IOOffset offset, Relative whence = SET) override;
-  virtual void resize(IOOffset size) override;
+  IOSize read(void *into, IOSize n) override;
+  IOSize readv(IOBuffer *into, IOSize buffers) override;
+  IOSize readv(IOPosBuffer *into, IOSize buffers) override;
+  IOSize write(const void *from, IOSize n) override;
+  IOOffset position(IOOffset offset, Relative whence = SET) override;
+  void resize(IOOffset size) override;
 
-  virtual void close(void) override;
+  void close(void) override;
   virtual void abort(void);
 
 private:
@@ -46,4 +41,4 @@ private:
   std::string m_name;
 };
 
-#endif // DAVIX_ADAPTOR_DAVIX_FILE_H
+#endif  // DAVIX_ADAPTOR_DAVIX_FILE_H

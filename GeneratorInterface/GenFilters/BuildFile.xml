@@ -9,6 +9,7 @@
 <use   name="root"/>
 <use   name="GeneratorInterface/Pythia6Interface"/>
 <use   name="GeneratorInterface/Core"/>
+<use   name="pythia8"/>
 <use   name="SimGeneral/HepPDTRecord"/>
 <use   name="DataFormats/GeometryVector"/>
 <use   name="DataFormats/GeometrySurface"/>
@@ -19,10 +20,10 @@
 <use   name="TrackingTools/Records"/>
 <use   name="CommonTools/UtilAlgos"/>
 <use   name="FWCore/ServiceRegistry"/>
-<use   name="FastSimulation/Particle"/>
-<use   name="FastSimulation/BaseParticlePropagator"/>
+<use   name="CommonTools/BaseParticlePropagator"/>
 <use   name="TrackingTools/GeomPropagators"/>
 <use   name="DataFormats/HepMCCandidate"/>
 <use   name="DataFormats/JetReco"/>
 <use   name="DataFormats/EgammaReco"/>
+<use   name="DataFormats/Math"/>
 <flags   EDM_PLUGIN="1"/>

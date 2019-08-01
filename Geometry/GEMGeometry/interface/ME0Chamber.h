@@ -13,13 +13,13 @@ public:
   ME0Chamber(ME0DetId id, const ReferenceCountingPointer<BoundPlane>& plane);
 
   /// Destructor
-  virtual ~ME0Chamber();
+  ~ME0Chamber() override;
 
   /// Return the ME0DetId of this chamber
   ME0DetId id() const;
 
   // Which subdetector
-  virtual SubDetector subDetector() const {return GeomDetEnumerators::ME0;}
+  SubDetector subDetector() const override { return GeomDetEnumerators::ME0; }
 
   /// equal if the id is the same
   bool operator==(const ME0Chamber& ch) const;
@@ -28,25 +28,24 @@ public:
   void add(ME0Layer* layer);
 
   /// Return the rolls in the chamber
-  virtual std::vector<const GeomDet*> components() const;
+  std::vector<const GeomDet*> components() const override;
 
   /// Return the sub-component (roll) with a given id in this chamber
-  virtual const GeomDet* component(DetId id) const;
+  const GeomDet* component(DetId id) const override;
 
-  /// Return the layer corresponding to the given id 
+  /// Return the layer corresponding to the given id
   const ME0Layer* layer(ME0DetId id) const;
 
   const ME0Layer* layer(int isl) const;
-  
+
   /// Return the layers
   const std::vector<const ME0Layer*>& layers() const;
 
   /// Retunr numbers of layers
   int nLayers() const;
 
-
   /// To support the old ME0 Geometry (with 1 eta partition)
-  /// Add EtaPartition to the chamber which takes ownership 
+  /// Add EtaPartition to the chamber which takes ownership
   void add(ME0EtaPartition* roll);
 
   /// To support the old ME0 Geometry (with 1 eta partition)
@@ -65,12 +64,9 @@ public:
 
   //For a line fit in the chamber frame, compute: global phi position extrapolated
   //to the last layer - that extrapolated to the inner layer
-  float computeDeltaPhi(const LocalPoint& position, const LocalVector& direction ) const;
-
-
+  float computeDeltaPhi(const LocalPoint& position, const LocalVector& direction) const;
 
 private:
-
   ME0DetId detId_;
 
   // vector of layers for a chamber

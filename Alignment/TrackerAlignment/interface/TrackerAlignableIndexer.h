@@ -21,9 +21,7 @@
 #include "Alignment/CommonAlignment/interface/AlignableIndexer.h"
 #include "Alignment/TrackerAlignment/interface/TrackerNameSpace.h"
 
-
-class TrackerAlignableIndexer : public AlignableIndexer
-{
+class TrackerAlignableIndexer : public AlignableIndexer {
 public:
   /// Build the counters map.
   TrackerAlignableIndexer(const align::TrackerNameSpace&);
@@ -31,7 +29,7 @@ public:
   TrackerAlignableIndexer& operator=(const TrackerAlignableIndexer&) = default;
   TrackerAlignableIndexer(TrackerAlignableIndexer&&) = default;
   TrackerAlignableIndexer& operator=(TrackerAlignableIndexer&&) = default;
-  virtual ~TrackerAlignableIndexer() = default;
+  ~TrackerAlignableIndexer() override = default;
 
 private:
   const align::TrackerNameSpace tns_;

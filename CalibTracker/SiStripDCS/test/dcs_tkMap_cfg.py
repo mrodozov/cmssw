@@ -17,9 +17,11 @@ process.source = cms.Source("EmptySource",
     firstRun = cms.untracked.uint32(1)
 )
 
-process.TkDetMap = cms.Service("TkDetMap")
-process.load("DQMServices.Core.DQMStore_cfg")
-process.SiStripDetInfoFileReader = cms.Service("SiStripDetInfoFileReader")
+process.load("DQM.SiStripCommon.TkHistoMap_cff")
+# load TrackerTopology (needed for TkDetMap and TkHistoMap)
+process.load("Configuration.Geometry.GeometryExtended2017_cff")
+process.load("Geometry.TrackerGeometryBuilder.trackerParameters_cfi")
+process.trackerTopology = cms.ESProducer("TrackerTopologyEP")
 
 process.load("CondCore.CondDB.CondDB_cfi")
 process.tkVoltageMap = cms.EDAnalyzer( "SiStripDetVOffTkMapPlotter",

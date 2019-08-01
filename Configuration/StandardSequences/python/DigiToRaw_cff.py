@@ -13,32 +13,43 @@ from EventFilter.HcalRawToDigi.HcalDigiToRaw_cfi import *
 from EventFilter.CSCRawToDigi.cscPacker_cfi import *
 from EventFilter.DTRawToDigi.dtPacker_cfi import *
 from EventFilter.RPCRawToDigi.rpcPacker_cfi import *
+from EventFilter.GEMRawToDigi.gemPacker_cfi import *
 from EventFilter.CastorRawToDigi.CastorDigiToRaw_cfi import *
 from EventFilter.RawDataCollector.rawDataCollector_cfi import *
 from L1Trigger.Configuration.L1TDigiToRaw_cff import *
-#DigiToRaw = cms.Sequence(L1TDigiToRaw*siPixelRawData*SiStripDigiToRaw*ecalPacker*esDigiToRaw*hcalRawData*cscpacker*dtpacker*rpcpacker*rawDataCollector)
-DigiToRaw = cms.Sequence(L1TDigiToRaw*siPixelRawData*SiStripDigiToRaw*ecalPacker*esDigiToRaw*hcalRawData*cscpacker*dtpacker*rpcpacker*castorRawData*rawDataCollector)
+
+DigiToRawTask = cms.Task(L1TDigiToRawTask, siPixelRawData, SiStripDigiToRaw, ecalPacker, esDigiToRaw, hcalRawDataTask, cscpacker, dtpacker, rpcpacker, castorRawData, rawDataCollector)
+DigiToRaw = cms.Sequence(DigiToRawTask)
+
 ecalPacker.Label = 'simEcalDigis'
 ecalPacker.InstanceEB = 'ebDigis'
 ecalPacker.InstanceEE = 'eeDigis'
 ecalPacker.labelEBSRFlags = "simEcalDigis:ebSrFlags"
 ecalPacker.labelEESRFlags = "simEcalDigis:eeSrFlags"
 
-from Configuration.Eras.Modifier_phase2_common_cff import phase2_common
-phase2_common.toReplaceWith(DigiToRaw, DigiToRaw.copyAndExclude([castorRawData]))
+from Configuration.Eras.Modifier_run3_common_cff import run3_common
+run3_common.toReplaceWith(DigiToRawTask, DigiToRawTask.copyAndExclude([castorRawData]))
 
-#until we have hcal raw data for phase 2....
-from Configuration.Eras.Modifier_phase2_hcal_cff import phase2_hcal
-phase2_hcal.toReplaceWith(DigiToRaw, DigiToRaw.copyAndExclude([hcalRawData]))
+#if we don't have hcal raw data
+from Configuration.Eras.Modifier_hcalSkipPacker_cff import hcalSkipPacker
+hcalSkipPacker.toReplaceWith(DigiToRawTask, DigiToRawTask.copyAndExclude([hcalRawDataTask]))
 
 # Remove siPixelRawData until we have phase1 pixel digis
 from Configuration.Eras.Modifier_phase2_tracker_cff import phase2_tracker
-phase2_tracker.toReplaceWith(DigiToRaw, DigiToRaw.copyAndExclude([siPixelRawData])) # FIXME
+phase2_tracker.toReplaceWith(DigiToRawTask, DigiToRawTask.copyAndExclude([siPixelRawData])) # FIXME
+
+# GEM settings
+_gem_DigiToRawTask = DigiToRawTask.copy()
+_gem_DigiToRawTask.add(gemPacker)
+
+from Configuration.Eras.Modifier_run2_GEM_2017_cff import run2_GEM_2017
+run2_GEM_2017.toReplaceWith(DigiToRawTask, _gem_DigiToRawTask)
+
+from Configuration.Eras.Modifier_run3_GEM_cff import run3_GEM
+run3_GEM.toReplaceWith(DigiToRawTask, _gem_DigiToRawTask)
 
 from Configuration.Eras.Modifier_phase2_muon_cff import phase2_muon
-phase2_muon.toReplaceWith(DigiToRaw, DigiToRaw.copyAndExclude([rpcpacker]))
+phase2_muon.toReplaceWith(DigiToRawTask, DigiToRawTask.copyAndExclude([rpcpacker]))
 
 from Configuration.Eras.Modifier_fastSim_cff import fastSim
-if fastSim.isChosen() :
-    for _entry in [siPixelRawData,SiStripDigiToRaw,castorRawData]:
-        DigiToRaw.remove(_entry)
+fastSim.toReplaceWith(DigiToRawTask, DigiToRawTask.copyAndExclude([siPixelRawData,SiStripDigiToRaw,castorRawData]))

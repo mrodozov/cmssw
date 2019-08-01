@@ -22,29 +22,25 @@ class GEMChamber;
 class GEMEtaPartition;
 class MuonDDDConstants;
 
-class GEMGeometryBuilderFromDDD 
-{ 
- public:
-
+class GEMGeometryBuilderFromDDD {
+public:
   GEMGeometryBuilderFromDDD();
 
   ~GEMGeometryBuilderFromDDD();
 
-  GEMGeometry* build(const DDCompactView* cview, const MuonDDDConstants& muonConstants);
+  void build(GEMGeometry& theGeometry, const DDCompactView* cview, const MuonDDDConstants& muonConstants);
 
- private:
-  GEMGeometry* buildGeometry(DDFilteredView& fview, const MuonDDDConstants& muonConstants);
-  std::map<GEMDetId,std::vector<GEMDetId>> chids;
+private:
+  std::map<GEMDetId, std::vector<GEMDetId>> chids;
 
   typedef ReferenceCountingPointer<BoundPlane> RCPBoundPlane;
-  
-  RCPBoundPlane boundPlane(const DDFilteredView& fv,
-			   Bounds* bounds, bool isOddChamber) const ;
-  
+
+  RCPBoundPlane boundPlane(const DDFilteredView& fv, Bounds* bounds, bool isOddChamber) const;
+
   GEMSuperChamber* buildSuperChamber(DDFilteredView& fv, GEMDetId detId) const;
 
   GEMChamber* buildChamber(DDFilteredView& fv, GEMDetId detId) const;
-  
+
   GEMEtaPartition* buildEtaPartition(DDFilteredView& fv, GEMDetId detId) const;
 };
 

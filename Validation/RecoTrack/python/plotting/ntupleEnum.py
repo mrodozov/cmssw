@@ -1,8 +1,9 @@
 # Poor-man enum class with string conversion
 class _Enum:
     def __init__(self, **values):
+        import six
         self._reverse = {}
-        for key, value in values.iteritems():
+        for key, value in six.iteritems(values):
             setattr(self, key, value)
             if value in self._reverse:
                 raise Exception("Value %s is already used for a key %s, tried to re-add it for key %s" % (value, self._reverse[value], key))
@@ -93,9 +94,10 @@ SeedStopReason = _Enum(
   NOT_STOPPED = 1,
   SEED_CLEANING = 2,
   NO_TRAJECTORY = 3,
-  FINAL_CLEAN = 4,
-  SMOOTHING_FAILED = 5,
-  SIZE = 6
+  SEED_REGION_REBUILD = 4,
+  FINAL_CLEAN = 5,
+  SMOOTHING_FAILED = 6,
+  SIZE = 7
 )
 
 # to be kept is synch with enum HitSimType in TrackingNtuple.py
@@ -106,3 +108,4 @@ HitSimType = _Enum(
     Noise = 3,
     Unknown = 99
 )
+

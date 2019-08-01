@@ -4,7 +4,7 @@
 //
 // Package:    MCDijetResonance
 // Class:      MCDijetResonance
-// 
+//
 /* 
 
  Description: filter to select Dijet Resonance events.
@@ -16,7 +16,6 @@
 // Author: Robert Harris
 //
 //
-
 
 // system include files
 #include <memory>
@@ -30,7 +29,6 @@
 
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 
-
 //
 // class decleration
 //
@@ -39,19 +37,20 @@ namespace edm {
 }
 
 class MCDijetResonance : public edm::EDFilter {
-   public:
-      explicit MCDijetResonance(const edm::ParameterSet&);
-      ~MCDijetResonance();
-      virtual void endJob() ;
+public:
+  explicit MCDijetResonance(const edm::ParameterSet&);
+  ~MCDijetResonance() override;
+  void endJob() override;
 
-      virtual bool filter(edm::Event&, const edm::EventSetup&);
-   private:
-      // ----------member data ---------------------------
-      edm::EDGetTokenT<edm::HepMCProduct> token_;
-      std::string dijetProcess;
-      unsigned int  nEvents;
-      unsigned int nAccepted; 
-      int maxQuarkID;
-      int bosonID;
+  bool filter(edm::Event&, const edm::EventSetup&) override;
+
+private:
+  // ----------member data ---------------------------
+  edm::EDGetTokenT<edm::HepMCProduct> token_;
+  std::string dijetProcess;
+  unsigned int nEvents;
+  unsigned int nAccepted;
+  int maxQuarkID;
+  int bosonID;
 };
 #endif

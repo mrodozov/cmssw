@@ -1,3 +1,4 @@
+from __future__ import print_function
 
 #-toDo: move this to common?
 
@@ -32,8 +33,8 @@ def unique(seq, keepstr=True):
     except TypeError: # hashing didn't work, see if seq is sortable
         try:
             from itertools import groupby
-            s = sorted(enumerate(seq),key=lambda (i,v):(v,i))
-            return t(g.next() for k,g in groupby(s, lambda (i,v): v))
+            s = sorted(enumerate(seq),key=lambda i_v1:(i_v1[1],i_v1[0]))
+            return t(next(g) for k,g in groupby(s, lambda i_v: i_v[1]))
         except:  # not sortable, use brute force
             seen = []
             return t(c for c in seq if not (c in seen or seen.append(c)))
@@ -163,8 +164,7 @@ class Tier0Handler( object ):
         Raises if connection error, bad response, timeout after retries occur, or if no Global Tags are available.
         """
         data = self._queryTier0DataSvc( os.path.join( self._uri, config ) )
-        gtnames = unique( [ str( di[ 'global_tag' ] ) for di in data['result'] if di[ 'global_tag' ] is not None ] )
-        gtnames.sort()
+        gtnames = sorted(unique( [ str( di[ 'global_tag' ] ) for di in data['result'] if di[ 'global_tag' ] is not None ] ))
         try:
             recentGT = gtnames[-1]
             return recentGT
@@ -178,10 +178,10 @@ class Tier0Handler( object ):
 def test( url ):
     t0 = Tier0Handler( url, 1, 1, 1, None, debug=False)
 
-    print '   fcsr = %s (%s)' % (t0.getFirstSafeRun(), type(t0.getFirstSafeRun()) )
-    print '   reco_config = %s' % t0.getGlobalTag('reco_config')
-    print '   express_config = %s' % t0.getGlobalTag('express_config')
-    print '\n'
+    print('   fcsr = %s (%s)' % (t0.getFirstSafeRun(), type(t0.getFirstSafeRun()) ))
+    print('   reco_config = %s' % t0.getGlobalTag('reco_config'))
+    print('   express_config = %s' % t0.getGlobalTag('express_config'))
+    print('\n')
 
 
 if __name__ == '__main__':

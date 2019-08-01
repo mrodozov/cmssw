@@ -28,28 +28,20 @@
 
 #include "SimDataFormats/GeneratorProducts/interface/HepMCProduct.h"
 
-
-class EmptyHepMCProducer : public edm::stream::EDProducer<>
-{
+class EmptyHepMCProducer : public edm::stream::EDProducer<> {
 public:
   explicit EmptyHepMCProducer(const edm::ParameterSet&);
-  ~EmptyHepMCProducer() {};
+  ~EmptyHepMCProducer() override{};
 
 private:
   virtual void beginJob();
-  virtual void produce(edm::Event&, const edm::EventSetup&) override;
+  void produce(edm::Event&, const edm::EventSetup&) override;
   virtual void endJob();
-
 };
 
-EmptyHepMCProducer::EmptyHepMCProducer(const edm::ParameterSet& iConfig)
-{
-  produces<edm::HepMCProduct>();
-}
+EmptyHepMCProducer::EmptyHepMCProducer(const edm::ParameterSet& iConfig) { produces<edm::HepMCProduct>(); }
 
-void
-EmptyHepMCProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
-{
+void EmptyHepMCProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup) {
   // create an empty output collection
   std::unique_ptr<edm::HepMCProduct> theOutput(new edm::HepMCProduct());
   //theOutput->addHepMCData(theEvent);

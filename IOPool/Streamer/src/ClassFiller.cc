@@ -1,9 +1,9 @@
 #include "IOPool/Streamer/interface/ClassFiller.h"
 #include "FWCore/Utilities/interface/EDMException.h"
 #include "FWCore/Utilities/interface/DebugMacros.h"
-#include "FWCore/Utilities/interface/DictionaryTools.h"
+#include "FWCore/Reflection/interface/DictionaryTools.h"
 #include "FWCore/Utilities/interface/TypeID.h"
-#include "FWCore/Utilities/interface/TypeWithDict.h"
+#include "FWCore/Reflection/interface/TypeWithDict.h"
 
 #include "TClass.h"
 
@@ -22,11 +22,10 @@ namespace edm {
   void doBuildRealData(std::string const& name) {
     FDEBUG(3) << "doing BuildRealData for " << name << "\n";
     TClass* ttest = TClass::GetClass(name.c_str());
-    if (ttest != 0) {
+    if (ttest != nullptr) {
       ttest->BuildRealData();
     } else {
-      throw edm::Exception(errors::Configuration)
-			<< "Could not find TClass for " << name << "\n";
+      throw edm::Exception(errors::Configuration) << "Could not find TClass for " << name << "\n";
     }
   }
   // ---------------------
@@ -45,26 +44,24 @@ namespace edm {
         throwMissingDictionariesException(missingDictionaries, context);
       }
     }
-    done=true;
+    done = true;
   }
 
   namespace {
     TClass* getRootClass(std::string const& name) {
-      TClass* tc = TClass::GetClass(name.c_str());    
-      
-      if(tc == 0) {
-	throw edm::Exception(errors::Configuration,"getRootClass")
-	  << "could not find TClass for " << name
-	  << "\n";
+      TClass* tc = TClass::GetClass(name.c_str());
+
+      if (tc == nullptr) {
+        throw edm::Exception(errors::Configuration, "getRootClass") << "could not find TClass for " << name << "\n";
       }
-      
+
       return tc;
     }
-  }
+  }  // namespace
 
   // ---------------------
   TClass* getTClass(std::type_info const& ti) {
     TypeID const type(ti);
     return getRootClass(type.className());
   }
-}
+}  // namespace edm

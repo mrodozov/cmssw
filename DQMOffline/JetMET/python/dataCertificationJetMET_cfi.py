@@ -1,4 +1,5 @@
 import FWCore.ParameterSet.Config as cms
+from DQMServices.Core.DQMEDHarvester import DQMEDHarvester
 
 ################# Quality Tests for jets #########################
 qTesterJet = cms.EDAnalyzer("QualityTester",
@@ -17,7 +18,7 @@ qTesterMET = cms.EDAnalyzer("QualityTester",
  )
 
 ################# Data Certification #########################
-dataCertificationJetMET = cms.EDAnalyzer('DataCertificationJetMET',
+dataCertificationJetMET = DQMEDHarvester('DataCertificationJetMET',
                               fileName       = cms.untracked.string(""),
                               refFileName    = cms.untracked.string(""),
                               OutputFile     = cms.untracked.bool(False),
@@ -60,6 +61,10 @@ dataCertificationJetMET = cms.EDAnalyzer('DataCertificationJetMET',
                               tcMETMeanTest           = cms.untracked.bool(False),
                               tcMETKSTest             = cms.untracked.bool(False),
 
+                              isHI                    = cms.untracked.bool(False),
 )
 
-
+dataCertificationJetMETHI = dataCertificationJetMET.clone(
+    isHI    = cms.untracked.bool(True),
+    jetAlgo = cms.untracked.string("ak"),
+)

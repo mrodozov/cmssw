@@ -32,16 +32,16 @@ MTVHistoProducerAlgoForTrackerBlock = cms.PSet(
     nintPt = cms.int32(40),
     useInvPt = cms.bool(False),
     useLogPt=cms.untracked.bool(True),
-    #                               
-    minHit = cms.double(-0.5),                            
+    #
+    minHit = cms.double(-0.5),
     maxHit = cms.double(80.5),
     nintHit = cms.int32(81),
-    #                               
-    minPu = cms.double(-0.5),                            
+    #
+    minPu = cms.double(-0.5),
     maxPu = cms.double(259.5),
     nintPu = cms.int32(130),
     #
-    minLayers = cms.double(-0.5),                            
+    minLayers = cms.double(-0.5),
     maxLayers = cms.double(25.5),
     nintLayers = cms.int32(26),
     #
@@ -65,19 +65,25 @@ MTVHistoProducerAlgoForTrackerBlock = cms.PSet(
     nintDeDx = cms.int32(40),
     #
     # TP originating vertical position
-    minVertpos = cms.double(0),
-    maxVertpos = cms.double(60),
-    nintVertpos = cms.int32(60),
+    minVertpos = cms.double(1e-2),
+    maxVertpos = cms.double(100),
+    nintVertpos = cms.int32(40),
+    useLogVertpos = cms.untracked.bool(True),
     #
     # TP originating z position
     minZpos = cms.double(-30),
     maxZpos = cms.double(30),
-    nintZpos = cms.int32(60),                               
+    nintZpos = cms.int32(60),
     #
     # dR
     mindr = cms.double(0.001),
     maxdr = cms.double(1),
     nintdr = cms.int32(100),
+    #
+    # dR_jet
+    mindrj = cms.double(0.001),
+    maxdrj = cms.double(0.1),
+    nintdrj = cms.int32(50),
     #
     # chi2/ndof
     minChi2 = cms.double(0),
@@ -107,23 +113,23 @@ MTVHistoProducerAlgoForTrackerBlock = cms.PSet(
     #parameters for resolution plots
     ptRes_rangeMin = cms.double(-0.1),
     ptRes_rangeMax = cms.double(0.1),
-    ptRes_nbin = cms.int32(100),                                   
+    ptRes_nbin = cms.int32(100),
 
     phiRes_rangeMin = cms.double(-0.01),
     phiRes_rangeMax = cms.double(0.01),
-    phiRes_nbin = cms.int32(300),                                   
+    phiRes_nbin = cms.int32(300),
 
     cotThetaRes_rangeMin = cms.double(-0.02),
     cotThetaRes_rangeMax = cms.double(+0.02),
-    cotThetaRes_nbin = cms.int32(300),                                   
+    cotThetaRes_nbin = cms.int32(300),
 
     dxyRes_rangeMin = cms.double(-0.1),
     dxyRes_rangeMax = cms.double(0.1),
-    dxyRes_nbin = cms.int32(500),                                   
+    dxyRes_nbin = cms.int32(500),
 
     dzRes_rangeMin = cms.double(-0.05),
     dzRes_rangeMax = cms.double(+0.05),
-    dzRes_nbin = cms.int32(150),                                   
+    dzRes_nbin = cms.int32(150),
 
 
     maxDzpvCumulative = cms.double(0.6),

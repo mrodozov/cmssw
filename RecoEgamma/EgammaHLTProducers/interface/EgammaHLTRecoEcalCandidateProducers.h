@@ -2,7 +2,7 @@
 //
 // Package:    EgammaHLTProducers
 // Class:      EgammaHLTRecoEcalCandidateProducers
-// 
+//
 /**\class EgammaHLTRecoEcalCandidateProducers.h EgammaHLTRecoEcalCandidateProducers.cc  RecoEgamma/EgammaHLTProducers/interface/EgammaHLTRecoEcalCandidateProducers.h.h
 */
 //
@@ -18,6 +18,7 @@
 #include "FWCore/Framework/interface/EventSetup.h"
 #include "FWCore/Framework/interface/ESHandle.h"
 
+#include "DataFormats/EgammaReco/interface/SuperClusterFwd.h"
 #include "DataFormats/EgammaReco/interface/SuperCluster.h"
 
 namespace edm {
@@ -25,19 +26,15 @@ namespace edm {
 }
 
 class EgammaHLTRecoEcalCandidateProducers : public edm::global::EDProducer<> {
-
- public:
-
-  EgammaHLTRecoEcalCandidateProducers (const edm::ParameterSet& ps);
-  ~EgammaHLTRecoEcalCandidateProducers();
+public:
+  EgammaHLTRecoEcalCandidateProducers(const edm::ParameterSet& ps);
+  ~EgammaHLTRecoEcalCandidateProducers() override;
 
   void produce(edm::StreamID sid, edm::Event& evt, const edm::EventSetup& es) const override;
   static void fillDescriptions(edm::ConfigurationDescriptions& descriptions);
 
- private:
+private:
   const edm::EDGetTokenT<reco::SuperClusterCollection> scHybridBarrelProducer_;
   const edm::EDGetTokenT<reco::SuperClusterCollection> scIslandEndcapProducer_;
   const std::string recoEcalCandidateCollection_;
 };
-
-

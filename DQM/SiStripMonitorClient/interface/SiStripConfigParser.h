@@ -14,24 +14,19 @@
 #include <string>
 #include <map>
 
-
 class SiStripConfigParser : public DQMParserBase {
-
- public:
-  
-
+public:
   // Constructor
   SiStripConfigParser();
-  
+
   // Destructor
-  ~SiStripConfigParser();
+  ~SiStripConfigParser() override;
 
   // get List of MEs for TrackerMap
   bool getMENamesForSummary(std::map<std::string, std::string>& me_names);
   bool getFrequencyForSummary(int& u_freq);
 
- private:
-  
+private:
 };
 
 #endif

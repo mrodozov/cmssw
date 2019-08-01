@@ -26,14 +26,13 @@
 #include "GeneratorInterface/GenFilters/interface/HighETPhotonsFilterAlgo.h"
 
 class HighETPhotonsFilter : public edm::EDFilter {
- public:
-  explicit HighETPhotonsFilter(const edm::ParameterSet&);
-  ~HighETPhotonsFilter();
-  
-  virtual bool filter(edm::Event&, const edm::EventSetup&);
-  
- private:
+public:
+  explicit HighETPhotonsFilter(const edm::ParameterSet &);
+  ~HighETPhotonsFilter() override;
+
+  bool filter(edm::Event &, const edm::EventSetup &) override;
+
+private:
   HighETPhotonsFilterAlgo *HighETPhotonsAlgo_;
-  
 };
 #endif

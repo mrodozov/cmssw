@@ -11,11 +11,12 @@
 <use   name="FWCore/ParameterSet"/>
 <use   name="FWCore/PluginManager"/>
 <use   name="FWCore/ServiceRegistry"/>
-<use   name="FWCore/Concurrency"/>
+<use   name="Utilities/Xerces"/>
 <use   name="OnlineDB/EcalCondDB"/>
 <use   name="OnlineDB/Oracle"/>
 <use   name="SimCalorimetry/EcalSelectiveReadoutProducers"/>
 <use   name="Geometry/EcalMapping"/>
+<use   name="CalibCalorimetry/EcalLaserCorrection"/>
 <use   name="root"/>
 <use   name="rootcore"/>
 <use   name="rootphysics"/>

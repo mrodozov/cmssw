@@ -23,17 +23,15 @@ namespace edm {
 // class declaration
 //
 class TriggerSummaryAnalyzerAOD : public edm::stream::EDAnalyzer<> {
-  
- public:
+public:
   explicit TriggerSummaryAnalyzerAOD(const edm::ParameterSet&);
-  virtual ~TriggerSummaryAnalyzerAOD();
-  static void fillDescriptions(edm::ConfigurationDescriptions & descriptions);
-  virtual void analyze(const edm::Event&, const edm::EventSetup&) override;
+  ~TriggerSummaryAnalyzerAOD() override;
+  static void fillDescriptions(edm::ConfigurationDescriptions& descriptions);
+  void analyze(const edm::Event&, const edm::EventSetup&) override;
 
- private:
+private:
   /// InputTag of TriggerEvent to analyze
-  const edm::InputTag                           inputTag_;
+  const edm::InputTag inputTag_;
   const edm::EDGetTokenT<trigger::TriggerEvent> inputToken_;
-
 };
 #endif

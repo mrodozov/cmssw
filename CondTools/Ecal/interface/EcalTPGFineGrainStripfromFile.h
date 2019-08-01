@@ -14,21 +14,20 @@ namespace edm {
   class ParameterSet;
   class Event;
   class EventSetup;
-}
+}  // namespace edm
 
 namespace popcon {
   class EcalTPGFineGrainStripfromFile : public popcon::PopConSourceHandler<EcalTPGFineGrainStripEE> {
-
   public:
-    void getNewObjects();
-    ~EcalTPGFineGrainStripfromFile();
-    EcalTPGFineGrainStripfromFile(edm::ParameterSet const & ); 
-    
-    std::string id() const { return m_name;}
+    void getNewObjects() override;
+    ~EcalTPGFineGrainStripfromFile() override;
+    EcalTPGFineGrainStripfromFile(edm::ParameterSet const&);
+
+    std::string id() const override { return m_name; }
 
   private:
     std::string m_name;
     std::string fname;
   };
-}
+}  // namespace popcon
 #endif

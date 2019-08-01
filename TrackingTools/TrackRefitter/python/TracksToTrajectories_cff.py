@@ -8,6 +8,7 @@ from RecoLocalTracker.SiPixelRecHits.PixelCPEGeneric_cfi import *
 from TrackingTools.KalmanUpdators.KFUpdatorESProducer_cfi import *
 from TrackingTools.GeomPropagators.SmartPropagator_cff import *
 
+from RecoMTD.TransientTrackingRecHit.MTDTransientTrackingRecHitBuilder_cfi import *
 from RecoMuon.TransientTrackingRecHit.MuonTransientTrackingRecHitBuilder_cfi import *
 from RecoTracker.TransientTrackingRecHit.TransientTrackingRecHitBuilder_cfi import *
 
@@ -29,7 +30,6 @@ KFFitterForRefitOutsideIn.Updator = cms.string('KFUpdator')
 KFFitterForRefitOutsideIn.Estimator = cms.string('Chi2EstimatorForRefit')
 KFFitterForRefitOutsideIn.minHits = cms.int32(3)
 
-
 KFSmootherForRefitOutsideIn = KFTrajectorySmoother.clone()
 KFSmootherForRefitOutsideIn.ComponentName = cms.string('KFSmootherForRefitOutsideIn')
 KFSmootherForRefitOutsideIn.Propagator = cms.string('SmartPropagatorAnyRKOpposite')
@@ -37,7 +37,6 @@ KFSmootherForRefitOutsideIn.Updator = cms.string('KFUpdator')
 KFSmootherForRefitOutsideIn.Estimator = cms.string('Chi2EstimatorForRefit')
 KFSmootherForRefitOutsideIn.errorRescaling = cms.double(100.0)
 KFSmootherForRefitOutsideIn.minHits = cms.int32(3)
-
 
 #
 KFFitterForRefitInsideOut = KFTrajectoryFitter.clone()
@@ -56,6 +55,11 @@ KFSmootherForRefitInsideOut.Estimator = cms.string('Chi2EstimatorForRefit')
 KFSmootherForRefitInsideOut.errorRescaling = cms.double(100.0)
 KFSmootherForRefitInsideOut.minHits = cms.int32(3)
 
-
-
+from Configuration.Eras.Modifier_fastSim_cff import fastSim
+# FastSim doesn't use Runge Kute for propagation
+# the following propagators are not used in FastSim, but just to be sure...
+fastSim.toModify(KFFitterForRefitOutsideIn, Propagator = 'SmartPropagatorAny')
+fastSim.toModify(KFSmootherForRefitOutsideIn, Propagator = 'SmartPropagator')
+fastSim.toModify(KFFitterForRefitInsideOut, Propagator = "SmartPropagatorAny")
+fastSim.toModify(KFSmootherForRefitInsideOut, Propagator = "SmartPropagatorAny")
 

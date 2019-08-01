@@ -5,7 +5,7 @@
 //
 // Package:    ErrorsAnalyzer
 // Class:      ErrorsAnalyzer
-// 
+//
 /**\class ErrorsAnalyzer ErrorsAnalyzer.cc MuonAnalysis/MomentumScaleCalibration/plugins/ErrorsAnalyzer.cc
 
  Description: <one line class summary>
@@ -45,18 +45,20 @@
 // class declaration
 //
 
-class ErrorsAnalyzer : public edm::EDAnalyzer
-{
+class ErrorsAnalyzer : public edm::EDAnalyzer {
 public:
   explicit ErrorsAnalyzer(const edm::ParameterSet&);
-  ~ErrorsAnalyzer();
+  ~ErrorsAnalyzer() override;
 
 private:
-  virtual void analyze(const edm::Event&, const edm::EventSetup&);
+  void analyze(const edm::Event&, const edm::EventSetup&) override;
   void fillHistograms();
-  void drawHistograms(const TProfile * histo, const TProfile * histoPlusErr, const TProfile * histoMinusErr, const TString & type);
+  void drawHistograms(const TProfile* histo,
+                      const TProfile* histoPlusErr,
+                      const TProfile* histoMinusErr,
+                      const TString& type);
   void fillValueError();
-  virtual void endJob() {};
+  void endJob() override{};
 
   TString treeFileName_;
   int resolFitType_;
@@ -77,22 +79,22 @@ private:
   std::vector<double> valuePlusError_;
   std::vector<double> valueMinusError_;
 
-  TProfile * sigmaPtVsEta_;
-  TProfile * sigmaPtVsEtaPlusErr_;
-  TProfile * sigmaPtVsEtaMinusErr_;
+  TProfile* sigmaPtVsEta_;
+  TProfile* sigmaPtVsEtaPlusErr_;
+  TProfile* sigmaPtVsEtaMinusErr_;
 
-  TProfile * sigmaPtVsPt_;
-  TProfile * sigmaPtVsPtPlusErr_;
-  TProfile * sigmaPtVsPtMinusErr_;
+  TProfile* sigmaPtVsPt_;
+  TProfile* sigmaPtVsPtPlusErr_;
+  TProfile* sigmaPtVsPtMinusErr_;
 
   // Mass resolution
-  TProfile * sigmaMassVsEta_;
-  TProfile * sigmaMassVsEtaPlusErr_;
-  TProfile * sigmaMassVsEtaMinusErr_;
+  TProfile* sigmaMassVsEta_;
+  TProfile* sigmaMassVsEtaPlusErr_;
+  TProfile* sigmaMassVsEtaMinusErr_;
 
-  TProfile * sigmaMassVsPt_;
-  TProfile * sigmaMassVsPtPlusErr_;
-  TProfile * sigmaMassVsPtMinusErr_;
+  TProfile* sigmaMassVsPt_;
+  TProfile* sigmaMassVsPtPlusErr_;
+  TProfile* sigmaMassVsPtMinusErr_;
 };
 
-#endif // RESOLUTIONANALYZER_HH
+#endif  // RESOLUTIONANALYZER_HH

@@ -20,37 +20,30 @@ namespace edm {
   class PathContext;
   class StreamID;
   class WaitingTask;
+  class ServiceToken;
 
   class WorkerInPath {
   public:
-    enum FilterAction { Normal=0, Ignore, Veto };
+    enum FilterAction { Normal = 0, Ignore, Veto };
 
     WorkerInPath(Worker*, FilterAction theAction, unsigned int placeInPath);
 
     template <typename T>
-    bool runWorker(typename T::MyPrincipal const&, EventSetup const&,
-                   StreamID streamID,
-                   typename T::Context const* context);
-
-    template <typename T>
     void runWorkerAsync(WaitingTask* iTask,
-                        typename T::MyPrincipal const&, EventSetup const&,
+                        typename T::MyPrincipal const&,
+                        EventSetupImpl const&,
+                        ServiceToken const&,
                         StreamID streamID,
                         typename T::Context const* context);
 
-    
     bool checkResultsOfRunWorker(bool wasEvent);
-    
-    void skipWorker(EventPrincipal const& iPrincipal) {
-      worker_->skipOnPath();
-    }
+
+    void skipWorker(EventPrincipal const& iPrincipal) { worker_->skipOnPath(); }
     void skipWorker(RunPrincipal const&) {}
     void skipWorker(LuminosityBlockPrincipal const&) {}
-    
-    void clearCounters() {
-      timesVisited_ = timesPassed_ = timesFailed_ = timesExcept_ = 0;
-    }
-    
+
+    void clearCounters() { timesVisited_ = timesPassed_ = timesFailed_ = timesExcept_ = 0; }
+
     int timesVisited() const { return timesVisited_; }
     int timesPassed() const { return timesPassed_; }
     int timesFailed() const { return timesFailed_; }
@@ -66,109 +59,74 @@ namespace edm {
     int timesPassed_;
     int timesFailed_;
     int timesExcept_;
-    
+
     FilterAction filterAction_;
     Worker* worker_;
 
     PlaceInPathContext placeInPathContext_;
   };
-  
+
   inline bool WorkerInPath::checkResultsOfRunWorker(bool wasEvent) {
-    if(not wasEvent) {
+    if (not wasEvent) {
       return true;
     }
     auto state = worker_->state();
     bool rc = true;
     switch (state) {
-      case Worker::Fail:
-      {
+      case Worker::Fail: {
         rc = false;
         break;
       }
       case Worker::Pass:
         break;
-      case Worker::Exception:
-      {
+      case Worker::Exception: {
         ++timesExcept_;
         return true;
       }
-        
+
       default:
         assert(false);
     }
-    
-    if(Ignore == filterAction()) {
+
+    if (Ignore == filterAction()) {
       rc = true;
-    } else if(Veto == filterAction()) {
+    } else if (Veto == filterAction()) {
       rc = !rc;
     }
-    
-    if(rc) {
+
+    if (rc) {
       ++timesPassed_;
     } else {
       ++timesFailed_;
     }
     return rc;
-    
   }
 
   template <typename T>
   void WorkerInPath::runWorkerAsync(WaitingTask* iTask,
-                                    typename T::MyPrincipal const& ep, EventSetup const & es,
+                                    typename T::MyPrincipal const& ep,
+                                    EventSetupImpl const& es,
+                                    ServiceToken const& token,
                                     StreamID streamID,
                                     typename T::Context const* context) {
     if (T::isEvent_) {
       ++timesVisited_;
     }
-    
-    if(T::isEvent_) {
-      ParentContext parentContext(&placeInPathContext_);
-      worker_->doWorkAsync<T>(iTask,ep, es,streamID, parentContext, context);
-    } else {
-      ParentContext parentContext(context);
-      worker_->doWorkNoPrefetchingAsync<T>(iTask,ep, es,streamID, parentContext, context);
-    }
-  }
-  
-  template <typename T>
-  bool WorkerInPath::runWorker(typename T::MyPrincipal const& ep, EventSetup const & es,
-                               StreamID streamID,
-                               typename T::Context const* context) {
 
     if (T::isEvent_) {
-      ++timesVisited_;
-    }
-    bool rc = true;
+      ParentContext parentContext(&placeInPathContext_);
+      worker_->doWorkAsync<T>(iTask, ep, es, token, streamID, parentContext, context);
+    } else {
+      ParentContext parentContext(context);
 
-    try {
-	// may want to change the return value from the worker to be 
-	// the Worker::FilterAction so conditions in the path will be easier to 
-	// identify
-        if(T::isEvent_) {
-          ParentContext parentContext(&placeInPathContext_);          
-          rc = worker_->doWork<T>(ep, es,streamID, parentContext, context);
-        } else {
-          ParentContext parentContext(context);
-          rc = worker_->doWork<T>(ep, es,streamID, parentContext, context);
-        }
-        // Ignore return code for non-event (e.g. run, lumi) calls
-	if (!T::isEvent_) rc = true;
-	else if (filterAction_ == Veto) rc = !rc;
-        else if (filterAction_ == Ignore) rc = true;
-
-	if (T::isEvent_) {
-	  if(rc) ++timesPassed_; else ++timesFailed_;
-	}
+      // We do not need to run prefetching here because this only handles
+      // stream transitions for runs and lumis. There are no products put
+      // into the runs or lumis in stream transitions, so there can be
+      // no data dependencies which require prefetching. Prefetching is
+      // needed for global transitions, but they are run elsewhere.
+      worker_->doWorkNoPrefetchingAsync<T>(iTask, ep, es, token, streamID, parentContext, context);
     }
-    catch(...) {
-	if (T::isEvent_) ++timesExcept_;
-	throw;
-    }
-
-    return rc;
   }
-
-}
+}  // namespace edm
 
 #endif
-

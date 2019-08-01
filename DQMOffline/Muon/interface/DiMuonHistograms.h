@@ -19,36 +19,34 @@
 #include "FWCore/Utilities/interface/InputTag.h"
 #include "FWCore/ServiceRegistry/interface/Service.h"
 #include "DQMServices/Core/interface/DQMStore.h"
-#include "DQMServices/Core/interface/MonitorElement.h"
 #include "DQMServices/Core/interface/DQMEDAnalyzer.h"
 #include "RecoMuon/TrackingTools/interface/MuonServiceProxy.h"
 
 #include "DataFormats/MuonReco/interface/Muon.h"
-#include "DataFormats/MuonReco/interface/MuonFwd.h" 
+#include "DataFormats/MuonReco/interface/MuonFwd.h"
 #include "DataFormats/BeamSpot/interface/BeamSpot.h"
 #include "DataFormats/VertexReco/interface/Vertex.h"
 #include "DataFormats/VertexReco/interface/VertexFwd.h"
 
-
 class DiMuonHistograms : public DQMEDAnalyzer {
- public:
-  /* Constructor */ 
+public:
+  /* Constructor */
   DiMuonHistograms(const edm::ParameterSet& pset);
-  
-  /* Destructor */ 
-  virtual ~DiMuonHistograms() ;
-  
-  /* Operations */ 
+
+  /* Destructor */
+  ~DiMuonHistograms() override;
+
+  /* Operations */
   void analyze(const edm::Event&, const edm::EventSetup&) override;
-  void bookHistograms(DQMStore::IBooker &, edm::Run const &, edm::EventSetup const &) override;
-  
- private:
+  void bookHistograms(DQMStore::IBooker&, edm::Run const&, edm::EventSetup const&) override;
+
+private:
   MuonServiceProxy* theService;
   edm::ParameterSet parameters;
-  
+
   // Switch for verbosity
   std::string metname;
-  
+
   //histo binning parameters
   int etaBin;
   int etaBBin;
@@ -70,7 +68,7 @@ class DiMuonHistograms : public DQMEDAnalyzer {
   double LowMassMax;
   double HighMassMin;
   double HighMassMax;
-  
+
   std::vector<MonitorElement*> GlbGlbMuon_LM;
   std::vector<MonitorElement*> GlbGlbMuon_HM;
   std::vector<MonitorElement*> StaTrkMuon_LM;
@@ -78,21 +76,27 @@ class DiMuonHistograms : public DQMEDAnalyzer {
   std::vector<MonitorElement*> TrkTrkMuon_LM;
   std::vector<MonitorElement*> TrkTrkMuon_HM;
 
+  std::vector<MonitorElement*> LooseLooseMuon;
+  std::vector<MonitorElement*> MediumMediumMuon;
   std::vector<MonitorElement*> TightTightMuon;
   std::vector<MonitorElement*> SoftSoftMuon;
-  
-  MonitorElement* test; // my test
+  std::vector<MonitorElement*> LooseLooseMuonBadFrac;
+  std::vector<MonitorElement*> MediumMediumMuonBadFrac;
+  std::vector<MonitorElement*> TightTightMuonBadFrac;
+  std::vector<MonitorElement*> SoftSoftMuonBadFrac;
+
+  MonitorElement* test;  // my test
 
   // Labels used
-  edm::EDGetTokenT<edm::View<reco::Muon> >   theMuonCollectionLabel_;
+  edm::EDGetTokenT<edm::View<reco::Muon> > theMuonCollectionLabel_;
   edm::EDGetTokenT<reco::VertexCollection> theVertexLabel_;
-  edm::EDGetTokenT<reco::BeamSpot>         theBeamSpotLabel_;
+  edm::EDGetTokenT<reco::BeamSpot> theBeamSpotLabel_;
 
   std::string theFolder;
 
   int nTightTight;
+  int nMediumMedium;
+  int nLooseLoose;
   int nGlbGlb;
-
 };
-#endif 
-
+#endif

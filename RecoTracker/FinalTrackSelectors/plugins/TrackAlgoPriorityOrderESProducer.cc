@@ -6,10 +6,10 @@
 
 #include "RecoTracker/Record/interface/CkfComponentsRecord.h"
 
-class TrackAlgoPriorityOrderESProducer: public edm::ESProducer {
+class TrackAlgoPriorityOrderESProducer : public edm::ESProducer {
 public:
   TrackAlgoPriorityOrderESProducer(const edm::ParameterSet& iConfig);
-  ~TrackAlgoPriorityOrderESProducer() = default;
+  ~TrackAlgoPriorityOrderESProducer() override = default;
 
   static void fillDescriptions(edm::ConfigurationDescriptions& descriptions);
 
@@ -22,9 +22,9 @@ private:
 TrackAlgoPriorityOrderESProducer::TrackAlgoPriorityOrderESProducer(const edm::ParameterSet& iConfig) {
   const auto& algoNames = iConfig.getParameter<std::vector<std::string> >("algoOrder");
   algoOrder_.reserve(algoNames.size());
-  for(const auto& name: algoNames) {
+  for (const auto& name : algoNames) {
     auto algo = reco::TrackBase::algoByName(name);
-    if(algo == reco::TrackBase::undefAlgorithm && name != "undefAlgorithm") {
+    if (algo == reco::TrackBase::undefAlgorithm && name != "undefAlgorithm") {
       throw cms::Exception("Configuration") << "Incorrect track algo " << name;
     }
     algoOrder_.push_back(algo);

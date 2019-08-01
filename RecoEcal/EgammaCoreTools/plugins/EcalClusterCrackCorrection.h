@@ -13,14 +13,12 @@
 #include "RecoEcal/EgammaCoreTools/plugins/EcalClusterCrackCorrectionBaseClass.h"
 
 class EcalClusterCrackCorrection : public EcalClusterCrackCorrectionBaseClass {
-        public:
-                EcalClusterCrackCorrection( const edm::ParameterSet &) {};
-                // compute the correction
-                virtual float getValue( const reco::BasicCluster &, const EcalRecHitCollection & ) const;
-                virtual float getValue( const reco::SuperCluster &, const int mode ) const;
+public:
+  EcalClusterCrackCorrection(const edm::ParameterSet &){};
+  // compute the correction
+  float getValue(const reco::BasicCluster &, const EcalRecHitCollection &) const override;
+  float getValue(const reco::SuperCluster &, const int mode) const override;
 
-		virtual float getValue( const reco::CaloCluster &) const;
-
-		
+  float getValue(const reco::CaloCluster &) const override;
 };
 #endif

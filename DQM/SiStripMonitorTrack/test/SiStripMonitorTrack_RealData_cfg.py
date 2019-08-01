@@ -27,8 +27,7 @@ process.load("Configuration.StandardSequences.GeometryRecoDB_cff")
 #-------------------------------------------------
 # TkDetMap for TkHistoMap
 #-------------------------------------------------
-process.TkDetMap = cms.Service("TkDetMap")
-process.SiStripDetInfoFileReader = cms.Service("SiStripDetInfoFileReader")
+process.load("CalibTracker.SiStripCommon.TkDetMapESProducer_cfi")
 
 #-------------------------------------------------
 # Calibration

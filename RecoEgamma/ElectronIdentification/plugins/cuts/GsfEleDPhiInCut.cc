@@ -4,35 +4,27 @@
 
 class GsfEleDPhiInCut : public CutApplicatorBase {
 public:
-  GsfEleDPhiInCut(const edm::ParameterSet& c) :
-    CutApplicatorBase(c),
-    _dPhiInCutValueEB(c.getParameter<double>("dPhiInCutValueEB")),
-    _dPhiInCutValueEE(c.getParameter<double>("dPhiInCutValueEE")),
-    _barrelCutOff(c.getParameter<double>("barrelCutOff")) {    
-  }
-  
-  result_type operator()(const reco::GsfElectronPtr&) const override final;
+  GsfEleDPhiInCut(const edm::ParameterSet& c)
+      : CutApplicatorBase(c),
+        _dPhiInCutValueEB(c.getParameter<double>("dPhiInCutValueEB")),
+        _dPhiInCutValueEE(c.getParameter<double>("dPhiInCutValueEE")),
+        _barrelCutOff(c.getParameter<double>("barrelCutOff")) {}
 
-  double value(const reco::CandidatePtr& cand) const override final;
+  result_type operator()(const reco::GsfElectronPtr&) const final;
 
-  CandidateType candidateType() const override final { 
-    return ELECTRON; 
-  }
+  double value(const reco::CandidatePtr& cand) const final;
+
+  CandidateType candidateType() const final { return ELECTRON; }
 
 private:
   const double _dPhiInCutValueEB, _dPhiInCutValueEE, _barrelCutOff;
 };
 
-DEFINE_EDM_PLUGIN(CutApplicatorFactory,
-		  GsfEleDPhiInCut,
-		  "GsfEleDPhiInCut");
+DEFINE_EDM_PLUGIN(CutApplicatorFactory, GsfEleDPhiInCut, "GsfEleDPhiInCut");
 
-CutApplicatorBase::result_type 
-GsfEleDPhiInCut::
-operator()(const reco::GsfElectronPtr& cand) const{  
-  const float dPhiInCutValue = 
-    ( std::abs(cand->superCluster()->position().eta()) < _barrelCutOff ? 
-      _dPhiInCutValueEB : _dPhiInCutValueEE );
+CutApplicatorBase::result_type GsfEleDPhiInCut::operator()(const reco::GsfElectronPtr& cand) const {
+  const float dPhiInCutValue =
+      (std::abs(cand->superCluster()->position().eta()) < _barrelCutOff ? _dPhiInCutValueEB : _dPhiInCutValueEE);
   return std::abs(cand->deltaPhiSuperClusterTrackAtVtx()) < dPhiInCutValue;
 }
 

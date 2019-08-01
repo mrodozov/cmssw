@@ -34,5 +34,8 @@ pfRecoTauDiscriminationAgainstElectronMVA6 = cms.EDProducer("PFRecoTauDiscrimina
     minMVAWOgWgsfEC            = cms.double(0.0),
     minMVAWgWgsfEC             = cms.double(0.0),
 
-    srcGsfElectrons = cms.InputTag('gedGsfElectrons')
+    srcGsfElectrons = cms.InputTag('gedGsfElectrons'),
+    vetoEcalCracks = cms.bool(True),
+    usePhiAtEcalEntranceExtrapolation = cms.bool(False),
+    verbosity = cms.int32(0)
 )

@@ -1,11 +1,13 @@
-# /dev/CMSSW_9_0_1/Fake/V1 (CMSSW_9_0_0_pre6)
+# hltGetConfiguration --cff --data /dev/CMSSW_11_0_0/Fake --type Fake
+
+# /dev/CMSSW_11_0_0/Fake/V3 (CMSSW_11_0_0_pre4)
 
 import FWCore.ParameterSet.Config as cms
 
 fragment = cms.ProcessFragment( "HLT" )
 
 fragment.HLTConfigVersion = cms.PSet(
-  tableName = cms.string('/dev/CMSSW_9_0_1/Fake/V1')
+  tableName = cms.string('/dev/CMSSW_11_0_0/Fake/V3')
 )
 
 fragment.streams = cms.PSet(  A = cms.vstring( 'InitialPD' ) )
@@ -39,10 +41,10 @@ fragment.hltTriggerType = cms.EDFilter( "HLTTriggerTypeFilter",
 )
 fragment.hltGtDigis = cms.EDProducer( "L1GlobalTriggerRawToDigi",
     DaqGtFedId = cms.untracked.int32( 813 ),
-    Verbosity = cms.untracked.int32( 0 ),
-    UnpackBxInEvent = cms.int32( 5 ),
+    DaqGtInputTag = cms.InputTag( "rawDataCollector" ),
     ActiveBoardsMask = cms.uint32( 0xffff ),
-    DaqGtInputTag = cms.InputTag( "rawDataCollector" )
+    Verbosity = cms.untracked.int32( 0 ),
+    UnpackBxInEvent = cms.int32( 5 )
 )
 fragment.hltGctDigis = cms.EDProducer( "GctRawToDigi",
     checkHeaders = cms.untracked.bool( False ),
@@ -143,6 +145,7 @@ fragment.hltFEDSelector = cms.EDProducer( "EvFFEDSelector",
 fragment.hltTriggerSummaryAOD = cms.EDProducer( "TriggerSummaryProducerAOD",
     moduleLabelPatternsToSkip = cms.vstring(  ),
     processName = cms.string( "@" ),
+    throw = cms.bool( False ),
     moduleLabelPatternsToMatch = cms.vstring( 'hlt*' )
 )
 fragment.hltTriggerSummaryRAW = cms.EDProducer( "TriggerSummaryProducerRAW",
@@ -164,7 +167,7 @@ fragment.hltTrigReport = cms.EDAnalyzer( "HLTrigReport",
     serviceBy = cms.untracked.string( "never" ),
     resetBy = cms.untracked.string( "never" ),
     reportBy = cms.untracked.string( "job" ),
-    HLTriggerResults = cms.InputTag( 'TriggerResults','','HLT' )
+    HLTriggerResults = cms.InputTag( 'TriggerResults','','@currentProcess' )
 )
 
 fragment.HLTL1UnpackerSequence = cms.Sequence( fragment.hltGtDigis + fragment.hltGctDigis + fragment.hltL1GtObjectMap + fragment.hltL1extraParticles )

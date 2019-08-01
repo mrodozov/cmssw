@@ -12,36 +12,38 @@
 // #include "RecoBTag/MCTools/interface/JetFlavour.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 
-
 class MVAJetTagPlotter : public BaseTagInfoPlotter {
+public:
+  MVAJetTagPlotter(const std::string& tagName,
+                   const EtaPtBin& etaPtBin,
+                   const edm::ParameterSet& pSet,
+                   const std::string& folderName,
+                   unsigned int mc,
+                   bool willFinalize,
+                   DQMStore::IBooker& ibook);
 
- public:
+  ~MVAJetTagPlotter() override;
 
-  MVAJetTagPlotter (const std::string & tagName, const EtaPtBin & etaPtBin,
-		    const edm::ParameterSet& pSet, const std::string& folderName, 
-		    const unsigned int& mc, const bool& willFinalize, DQMStore::IBooker & ibook);
+  void analyzeTag(const std::vector<const reco::BaseTagInfo*>& baseTagInfos,
+                  double jec,
+                  int jetFlavour,
+                  float w = 1) override;
 
-  ~MVAJetTagPlotter ();
+  void finalize(DQMStore::IBooker& ibook_, DQMStore::IGetter& igetter_) override;
 
-  virtual void analyzeTag (const std::vector<const reco::BaseTagInfo *> & baseTagInfos, const double & jec, const int & jetFlavour);
-  virtual void analyzeTag (const std::vector<const reco::BaseTagInfo *> & baseTagInfos, const double & jec, const int & jetFlavour, const float & w);
+  void epsPlot(const std::string& name) override;
 
-  virtual void finalize (DQMStore::IBooker & ibook_, DQMStore::IGetter & igetter_);
+  void psPlot(const std::string& name) override;
 
-  void epsPlot(const std::string & name);
+  void setEventSetup(const edm::EventSetup& setup) override;
+  std::vector<std::string> tagInfoRequirements() const override;
 
-  void psPlot(const std::string & name);
-
-  virtual void setEventSetup (const edm::EventSetup & setup);
-  virtual std::vector<std::string> tagInfoRequirements () const;
-
- private:
-
+private:
   std::string jetTagComputer;
-  const GenericMVAJetTagComputer *computer;
+  const GenericMVAJetTagComputer* computer;
 
   reco::TaggingVariableName categoryVariable;
-  std::vector<TaggingVariablePlotter*> categoryPlotters;
+  std::vector<std::unique_ptr<TaggingVariablePlotter>> categoryPlotters;
 };
 
 #endif

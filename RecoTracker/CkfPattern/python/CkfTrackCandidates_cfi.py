@@ -7,6 +7,7 @@ ckfTrackCandidates = cms.EDProducer("CkfTrackCandidateMaker",
     TrajectoryCleaner = cms.string('TrajectoryCleanerBySharedHits'),
 # Run cleaning after in-out tracking in addition to at end of tracking ?
     cleanTrajectoryAfterInOut = cms.bool(True),
+    reverseTrajectories  =cms.bool(False),
 # Split matched strip tracker hits into mono/stereo components.
     useHitsSplitting = cms.bool(True),
 # After in-out tracking, do out-in tracking through the seeding
@@ -31,6 +32,5 @@ ckfTrackCandidates = cms.EDProducer("CkfTrackCandidateMaker",
         numberMeasurementsForFit = cms.int32(4)
     ),
     MeasurementTrackerEvent = cms.InputTag("MeasurementTrackerEvent"),
-    produceSeedStopReasons = cms.bool(False), # useful only for ntuple/debugging
 )
 

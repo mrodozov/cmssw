@@ -23,26 +23,24 @@ public:
   DTTTrigCorrectionFirst(const edm::ParameterSet& pset);
 
   /// Destructor
-  virtual ~DTTTrigCorrectionFirst();
+  ~DTTTrigCorrectionFirst() override;
 
   // Operations
 
-  virtual void beginJob() {}
-  virtual void beginRun( const edm::Run& run, const edm::EventSetup& setup );
-  virtual void analyze(const edm::Event& event, const edm::EventSetup& setup){}
+  void beginJob() override {}
+  void beginRun(const edm::Run& run, const edm::EventSetup& setup) override;
+  void analyze(const edm::Event& event, const edm::EventSetup& setup) override {}
 
-  virtual void endJob();
+  void endJob() override;
 
 protected:
-
 private:
-  const DTTtrig *tTrigMap;
+  const DTTtrig* tTrigMap;
   edm::ESHandle<DTGeometry> muonGeom;
 
   std::string dbLabel;
 
   bool debug;
-  double ttrigMin,ttrigMax,rmsLimit; 
+  double ttrigMin, ttrigMax, rmsLimit;
 };
 #endif
-

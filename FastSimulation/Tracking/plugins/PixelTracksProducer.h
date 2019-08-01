@@ -12,31 +12,25 @@ class PixelFitter;
 class PixelTrackFilter;
 class TrackingRegionProducer;
 
-namespace edm { 
+namespace edm {
   class ParameterSet;
   class Event;
   class EventSetup;
-}
+}  // namespace edm
 
-
-class PixelTracksProducer :  public edm::stream::EDProducer <> {
-
+class PixelTracksProducer : public edm::stream::EDProducer<> {
 public:
   explicit PixelTracksProducer(const edm::ParameterSet& conf);
 
-  ~PixelTracksProducer();
+  ~PixelTracksProducer() override;
 
-  virtual void produce(edm::Event& ev, const edm::EventSetup& es);
+  void produce(edm::Event& ev, const edm::EventSetup& es) override;
 
 private:
-
   edm::EDGetTokenT<PixelFitter> fitterToken;
-  TrackingRegionProducer* theRegionProducer;
+  std::unique_ptr<TrackingRegionProducer> theRegionProducer;
 
   edm::EDGetTokenT<TrajectorySeedCollection> seedProducerToken;
   edm::EDGetTokenT<PixelTrackFilter> filterToken;
-
 };
 #endif
-
-

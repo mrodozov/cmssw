@@ -6,19 +6,17 @@
  *
  *  \author Marcello Maggi -- INFN Bari
  */
-#include <FWCore/Framework/interface/MakerMacros.h>
-#include <FWCore/Framework/interface/EDProducer.h>
-
+#include "FWCore/Framework/interface/MakerMacros.h"
+#include "FWCore/Framework/interface/EDProducer.h"
 
 class RPCFakeEvent : public edm::EDProducer {
- public:
+public:
   RPCFakeEvent(const edm::ParameterSet& config);
-  ~RPCFakeEvent(){}
+  ~RPCFakeEvent() override {}
   void produce(edm::Event& e, const edm::EventSetup& c) override;
 
- private:
+private:
   std::vector<std::string> filesed;
   bool rpcdigiprint;
-
 };
 #endif

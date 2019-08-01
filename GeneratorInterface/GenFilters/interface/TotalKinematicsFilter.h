@@ -24,14 +24,13 @@
     tolerance). The center of mass energy is obtained from the
     initial state protons. The tolerance is specified in GeV.
  */
-class TotalKinematicsFilter : public edm::EDFilter 
-{
-  public:
+class TotalKinematicsFilter : public edm::EDFilter {
+public:
   explicit TotalKinematicsFilter(const edm::ParameterSet&);
-  ~TotalKinematicsFilter();
+  ~TotalKinematicsFilter() override;
 
-  private:
-  virtual bool filter(edm::Event&, const edm::EventSetup&);
+private:
+  bool filter(edm::Event&, const edm::EventSetup&) override;
 
   // ----------member data ---------------------------
 
@@ -41,7 +40,6 @@ class TotalKinematicsFilter : public edm::EDFilter
   double tolerance_;
 
   bool verbose_;
-
 };
 
 #endif

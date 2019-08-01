@@ -3,6 +3,9 @@
 
 #include <memory>
 
+#include "DataFormats/EgammaReco/interface/BasicClusterFwd.h"
+#include "DataFormats/EgammaReco/interface/SuperClusterFwd.h"
+
 #include "FWCore/Framework/interface/Frameworkfwd.h"
 #include "FWCore/Framework/interface/stream/EDProducer.h"
 #include "FWCore/Framework/interface/Event.h"
@@ -12,34 +15,25 @@
 
 #include "FWCore/Utilities/interface/InputTag.h"
 
-class UnifiedSCCollectionProducer : public edm::stream::EDProducer<> 
-{
-  
-  public:
+class UnifiedSCCollectionProducer : public edm::stream::EDProducer<> {
+public:
+  UnifiedSCCollectionProducer(const edm::ParameterSet& ps);
 
-      UnifiedSCCollectionProducer(const edm::ParameterSet& ps);
+  void produce(edm::Event&, const edm::EventSetup&) override;
 
-      virtual void produce(edm::Event&, const edm::EventSetup&);
-      
-  private:
-	  // the clean collection      
-      edm::EDGetTokenT<reco::BasicClusterCollection>  cleanBcCollection_; 
-      edm::EDGetTokenT<reco::SuperClusterCollection>  cleanScCollection_; 
-      // the uncleaned collection
-      edm::EDGetTokenT<reco::BasicClusterCollection>  uncleanBcCollection_;
-      edm::EDGetTokenT<reco::SuperClusterCollection>  uncleanScCollection_;
-      
-      // the names of the products to be produced:
-      std::string  bcCollection_;     
-      std::string  scCollection_;     
-      std::string  bcCollectionUncleanOnly_;
-      std::string  scCollectionUncleanOnly_;
+private:
+  // the clean collection
+  edm::EDGetTokenT<reco::BasicClusterCollection> cleanBcCollection_;
+  edm::EDGetTokenT<reco::SuperClusterCollection> cleanScCollection_;
+  // the uncleaned collection
+  edm::EDGetTokenT<reco::BasicClusterCollection> uncleanBcCollection_;
+  edm::EDGetTokenT<reco::SuperClusterCollection> uncleanScCollection_;
 
-
-
+  // the names of the products to be produced:
+  std::string bcCollection_;
+  std::string scCollection_;
+  std::string bcCollectionUncleanOnly_;
+  std::string scCollectionUncleanOnly_;
 };
 
-
 #endif
-
-

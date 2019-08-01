@@ -24,27 +24,22 @@
 \date   february 2008
 */
 
-
-
-
 class PFMET : public edm::EDProducer {
- public:
-
+public:
   explicit PFMET(const edm::ParameterSet&);
 
-  ~PFMET();
+  ~PFMET() override;
 
-  virtual void produce(edm::Event&, const edm::EventSetup&);
+  void produce(edm::Event&, const edm::EventSetup&) override;
 
-  virtual void beginJob();
+  void beginJob() override;
 
- private:
-
+private:
   /// Input PFCandidates
-  edm::InputTag       inputTagPFCandidates_;
+  edm::InputTag inputTagPFCandidates_;
   edm::EDGetTokenT<reco::PFCandidateCollection> tokenPFCandidates_;
 
-  pf2pat::PFMETAlgo   pfMETAlgo_;
+  pf2pat::PFMETAlgo pfMETAlgo_;
 };
 
 #endif

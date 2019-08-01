@@ -15,38 +15,36 @@
 #include <iostream>
 #include <string>
 
-
 class EcalTBDaqFormatter;
 class EcalSupervisorTBDataFormatter;
 class CamacTBDataFormatter;
 class TableDataFormatter;
 class MatacqTBDataFormatter;
 
-  class EcalDCCTBUnpackingModule: public edm::EDProducer {
-  public:
-    /// Constructor
-    EcalDCCTBUnpackingModule(const edm::ParameterSet& pset);
+class EcalDCCTBUnpackingModule : public edm::EDProducer {
+public:
+  /// Constructor
+  EcalDCCTBUnpackingModule(const edm::ParameterSet& pset);
 
-    /// Destructor
-    virtual ~EcalDCCTBUnpackingModule();
-    
-    /// Produce digis out of raw data
-    void produce(edm::Event & e, const edm::EventSetup& c);
+  /// Destructor
+  ~EcalDCCTBUnpackingModule() override;
 
-    // BeginJob
-    void beginJob();
+  /// Produce digis out of raw data
+  void produce(edm::Event& e, const edm::EventSetup& c) override;
 
-    // EndJob
-    void endJob(void);
+  // BeginJob
+  void beginJob() override;
 
-  private:
+  // EndJob
+  void endJob(void) override;
 
-    EcalTBDaqFormatter* formatter_;
-    EcalSupervisorTBDataFormatter* ecalSupervisorFormatter_;
-    CamacTBDataFormatter* camacTBformatter_;
-    TableDataFormatter* tableFormatter_;
-    MatacqTBDataFormatter* matacqFormatter_;
-    edm::InputTag fedRawDataCollectionTag_;
-  };
+private:
+  EcalTBDaqFormatter* formatter_;
+  EcalSupervisorTBDataFormatter* ecalSupervisorFormatter_;
+  CamacTBDataFormatter* camacTBformatter_;
+  TableDataFormatter* tableFormatter_;
+  MatacqTBDataFormatter* matacqFormatter_;
+  edm::InputTag fedRawDataCollectionTag_;
+};
 
 #endif

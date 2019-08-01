@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/sh -ex
 # Pass in name and status
 function die { echo $1: status $2 ;  exit $2; }
 
@@ -9,6 +9,8 @@ cmsRun ${LOCAL_TEST_DIR}/PrePoolInputTest_cfg.py PoolInputTest.root 11 561 7 6 3
 cp PoolInputTest.root PoolInputOther.root
 
 cmsRun --parameter-set ${LOCAL_TEST_DIR}/PoolInputTest_cfg.py || die 'Failure using PoolInputTest_cfg.py' $?
+cmsRun  ${LOCAL_TEST_DIR}/PoolInputTest_noDelay_cfg.py >& ${LOCAL_TMP_DIR}/PoolInputTest_noDelay_cfg.txt || die 'Failure using PoolInputTest_noDelay_cfg.py' $?
+grep 'event delayed read from source' ${LOCAL_TMP_DIR}/PoolInputTest_noDelay_cfg.txt && die 'Failure in PoolInputTest_noDelay_cfg.py, found delay reads from source' 1
 
 cmsRun ${LOCAL_TEST_DIR}/PrePool2FileInputTest_cfg.py || die 'Failure using PrePool2FileInputTest_cfg.py' $?
 cmsRun ${LOCAL_TEST_DIR}/Pool2FileInputTest_cfg.py || die 'Failure using Pool2FileInputTest_cfg.py' $?
@@ -24,20 +26,6 @@ cmsRun --parameter-set ${LOCAL_TEST_DIR}/PoolInputTest3_cfg.py || die 'Failure u
 cmsRun --parameter-set ${LOCAL_TEST_DIR}/PoolEmptyTest_cfg.py || die 'Failure using PoolEmptyTest_cfg.py' $?
 
 cmsRun --parameter-set ${LOCAL_TEST_DIR}/PoolEmptyTest2_cfg.py || die 'Failure using PoolEmptyTest2_cfg.py' $?
-
-cmsRun --parameter-set ${LOCAL_TEST_DIR}/poolsource_multiprocess_gen_file_cfg.py || die 'Failure using poolsource_multiprocess_gen_file_cfg.py' $?
-
-cmsRun --parameter-set ${LOCAL_TEST_DIR}/poolsource_multiprocess_cfg.py || die 'Failure using poolsource_multiprocess_cfg.py' $?
-
-cmsRun --parameter-set ${LOCAL_TEST_DIR}/poolsource_multiprocess_gen_file_oneRun_cfg.py || die 'Failure using poolsource_multiprocess_gen_file_oneRun_cfg.py' $?
-
-cmsRun --parameter-set ${LOCAL_TEST_DIR}/poolsource_multiprocess_oneRun_cfg.py || die 'Failure using poolsource_multiprocess_oneRun_cfg.py' $?
-
-cmsRun --parameter-set ${LOCAL_TEST_DIR}/poolsource_multiprocess_WithSkip_cfg.py || die 'Failure using poolsource_multiprocess_WithSkip_cfg.py' $?
-
-cmsRun --parameter-set ${LOCAL_TEST_DIR}/poolsource_multiprocess_selectevents_cfy.py || die 'Failure using poolsource_multiprocess_selectevents_cfy.py' $?
-
-cmsRun --parameter-set ${LOCAL_TEST_DIR}/poolsource_multiprocess_emptyrunslumis_cfy.py || die 'Failure using poolsource_multiprocess_emptyrunslumis_cfy.py' $?
 
 cmsRun --parameter-set ${LOCAL_TEST_DIR}/PoolAliasTestStep1_cfg.py || die 'Failure using PoolAliasTestStep1_cfg.py' $?
 
@@ -63,7 +51,7 @@ cmsRun ${LOCAL_TEST_DIR}/RunPerLumiTest_cfg.py 25 >& ${LOCAL_TMP_DIR}/RunPerLumi
 grep 'record' ${LOCAL_TMP_DIR}/RunPerLumiTest.txt | cut -d ' ' -f 4-11 > ${LOCAL_TMP_DIR}/RunPerLumiTest.filtered.txt
 diff ${LOCAL_TEST_DIR}/unit_test_outputs/RunPerLumiTest.filtered.txt ${LOCAL_TMP_DIR}/RunPerLumiTest.filtered.txt || die 'incorrect output using RunPerLumiTest_cfg.py' $? 
 
-cmsRun ${LOCAL_TEST_DIR}/RunPerLumiTest_cfg.py 50 >& ${LOCAL_TMP_DIR}/tooManyLumis.txt
+cmsRun ${LOCAL_TEST_DIR}/RunPerLumiTest_cfg.py 50 >& ${LOCAL_TMP_DIR}/tooManyLumis.txt && die 'RunPerLumiTest_cfg.py should have failed but did not' $?
 grep "MismatchedInputFiles" ${LOCAL_TMP_DIR}/tooManyLumis.txt || die  'RunPerLumiTest_cfg.py should have failed but did not' $?
 
 
@@ -76,30 +64,37 @@ cmsRun --parameter-set ${LOCAL_TEST_DIR}/preMerge2_cfg.py || die 'Failure using 
 cmsRun --parameter-set ${LOCAL_TEST_DIR}/HeteroMerge_cfg.py || die 'Failure using HeteroMerge_cfg.py' $?
 
 #test reading of the old format files
+IOPoolInputData=$CMSSW_BASE/src
+for dir in $(echo $CMSSW_SEARCH_PATH | tr : '\n') ;  do
+  if [ -d ${dir}/IOPool/Input/data ] ; then
+    IOPoolInputData=${dir}
+    break
+  fi
+done
 
-for file in ${CMSSW_BASE}/src/IOPool/Input/testdata/raw*.root
+for file in ${IOPoolInputData}/IOPool/Input/data/raw*.root
 do
   cmsRun ${LOCAL_TEST_DIR}/test_old_raw_data_step1_cfg.py "$file" || die "Failed to read old raw data file $file" $?
   cmsRun ${LOCAL_TEST_DIR}/test_old_raw_data_step2_cfg.py || die "Failed to read raw data file converted from $file" $?
   rm -fr converted.root
 done
 
-for file in ${CMSSW_BASE}/src/IOPool/Input/testdata/old*.root
+for file in ${IOPoolInputData}/IOPool/Input/data/old*.root
 do
   cmsRun ${LOCAL_TEST_DIR}/test_old_formats_cfg.py "$file" || die "Failed to read old file $file" $?
 done
 
-for file in ${CMSSW_BASE}/src/IOPool/Input/testdata/empty*.root
+for file in ${IOPoolInputData}/IOPool/Input/data/empty*.root
 do
   cmsRun ${LOCAL_TEST_DIR}/test_empty_old_formats_cfg.py "$file" || die "Failed to read old empty file $file" $?
 done
 
 # Note that the expected sequence of runs, lumis, and events changed slightly at 3_8_0 so
 # a different test config is required to run the following test for earlier releases. 
-for file in ${CMSSW_BASE}/src/IOPool/Input/testdata/complex*.root
+for file in ${IOPoolInputData}/IOPool/Input/data/complex*.root
 do
   case $file in
-  "${CMSSW_BASE}/src/IOPool/Input/testdata/complex_old_format_CMSSW_2_2_13.root" | "${CMSSW_BASE}/src/IOPool/Input/testdata/complex_old_format_CMSSW_3_5_0.root" | "${CMSSW_BASE}/src/IOPool/Input/testdata/complex_old_format_CMSSW_3_7_0.root") 
+  "${IOPoolInputData}/IOPool/Input/data/complex_old_format_CMSSW_2_2_13.root" | "${IOPoolInputData}/IOPool/Input/data/complex_old_format_CMSSW_3_5_0.root" | "${IOPoolInputData}/IOPool/Input/data/complex_old_format_CMSSW_3_7_0.root")
   script=test_complex_before_3_8_0_cfg.py
   ;;
   *)
@@ -109,7 +104,7 @@ do
   cmsRun ${LOCAL_TEST_DIR}/$script "$file" || die "Failed to read old complex file $file" $?
 done
 
-cmsRun ${LOCAL_TEST_DIR}/test_merge_two_files.py ${CMSSW_BASE}/src/IOPool/Input/testdata/complex_old_format_CMSSW_4_2_7.root ${CMSSW_BASE}/src/IOPool/Input/testdata/complex_old_format_CMSSW_4_2_8.root || die 'Failure using test_merge_two_files.py' $?
+cmsRun ${LOCAL_TEST_DIR}/test_merge_two_files.py ${IOPoolInputData}/IOPool/Input/data/complex_old_format_CMSSW_4_2_7.root ${IOPoolInputData}/IOPool/Input/data/complex_old_format_CMSSW_4_2_8.root || die 'Failure using test_merge_two_files.py' $?
 
 cmsRun ${LOCAL_TEST_DIR}/test_reduced_ProcessHistory_cfg.py merged_files.root || die 'Failure using test_reduced_ProcessHistory_cfg.py' $?
 
@@ -117,4 +112,11 @@ cmsRun ${LOCAL_TEST_DIR}/test_reduced_ProcessHistory_dup_cfg.py merged_files.roo
 
 cmsRun ${LOCAL_TEST_DIR}/test_reduced_ProcessHistory_end_cfg.py merged_files.root || die 'Failure using test_reduced_ProcessHistory_end_cfg.py' $?
 
+cmsRun ${LOCAL_TEST_DIR}/test_make_multi_lumi_cfg.py || die 'Failure using test_make_multi_lumi_cfg.py' $?
+cmsRun ${LOCAL_TEST_DIR}/test_read_multi_lumi_as_one_cfg.py || die 'Failure using test_read_multi_lumi_as_one_cfg.py' $?
+
+cmsRun ${LOCAL_TEST_DIR}/test_make_overlapping_lumis_cfg.py || die 'Failure using test_make_overlapping_lumis_cfg.py' $?
+cmsRun ${LOCAL_TEST_DIR}/test_read_overlapping_lumis_cfg.py || die 'Failure using test_read_overlapping_lumis_cfg.py' $?
+
 popd
+exit 0

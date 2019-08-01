@@ -22,8 +22,8 @@ uncleanedOnlyElectronGsfTracks = electronGsfTracks.clone(
     src = 'uncleanedOnlyElectronCkfTrackCandidates'
     )
 
-uncleanedOnlyTracking = cms.Sequence(uncleanedOnlyElectronSeeds*uncleanedOnlyElectronCkfTrackCandidates*uncleanedOnlyElectronGsfTracks)
-
+uncleanedOnlyTrackingTask = cms.Task(uncleanedOnlyElectronSeeds,uncleanedOnlyElectronCkfTrackCandidates,uncleanedOnlyElectronGsfTracks)
+uncleanedOnlyTracking = cms.Sequence(uncleanedOnlyTrackingTask)
 #
 # Conversions
 #
@@ -50,7 +50,8 @@ uncleanedOnlyCkfInOutTracksFromConversions = ckfInOutTracksFromConversions.clone
     ComponentName = cms.string('uncleanedOnlyCkfInOutTracksFromConversions')
     )
 
-uncleanedOnlyCkfTracksFromConversions = cms.Sequence(uncleanedOnlyConversionTrackCandidates*uncleanedOnlyCkfOutInTracksFromConversions*uncleanedOnlyCkfInOutTracksFromConversions)
+uncleanedOnlyCkfTracksFromConversionsTask = cms.Task(uncleanedOnlyConversionTrackCandidates,uncleanedOnlyCkfOutInTracksFromConversions,uncleanedOnlyCkfInOutTracksFromConversions)
+uncleanedOnlyCkfTracksFromConversions = cms.Sequence(uncleanedOnlyCkfTracksFromConversionsTask)
 
 from RecoEgamma.EgammaPhotonProducers.conversionTrackSequence_cff import *
 uncleanedOnlyGeneralConversionTrackProducer = generalConversionTrackProducer.clone()
@@ -70,7 +71,8 @@ uncleanedOnlyGsfConversionTrackProducer = gsfConversionTrackProducer.clone(
     TrackProducer = cms.string('uncleanedOnlyElectronGsfTracks')
     )
 
-uncleanedOnlyConversionTrackProducers  = cms.Sequence(uncleanedOnlyGeneralConversionTrackProducer*uncleanedOnlyInOutConversionTrackProducer*uncleanedOnlyOutInConversionTrackProducer*uncleanedOnlyGsfConversionTrackProducer)
+uncleanedOnlyConversionTrackProducersTask  = cms.Task(uncleanedOnlyGeneralConversionTrackProducer,uncleanedOnlyInOutConversionTrackProducer,uncleanedOnlyOutInConversionTrackProducer,uncleanedOnlyGsfConversionTrackProducer)
+uncleanedOnlyConversionTrackProducers  = cms.Sequence(uncleanedOnlyConversionTrackProducersTask)
 
 from RecoEgamma.EgammaPhotonProducers.conversionTrackSequence_cff import *
 uncleanedOnlyInOutOutInConversionTrackMerger = inOutOutInConversionTrackMerger.clone(
@@ -90,7 +92,8 @@ uncleanedOnlyGsfGeneralInOutOutInConversionTrackMerger = gsfGeneralInOutOutInCon
     TrackProducer1 = cms.InputTag('uncleanedOnlyGeneralInOutOutInConversionTrackMerger')
     )
 
-uncleanedOnlyConversionTrackMergers = cms.Sequence(uncleanedOnlyInOutOutInConversionTrackMerger*uncleanedOnlyGeneralInOutOutInConversionTrackMerger*uncleanedOnlyGsfGeneralInOutOutInConversionTrackMerger)
+uncleanedOnlyConversionTrackMergersTask = cms.Task(uncleanedOnlyInOutOutInConversionTrackMerger,uncleanedOnlyGeneralInOutOutInConversionTrackMerger,uncleanedOnlyGsfGeneralInOutOutInConversionTrackMerger)
+uncleanedOnlyConversionTrackMergers = cms.Sequence(uncleanedOnlyConversionTrackMergersTask)
 
 from RecoEgamma.EgammaPhotonProducers.allConversions_cfi import *
 uncleanedOnlyAllConversions = allConversions.clone(
@@ -101,8 +104,8 @@ uncleanedOnlyAllConversions = allConversions.clone(
     src = cms.InputTag("uncleanedOnlyGsfGeneralInOutOutInConversionTrackMerger")
     )
 
-uncleanedOnlyConversions = cms.Sequence(uncleanedOnlyCkfTracksFromConversions*uncleanedOnlyConversionTrackProducers*uncleanedOnlyConversionTrackMergers*uncleanedOnlyAllConversions)
-
+uncleanedOnlyConversionsTask = cms.Task(uncleanedOnlyCkfTracksFromConversionsTask,uncleanedOnlyConversionTrackProducersTask,uncleanedOnlyConversionTrackMergersTask,uncleanedOnlyAllConversions)
+uncleanedOnlyConversions = cms.Sequence(uncleanedOnlyConversionsTask)
 #
 # Particle Flow Tracking
 #
@@ -124,13 +127,16 @@ uncleanedOnlyPfTrackElec = pfTrackElec.clone(
     PFRecTrackLabel = cms.InputTag("uncleanedOnlyPfTrack")
     )
 
-uncleanedOnlyPfTracking = cms.Sequence(uncleanedOnlyPfTrack*uncleanedOnlyPfConversions*uncleanedOnlyPfTrackElec)
+uncleanedOnlyPfTrackingTask = cms.Task(uncleanedOnlyPfTrack,uncleanedOnlyPfConversions,uncleanedOnlyPfTrackElec)
+uncleanedOnlyPfTracking = cms.Sequence(uncleanedOnlyPfTrackingTask)
 
 #
 # Electrons
 #
 
-from RecoEgamma.EgammaElectronProducers.gsfElectronCores_cfi import *
+from RecoEgamma.EgammaElectronProducers.ecalDrivenGsfElectronCores_cfi import ecalDrivenGsfElectronCores
+from RecoEgamma.EgammaElectronProducers.gsfElectronCores_cfi import gsfElectronCores
+from RecoEgamma.EgammaElectronProducers.ecalDrivenGsfElectronCoresFromMultiCl_cff import ecalDrivenGsfElectronCoresFromMultiCl
 uncleanedOnlyGsfElectronCores = ecalDrivenGsfElectronCores.clone(
     gsfTracks = cms.InputTag("uncleanedOnlyElectronGsfTracks"),
     gsfPfRecTracks = cms.InputTag("uncleanedOnlyPfTrackElec")
@@ -143,11 +149,11 @@ uncleanedOnlyGsfElectrons = ecalDrivenGsfElectrons.clone(
     seedsTag = cms.InputTag("uncleanedOnlyElectronSeeds")
     )
 
-uncleanedOnlyElectrons = cms.Sequence(uncleanedOnlyGsfElectronCores*uncleanedOnlyGsfElectrons)
-
+uncleanedOnlyElectronsTask = cms.Task(uncleanedOnlyGsfElectronCores,uncleanedOnlyGsfElectrons)
+uncleanedOnlyElectrons = cms.Sequence(uncleanedOnlyElectronsTask)
 #
 # Whole Sequence
 #
 
-uncleanedOnlyElectronSequence = cms.Sequence(uncleanedOnlyTracking*uncleanedOnlyConversions*uncleanedOnlyPfTracking*uncleanedOnlyElectrons)
-
+uncleanedOnlyElectronTask = cms.Task(uncleanedOnlyTrackingTask,uncleanedOnlyConversionsTask,uncleanedOnlyPfTrackingTask,uncleanedOnlyElectronsTask)
+uncleanedOnlyElectronSequence = cms.Sequence(uncleanedOnlyElectronTask)

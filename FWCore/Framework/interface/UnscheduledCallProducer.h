@@ -34,74 +34,76 @@ namespace edm {
 
   class UnscheduledCallProducer {
   public:
-    
     using worker_container = std::vector<Worker*>;
     using const_iterator = worker_container::const_iterator;
-    
+
     UnscheduledCallProducer(ActivityRegistry& iReg) : unscheduledWorkers_() {
       aux_.preModuleDelayedGetSignal_.connect(std::cref(iReg.preModuleEventDelayedGetSignal_));
       aux_.postModuleDelayedGetSignal_.connect(std::cref(iReg.postModuleEventDelayedGetSignal_));
     }
     void addWorker(Worker* aWorker) {
-      assert(0 != aWorker);
+      assert(nullptr != aWorker);
       unscheduledWorkers_.push_back(aWorker);
+      if (aWorker->hasAccumulator()) {
+        accumulatorWorkers_.push_back(aWorker);
+      }
     }
-    
-    void setEventSetup(EventSetup const& iSetup) {
-      aux_.setEventSetup(&iSetup);
-    }
+
+    void setEventSetup(EventSetupImpl const& iSetup) { aux_.setEventSetup(&iSetup); }
 
     UnscheduledAuxiliary const& auxiliary() const { return aux_; }
 
     const_iterator begin() const { return unscheduledWorkers_.begin(); }
     const_iterator end() const { return unscheduledWorkers_.end(); }
-    
-    template <typename T, typename U>
-    void runNow(typename T::MyPrincipal& p, EventSetup const& es, StreamID streamID,
-                typename T::Context const* topContext, U const* context) const {
-      //do nothing for event since we will run when requested
-      if(!T::isEvent_) {
-        for(auto worker: unscheduledWorkers_) {
-          try {
-            ParentContext parentContext(context);
-            worker->doWork<T>(p, es, streamID, parentContext, topContext);
-          }
-          catch (cms::Exception & ex) {
-            if(ex.context().empty()) {
-              addContextToException<T>(ex,worker,p.id());
-            }
-            throw;
-          }
-        }
-      }
-    }
 
     template <typename T, typename U>
     void runNowAsync(WaitingTask* task,
-                     typename T::MyPrincipal& p, EventSetup const& es, StreamID streamID,
-                     typename T::Context const* topContext, U const* context) const {
+                     typename T::MyPrincipal& p,
+                     EventSetupImpl const& es,
+                     ServiceToken const& token,
+                     StreamID streamID,
+                     typename T::Context const* topContext,
+                     U const* context) const {
       //do nothing for event since we will run when requested
-      if(!T::isEvent_) {
-        for(auto worker: unscheduledWorkers_) {
+      if (!T::isEvent_) {
+        for (auto worker : unscheduledWorkers_) {
           ParentContext parentContext(context);
-          worker->doWorkNoPrefetchingAsync<T>(task, p, es, streamID, parentContext, topContext);
+
+          // We do not need to run prefetching here because this only handles
+          // stream transitions for runs and lumis. There are no products put
+          // into the runs or lumis in stream transitions, so there can be
+          // no data dependencies which require prefetching. Prefetching is
+          // needed for global transitions, but they are run elsewhere.
+          worker->doWorkNoPrefetchingAsync<T>(task, p, es, token, streamID, parentContext, topContext);
         }
       }
     }
 
-    
+    template <typename T>
+    void runAccumulatorsAsync(WaitingTask* task,
+                              typename T::MyPrincipal const& ep,
+                              EventSetupImpl const& es,
+                              ServiceToken const& token,
+                              StreamID streamID,
+                              ParentContext const& parentContext,
+                              typename T::Context const* context) {
+      for (auto worker : accumulatorWorkers_) {
+        worker->doWorkAsync<T>(task, ep, es, token, streamID, parentContext, context);
+      }
+    }
+
   private:
     template <typename T, typename ID>
     void addContextToException(cms::Exception& ex, Worker const* worker, ID const& id) const {
       std::ostringstream ost;
-      ost << "Processing " << T::transitionName()<<" "<< id;
+      ost << "Processing " << T::transitionName() << " " << id;
       ex.addContext(ost.str());
     }
     worker_container unscheduledWorkers_;
+    worker_container accumulatorWorkers_;
     UnscheduledAuxiliary aux_;
   };
 
-}
+}  // namespace edm
 
 #endif
-

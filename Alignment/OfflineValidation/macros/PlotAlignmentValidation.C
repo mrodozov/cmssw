@@ -1,51 +1,66 @@
-#include <TStyle.h>
-#include <TSystem.h>
+#include "Alignment/OfflineValidation/macros/PlotAlignmentValidation.h"
+
+#include "Alignment/OfflineValidation/macros/TkAlStyle.cc"
+#include "Alignment/OfflineValidation/interface/TkOffTreeVariables.h"
+
+#include "Math/ProbFunc.h"
+
+#include "TAxis.h"
+#include "TCanvas.h"
+#include "TDirectory.h"
+#include "TDirectoryFile.h"
+#include "TF1.h"
+#include "TFile.h"
+#include "TGaxis.h"
+#include "TH2F.h"
+#include "THStack.h"
+#include "TKey.h"
+#include "TLatex.h"
+#include "TLegend.h"
+#include "TLegendEntry.h"
+#include "TPad.h"
+#include "TPaveStats.h"
+#include "TPaveText.h"
+#include "TProfile.h"
+#include "TRandom3.h"
+#include "TRegexp.h"
+#include "TROOT.h"
+#include "TString.h"
+#include "TStyle.h"
+#include "TSystem.h"
+#include "TTree.h"
+
 #include <algorithm>
+#include <cmath>
+#include <cstdio>
+#include <cstdlib>
+#include <exception>
 #include <fstream>
 #include <iostream>
 #include <memory>
 #include <sstream>
-#include <stdio.h>
-#include <stdlib.h>
 #include <string>
 #include <vector>
-#include "TTree.h"
-#include "TString.h"
-#include "TAxis.h"
-#include "TGaxis.h"
-#include "TProfile.h"
-#include "TH2F.h"
-#include "TROOT.h"
-#include "TDirectory.h"
-#include "TCanvas.h"
-#include "TFile.h"
-#include "TDirectoryFile.h"
-#include "TLegend.h"
-#include "TLegendEntry.h"
-#include "THStack.h"
-#include <exception>
-#include "TKey.h"
-#include "TPad.h"
-#include "TPaveText.h"
-#include "TPaveStats.h"
-#include "TF1.h"
-#include "TRegexp.h"
-#include "TLatex.h"
 
-// This line works only if we have a CMSSW environment...
-#include "Alignment/OfflineValidation/interface/TkOffTreeVariables.h"
 
-#include "Alignment/OfflineValidation/macros/PlotAlignmentValidation.h"
-#include "Alignment/OfflineValidation/plugins/TkAlStyle.cc"
+/*! \class PlotAlignmentValidation
+ *  \brief Class PlotAlignmentValidation
+ *         Class used as the last step for Offline Track Validation tool.
+ *         The main goal of this class is creating the plots regarding DMRs and Surface Deformations for modules and substructures.
+ */
+
 
 //------------------------------------------------------------------------------
-PlotAlignmentValidation::PlotAlignmentValidation(const char *inputFile,std::string legendName, int lineColor, int lineStyle, bool bigtext) : bigtext_(bigtext)
+/*! \fn PlotAlignmentValidation
+ *  \brief Constructor for the class
+ */
+
+PlotAlignmentValidation::PlotAlignmentValidation(bool bigtext) : bigtext_(bigtext)
 {
   setOutputDir(".");
   setTreeBaseDir();
   sourcelist = NULL;
   
-  loadFileList( inputFile, legendName, lineColor, lineStyle);
   moreThanOneSource=false;
   useFit_ = false;
 
@@ -63,6 +78,18 @@ PlotAlignmentValidation::PlotAlignmentValidation(const char *inputFile,std::stri
 }
 
 //------------------------------------------------------------------------------
+/*! \fn PlotAlignmentValidation
+ *  \brief Constructor for the class. This function also retrieves the list of root files used to produce DMRs and Surface Deformations
+ */
+PlotAlignmentValidation::PlotAlignmentValidation(const char *inputFile,std::string legendName, int lineColor, int lineStyle, bool bigtext) : PlotAlignmentValidation(bigtext)
+{
+  loadFileList(inputFile, legendName, lineColor, lineStyle);
+}
+
+//------------------------------------------------------------------------------
+/*! \fn ~PlotAlignmentValidation
+ *  \brief Default destructor
+ */
 PlotAlignmentValidation::~PlotAlignmentValidation()
 {
 
@@ -72,17 +99,54 @@ PlotAlignmentValidation::~PlotAlignmentValidation()
   }
 
   delete sourcelist;
+
 }
 
 //------------------------------------------------------------------------------
+/*!
+ * \fn openSummaryFile
+ * \brief Create/open the root and txt summary files, where the DMR histograms and the associtated mean/sigma are stored respectively
+ */
+
+
+void PlotAlignmentValidation::openSummaryFile()
+{
+  if (!openedsummaryfile) {
+    openedsummaryfile = true;
+    summaryfile.open(outputDir+"/"+summaryfilename+".txt");
+    //Rootfile introduced to store the DMR histograms
+    rootsummaryfile= new TFile(outputDir+"/"+summaryfilename+".root","RECREATE");
+
+    for (auto vars : sourceList) {
+      summaryfile << "\t" << vars->getName();
+    }
+    summaryfile << "\tformat={}\n";
+  }else{
+    //Check for the rootfile to be open, and open it in case it is not already.
+    if (!rootsummaryfile->IsOpen()) rootsummaryfile->Open(outputDir+"/"+summaryfilename+".root","UPDATE");
+
+  }
+}
+
+//------------------------------------------------------------------------------
+/*! \fn loadFileList
+ *  \brief Add to the list of sources the rootfile associated to a particular geometry
+ */
 void PlotAlignmentValidation::loadFileList(const char *inputFile, std::string legendName, int lineColor, int lineStyle)
 {
 
+  if (openedsummaryfile) {
+    std::cout << "Can't load a root file after opening the summary file!" << std::endl;
+    assert(0);
+  }
   sourceList.push_back( new TkOfflineVariables( inputFile, treeBaseDir, legendName, lineColor, lineStyle ) );
-  
+
 }
 
 //------------------------------------------------------------------------------
+/*! \fn useFitForDMRplots
+ *  \brief Store the selected boolean in one of the private members of the class
+ */
 void PlotAlignmentValidation::useFitForDMRplots(bool usefit)
 {
 
@@ -91,6 +155,10 @@ void PlotAlignmentValidation::useFitForDMRplots(bool usefit)
 }
 
 //------------------------------------------------------------------------------
+/*! \fn numberOfLayers
+ *  \brief Select the number of layers associated to a subdetector.
+ */
+//TODO Possible improvement: reduce the number of switches in the code by implementing a map
 int PlotAlignmentValidation::numberOfLayers(int phase, int subdetector) {
   switch (phase) {
   case 0:
@@ -119,6 +187,9 @@ int PlotAlignmentValidation::numberOfLayers(int phase, int subdetector) {
 }
 
 //------------------------------------------------------------------------------
+/*! \fn maxNumberOfLayers
+ *  \brief Return the number of layers of a subdetector
+ */
 int PlotAlignmentValidation::maxNumberOfLayers(int subdetector) {
   int result = 0;
   for (auto it = sourceList.begin(); it != sourceList.end(); ++it) {
@@ -128,6 +199,9 @@ int PlotAlignmentValidation::maxNumberOfLayers(int subdetector) {
 }
 
 //------------------------------------------------------------------------------
+/*! \fn legendOptions
+ *  \brief Assign legend options to members of the class
+ */
 void PlotAlignmentValidation::legendOptions(TString options)
 {
 
@@ -155,13 +229,23 @@ void PlotAlignmentValidation::legendOptions(TString options)
 }
 
 //------------------------------------------------------------------------------
+/*! \fn setOutputDir
+ *  \brief Set the output direcotry
+ */
 void PlotAlignmentValidation::setOutputDir( std::string dir )
 {
+  if (openedsummaryfile) {
+    std::cout << "Can't set the output dir after opening the summary file!" << std::endl;
+    assert(0);
+  }
   outputDir = dir;
   gSystem->mkdir(outputDir.data(), true);
 }
 
 //------------------------------------------------------------------------------
+/*! \fn plotSubDetResiduals
+ *  \brief Function used to plot residuals for a subdetector
+ */
 void PlotAlignmentValidation::plotSubDetResiduals(bool plotNormHisto,unsigned int subDetId)
 {
   gStyle->SetOptStat(11111);
@@ -384,6 +468,9 @@ void PlotAlignmentValidation::plotOutlierModules(const char *outputFileName, std
 }
 
 //------------------------------------------------------------------------------
+/*! \fn getTreeList
+ *  \brief Extract from the rootfiles stored in the sourcelist the corresponding trees.
+ */
 TList* PlotAlignmentValidation::getTreeList()
 {
   TList *treeList = new TList();
@@ -623,6 +710,9 @@ void PlotAlignmentValidation::plotSS( const std::string& options, const std::str
 
 
 //------------------------------------------------------------------------------
+/*! \fn plotDMR
+ *  \brief Main function used to plot DMRs for a single IOV printing the canvases in the output directory and saving histograms and fit funtions in a root file.
+ */
 void PlotAlignmentValidation::plotDMR(const std::string& variable, Int_t minHits, const std::string& options)
 {
   // If several, comma-separated values are given in 'variable',
@@ -711,7 +801,7 @@ void PlotAlignmentValidation::plotDMR(const std::string& variable, Int_t minHits
     std::cerr << "Unknown variable " << variable << std::endl;
     plotinfo.nbins = 100; plotinfo.min = -0.1; plotinfo.max = 0.1;
   }
-
+  //Begin loop on structures
   for (int i=1; i<=6; ++i) {
 
     // Skip strip detectors if plotting any "Y" variable
@@ -761,7 +851,20 @@ void PlotAlignmentValidation::plotDMR(const std::string& variable, Int_t minHits
     plotinfo.hstack = &hstack;
     plotinfo.h = plotinfo.h1 = plotinfo.h2 = 0;
     plotinfo.firsthisto = true;
-    
+
+    openSummaryFile();
+    vmean.clear(); vrms.clear(); vdeltamean.clear(); vmeanerror.clear(); vPValueEqualSplitMeans.clear(), vAlignmentUncertainty.clear(); vPValueMeanEqualIdeal.clear(); vPValueRMSEqualIdeal.clear();
+
+    std::string stringsubdet;
+    switch (i) {
+      case 1: stringsubdet = "BPIX"; break;
+      case 2: stringsubdet = "FPIX"; break;
+      case 3: stringsubdet = "TIB"; break;
+      case 4: stringsubdet = "TID"; break;
+      case 5: stringsubdet = "TOB"; break;
+      case 6: stringsubdet = "TEC"; break;
+    }
+
     for(std::vector<TkOfflineVariables*>::iterator it = sourceList.begin();
 	it != sourceList.end(); ++it) {
 
@@ -769,21 +872,38 @@ void PlotAlignmentValidation::plotDMR(const std::string& variable, Int_t minHits
       plotinfo.h1 = plotinfo.h2 = plotinfo.h = 0;
 
       int minlayer = plotLayers ? 1 : plotLayerN;
+      //Layer 0 is associated to the entire structure, this check ensures that even when both the plotLayers and the plotPlain options are active, also the histogram for the entire structure is made.
+      if(plotinfo.plotPlain) minlayer=0; 
       int maxlayer = plotLayers ? numberOfLayers(plotinfo.vars->getPhase(), plotinfo.subDetId) : plotLayerN;
 
       for (int layer = minlayer; layer <= maxlayer; layer++) {
 
 	if (plotinfo.plotPlain) {
-	  plotDMRHistogram(plotinfo, 0, layer);
+	  plotDMRHistogram(plotinfo, 0, layer, stringsubdet);
 	}
 
 	if (plotinfo.plotSplits) {
-	  plotDMRHistogram(plotinfo, -1, layer);
-	  plotDMRHistogram(plotinfo, 1, layer);
+	  plotDMRHistogram(plotinfo, -1, layer, stringsubdet);
+	  plotDMRHistogram(plotinfo, 1, layer, stringsubdet);
 	}
 
 	if (plotinfo.plotPlain) {
-	  if (plotinfo.h) { setDMRHistStyleAndLegend(plotinfo.h, plotinfo, 0, layer); }
+	  if (plotinfo.h) {
+            setDMRHistStyleAndLegend(plotinfo.h, plotinfo, 0, layer);
+          } else {
+            if ((plotinfo.variable == "medianX" || plotinfo.variable == "medianY") && /*!plotinfo.plotLayers && */layer==0) {
+              vmean.push_back(nan(""));
+              vrms.push_back(nan(""));
+              vmeanerror.push_back(nan(""));
+              vAlignmentUncertainty.push_back(nan(""));
+              vPValueMeanEqualIdeal.push_back(nan(""));
+              vPValueRMSEqualIdeal.push_back(nan(""));
+              if (plotinfo.plotSplits && plotinfo.plotPlain) {
+                vdeltamean.push_back(nan(""));
+                vPValueEqualSplitMeans.push_back(nan(""));
+              }
+            }
+          }
 	}
 
 	if (plotinfo.plotSplits) {
@@ -813,6 +933,10 @@ void PlotAlignmentValidation::plotDMR(const std::string& variable, Int_t minHits
 	    legend.str("");
 	    legend << "#Delta#mu = " << deltamu << unit;
 	    plotinfo.legend->AddEntry(static_cast<TObject*>(0), legend.str().c_str(), "");
+
+            if ((plotinfo.variable == "medianX" || plotinfo.variable == "medianY") && !plotLayers && layer==0) {
+              vdeltamean.push_back(deltamu);
+            }
 	  }
 	  if (plotinfo.h1) { setDMRHistStyleAndLegend(plotinfo.h1, plotinfo, -1, layer); }
 	  if (plotinfo.h2) { setDMRHistStyleAndLegend(plotinfo.h2, plotinfo, 1, layer); }
@@ -855,14 +979,18 @@ void PlotAlignmentValidation::plotDMR(const std::string& variable, Int_t minHits
     else if (variable=="rmsNormX") plotName << "rmsNR_";
     else if (variable=="rmsNormY") plotName << "rmsNYR_";
 
+
+    TString subdet;
     switch (i) {
-      case 1: plotName << "BPIX"; break;
-      case 2: plotName << "FPIX"; break;
-      case 3: plotName << "TIB"; break;
-      case 4: plotName << "TID"; break;
-      case 5: plotName << "TOB"; break;
-      case 6: plotName << "TEC"; break;
+      case 1: subdet = "BPIX"; break;
+      case 2: subdet = "FPIX"; break;
+      case 3: subdet = "TIB"; break;
+      case 4: subdet = "TID"; break;
+      case 5: subdet = "TOB"; break;
+      case 6: subdet = "TEC"; break;
     }
+
+    plotName << subdet;
 
     if (plotPlain && !plotSplits) { plotName << "_plain"; }
     else if (!plotPlain && plotSplits) { plotName << "_split"; }
@@ -898,8 +1026,103 @@ void PlotAlignmentValidation::plotDMR(const std::string& variable, Int_t minHits
     delete plotinfo.h1;
     delete plotinfo.h2;
 
+    if (vmean.size()) {
+      summaryfile << "   mu_" << subdet;
+      if (plotinfo.variable == "medianY") summaryfile << "_y";
+      summaryfile << " (um)\t"
+                  << "latexname=$\\mu_\\text{" << subdet << "}";
+      if (plotinfo.variable == "medianY") summaryfile << "^{y}";
+      summaryfile << "$ ($\\mu$m)\t"
+                  << "format={:.3g}\t"
+                  << "latexformat=${:.3g}$";
+      for (auto mu : vmean) summaryfile << "\t" << mu;
+      summaryfile << "\n";
+    }
+    if (vrms.size()) {
+      summaryfile << "sigma_" << subdet;
+      if (plotinfo.variable == "medianY") summaryfile << "_y";
+      summaryfile << " (um)\t"
+                  << "latexname=$\\sigma_\\text{" << subdet << "}";
+      if (plotinfo.variable == "medianY") summaryfile << "^{y}";
+      summaryfile << "$ ($\\mu$m)\t"
+                  << "format={:.3g}\t"
+                  << "latexformat=${:.3g}$";
+      for (auto sigma : vrms) summaryfile << "\t" << sigma;
+      summaryfile << "\n";
+    }
+    if (vdeltamean.size()) {
+      summaryfile << "  dmu_" << subdet ;
+      if (plotinfo.variable == "medianY") summaryfile << "_y";
+      summaryfile << " (um)\t"
+                  << "latexname=$\\Delta\\mu_\\text{" << subdet << "}";
+      if (plotinfo.variable == "medianY") summaryfile << "^{y}";
+      summaryfile << "$ ($\\mu$m)\t"
+                  << "format={:.3g}\t"
+                  << "latexformat=${:.3g}$";
+      for (auto dmu : vdeltamean) summaryfile << "\t" << dmu;
+      summaryfile << "\n";
+    }
+    if (vmeanerror.size()) {
+      summaryfile << "  sigma_mu_" << subdet ;
+      if (plotinfo.variable == "medianY") summaryfile << "_y";
+      summaryfile << " (um)\t"
+                  << "latexname=$\\sigma\\mu_\\text{" << subdet << "}";
+      if (plotinfo.variable == "medianY") summaryfile << "^{y}";
+      summaryfile << "$ ($\\mu$m)\t"
+                  << "format={:.3g}\t"
+                  << "latexformat=${:.3g}$";
+      for (auto dmu : vmeanerror) summaryfile << "\t" << dmu;
+      summaryfile << "\n";
+    }
+    if (vPValueEqualSplitMeans.size()) {
+      summaryfile << "  p_delta_mu_equal_zero_" << subdet ;
+      if (plotinfo.variable == "medianY") summaryfile << "_y";
+      summaryfile << "\t"
+                  << "latexname=$P(\\delta\\mu_\\text{" << subdet << "}=0)";
+      if (plotinfo.variable == "medianY") summaryfile << "^{y}";
+      summaryfile << "$\t"
+                  << "format={:.3g}\t"
+                  << "latexformat=${:.3g}$";
+      for (auto dmu : vPValueEqualSplitMeans) summaryfile << "\t" << dmu;
+      summaryfile << "\n";
+    }
+    if (vAlignmentUncertainty.size()) {
+      summaryfile << "  alignment_uncertainty_" << subdet ;
+      if (plotinfo.variable == "medianY") summaryfile << "_y";
+      summaryfile << " (um)\t"
+                  << "latexname=$\\sigma_\\text{align}_\\text{" << subdet << "}";
+      if (plotinfo.variable == "medianY") summaryfile << "^{y}";
+      summaryfile << "$ ($\\mu$m)\t"
+                  << "format={:.3g}\t"
+                  << "latexformat=${:.3g}$";
+      for (auto dmu : vAlignmentUncertainty) summaryfile << "\t" << dmu;
+      summaryfile << "\n";
+    }
+    if (vPValueMeanEqualIdeal.size()) {
+      summaryfile << "  p_mean_equals_ideal_" << subdet ;
+      if (plotinfo.variable == "medianY") summaryfile << "_y";
+      summaryfile << "\t"
+                  << "latexname=$P(\\mu_\\text{" << subdet << "}=\\mu_\\text{ideal})";
+      if (plotinfo.variable == "medianY") summaryfile << "^{y}";
+      summaryfile << "$\t"
+                  << "format={:.3g}\t"
+                  << "latexformat=${:.3g}$";
+      for (auto dmu : vPValueMeanEqualIdeal) summaryfile << "\t" << dmu;
+      summaryfile << "\n";
+    }
+    if (vPValueRMSEqualIdeal.size()) {
+      summaryfile << "  p_RMS_equals_ideal_" << subdet ;
+      if (plotinfo.variable == "medianY") summaryfile << "_y";
+      summaryfile << "\t"
+                  << "latexname=$P(\\sigma_\\text{" << subdet << "}=\\sigma_\\text{ideal})";
+      if (plotinfo.variable == "medianY") summaryfile << "^{y}";
+      summaryfile << "$\t"
+                  << "format={:.3g}\t"
+                  << "latexformat=${:.3g}$";
+      for (auto dmu : vPValueRMSEqualIdeal) summaryfile << "\t" << dmu;
+      summaryfile << "\n";
+    }
   }
-
 }
 
 //------------------------------------------------------------------------------
@@ -919,8 +1142,8 @@ void PlotAlignmentValidation::plotChi2(const char *inputFile)
     if(mta1 != NULL) {
       mtb1 = (TDirectoryFile*) mta1->Get("GlobalTrackVariables");
       if(mtb1 != NULL) {
-        normchi = (TCanvas*) mtb1->Get("h_normchi2");
-	chiprob = (TCanvas*) mtb1->Get("h_chi2Prob");
+        normchi = dynamic_cast<TCanvas*>(mtb1->Get("h_normchi2"));
+        chiprob = dynamic_cast<TCanvas*>(mtb1->Get("h_chi2Prob"));
         if (normchi != NULL && chiprob != NULL) {
           errorflag = kFALSE;
         }
@@ -932,6 +1155,38 @@ void PlotAlignmentValidation::plotChi2(const char *inputFile)
     std::cout << "PlotAlignmentValidation::plotChi2: Can't find data from given file,"
               << " no chi^2-plots produced" << std::endl;
     return;
+  }
+
+  TLegend *legend = 0;
+  for (auto primitive : *normchi->GetListOfPrimitives()) {
+    legend = dynamic_cast<TLegend*>(primitive);
+    if (legend) break;
+  }
+  if (legend) {
+    openSummaryFile();
+    summaryfile << "ntracks";
+    for (auto alignment : sourceList) {
+      summaryfile << "\t";
+      TString title = alignment->getName();
+      int color = alignment->getLineColor();
+      int style = alignment->getLineStyle();
+      bool foundit = false;
+      for (auto entry : *legend->GetListOfPrimitives()) {
+        TLegendEntry *legendentry = dynamic_cast<TLegendEntry*>(entry);
+        assert(legendentry);
+        TH1 *h = dynamic_cast<TH1*>(legendentry->GetObject());
+        if (!h) continue;
+        if (legendentry->GetLabel() == title && h->GetLineColor() == color && h->GetLineStyle() == style) {
+          foundit = true;
+          summaryfile << h->GetEntries();
+          break;
+        }
+      }
+      if (!foundit) {
+        summaryfile << 0;
+      }
+    }
+    summaryfile << "\n";
   }
 
   chiprob->Draw();
@@ -954,7 +1209,7 @@ void PlotAlignmentValidation::plotChi2(const char *inputFile)
   chiprob->Write();
   fi3.Close();
 
-  fi1->Close();
+  delete fi1;
 
 }
 
@@ -1194,6 +1449,9 @@ THStack* PlotAlignmentValidation::addHists(const TString& selection, const TStri
 }
 
 //------------------------------------------------------------------------------
+/*! \fn fitGauss
+ *  \brief Operate a Gaussian fit to the given histogram
+ */
 TF1 *
 PlotAlignmentValidation::fitGauss(TH1 *hist,int color) 
 {
@@ -1204,9 +1462,9 @@ PlotAlignmentValidation::fitGauss(TH1 *hist,int color)
 
   float mean  = hist->GetMean();
   float sigma = hist->GetRMS();
-
- 
-  TF1 *func = new TF1("tmp", "gaus", mean - 2.*sigma, mean + 2.*sigma); 
+  string functionname="gaussian_";
+  functionname+=hist->GetName();
+  TF1 *func = new TF1(functionname.c_str(), "gaus", mean - 2.*sigma, mean + 2.*sigma); 
  
   func->SetLineColor(color);
   func->SetLineStyle(2);
@@ -1223,11 +1481,22 @@ PlotAlignmentValidation::fitGauss(TH1 *hist,int color)
       }
     }
   }
- 
-  
+  storeHistogramInRootfile(hist,func);
   return func;
 }
 
+
+//------------------------------------------------------------------------------
+/*! \fn storeHistogramInRootfile
+ *  \brief Store the histogram and the gaussian function resulting from the fitGauss function into a root file
+ */
+void PlotAlignmentValidation::storeHistogramInRootfile(TH1* hist, TF1* func)
+{
+  //Store histogram and fit function in the root summary file
+  rootsummaryfile->cd();
+  hist->Write();
+  func->Write(); 
+}
 
 //------------------------------------------------------------------------------
 void PlotAlignmentValidation::scaleXaxis(TH1* hist, Int_t scale)
@@ -1299,6 +1568,9 @@ void  PlotAlignmentValidation::setTitleStyle( TNamed &hist,const char* titleX, c
 
 
 //------------------------------------------------------------------------------
+/*! \fn 
+ *  \brief 
+ */
 void  PlotAlignmentValidation::setHistStyle( TH1& hist,const char* titleX, const char* titleY, int color)
 {
   std::stringstream title_Xaxis;
@@ -1355,7 +1627,6 @@ void  PlotAlignmentValidation::setHistStyle( TH1& hist,const char* titleX, const
 }
 
 //------------------------------------------------------------------------------
-
 std::string PlotAlignmentValidation::
 getSelectionForDMRPlot(int minHits, int subDetId, int direction, int layer)
 {
@@ -1385,6 +1656,7 @@ getVariableForDMRPlot(const std::string& histoname, const std::string& variable,
   return builder.str();
 }
 
+//------------------------------------------------------------------------------
 void PlotAlignmentValidation::
 setDMRHistStyleAndLegend(TH1F* h, PlotAlignmentValidation::DMRPlotInfo& plotinfo, int direction, int layer)
 {
@@ -1502,6 +1774,26 @@ setDMRHistStyleAndLegend(TH1F* h, PlotAlignmentValidation::DMRPlotInfo& plotinfo
       legend << ", ";
   }
 
+  if ((plotinfo.variable == "medianX" || plotinfo.variable == "medianY") && /*!plotinfo.plotLayers && */layer==0 && direction==0) {
+    vmean.push_back(mean);
+    vrms.push_back(rms);
+    vmeanerror.push_back(meanerror);
+  TH1F* ideal = (TH1F*)plotinfo.hstack->GetHists()->At(0);
+  TH1F* h = plotinfo.h;
+  if(h->GetRMS() >= ideal->GetRMS())
+  {
+  vAlignmentUncertainty.push_back(sqrt(pow(h->GetRMS(),2)-pow(ideal->GetRMS(),2)));
+  }
+  else{
+  vAlignmentUncertainty.push_back(nan(""));
+  }
+  float p = (float)resampleTestOfEqualMeans(ideal, h, 10000);
+  vPValueMeanEqualIdeal.push_back(p);
+  p=resampleTestOfEqualRMS(ideal, h, 10000);
+  vPValueRMSEqualIdeal.push_back(p);
+
+  }
+
   // Legend: Delta mu for split plots
   if (showdeltamu) {
     float factor = 10000.0f;
@@ -1513,6 +1805,15 @@ setDMRHistStyleAndLegend(TH1F* h, PlotAlignmentValidation::DMRPlotInfo& plotinfo
     legend << "#Delta#mu = " << deltamu << units;
     if ((showModules_ || showUnderOverFlow_) && !twolines_)
       legend << ", ";
+
+    if ((plotinfo.variable == "medianX" || plotinfo.variable == "medianY") && /*!plotinfo.plotLayers && */layer==0 && direction==0) {
+      vdeltamean.push_back(deltamu);
+      if(plotinfo.h1->GetEntries()&&plotinfo.h2->GetEntries()){
+          float p = (float)resampleTestOfEqualMeans(plotinfo.h1,plotinfo.h2, 10000);
+          vPValueEqualSplitMeans.push_back(p);
+          
+      }
+    }
   }
 
   if (twolines_) {
@@ -1539,18 +1840,32 @@ setDMRHistStyleAndLegend(TH1F* h, PlotAlignmentValidation::DMRPlotInfo& plotinfo
 
 }
 
+/*!
+ * \fn plotDMRHistogram 
+ * \brief Create the DMR histrogram using data stored in trees and store them in the plotinfo structure.
+ */
+
 void PlotAlignmentValidation::
-plotDMRHistogram(PlotAlignmentValidation::DMRPlotInfo& plotinfo, int direction, int layer)
+plotDMRHistogram(PlotAlignmentValidation::DMRPlotInfo& plotinfo, int direction, int layer, std::string subdet)
 {
   TH1F* h = 0;
-  std::string histoname;
-  if (direction == -1) { histoname = "myhisto1"; }
-  else if (direction == 1) { histoname = "myhisto2"; }
-  else { histoname = "myhisto"; }
-  std::string plotVariable = getVariableForDMRPlot(histoname, plotinfo.variable, plotinfo.nbins, plotinfo.min, plotinfo.max);
+  //Create a name for the histogram that summarize all relevant information: name of the geometry, variable plotted, structure, layer, and whether the modules considered point inward or outward.
+  TString histoname(plotinfo.vars->getName());
+  histoname.ReplaceAll(" ","_");
+  histoname+="_";  histoname+=subdet.c_str();
+  if (plotinfo.variable == "medianY")histoname+="_y";
+  if(layer!=0){
+    if(subdet=="TID"||subdet=="TEC")histoname+="_disc";
+    else histoname+="_layer";
+    histoname+=to_string(layer);
+  }
+  if (direction == -1) { histoname += "_minus"; }
+  else if (direction == 1) { histoname += "_plus"; }
+  else { histoname += ""; }
+  std::string plotVariable = getVariableForDMRPlot(histoname.Data(), plotinfo.variable, plotinfo.nbins, plotinfo.min, plotinfo.max);
   std::string selection = getSelectionForDMRPlot(plotinfo.minHits, plotinfo.subDetId, direction, layer);
   plotinfo.vars->getTree()->Draw(plotVariable.c_str(), selection.c_str(), "goff");
-  if (gDirectory) gDirectory->GetObject(histoname.c_str(), h);
+  if (gDirectory) gDirectory->GetObject(histoname.Data(), h);
   if (h && h->GetEntries() > 0) {
     if (direction == -1) { plotinfo.h1 = h; }
     else if (direction == 1) { plotinfo.h2 = h; }
@@ -1605,4 +1920,208 @@ void PlotAlignmentValidation::modifySSHistAndLegend(THStack* hs, TLegend* legend
 
   // Make some room for the legend
   hs->SetMaximum(hs->GetMaximum("nostack PE")*1.3);
+}
+
+
+//random variable: \sigma_{X_1}-\sigma_{X_2}-\delta_{RMS}
+//is centered approx around 0
+//null hypothesis: \delta_{RMS}=0
+//so \delta_\sigma is a realization of this random variable
+//how probable is it to get our value of \delta_\sigma?
+//->p-value
+double PlotAlignmentValidation::resampleTestOfEqualRMS(TH1F* h1, TH1F* h2, int numSamples){
+//vector to store realizations of random variable
+    vector<double> diff;
+    diff.clear();
+//"true" (in bootstrap terms) difference of the samples' RMS
+    double rmsdiff = abs(h1->GetRMS()-h2->GetRMS());
+//means of the samples to calculate RMS
+    double m1 = h1->GetMean();
+    double m2 = h2->GetMean();
+//realization of random variable
+    double d1 = 0;
+    double d2 = 0;
+//mean of random variable
+    double test_mean=0;
+    for(int i=0;i<numSamples;i++){
+        d1=0;
+        d2=0;
+        for(int i=0;i<h1->GetEntries();i++){
+            d1+=h1->GetRandom()-m1;
+        }
+        for(int i=0;i<h2->GetEntries();i++){
+            d2+=h2->GetRandom()+m2;
+        }
+        d1/=h1->GetEntries();
+        d2/=h2->GetEntries();
+        diff.push_back(abs(d1-d2-rmsdiff));
+        test_mean+=abs(d1-d2-rmsdiff);
+    }
+    test_mean/=numSamples;
+//p value
+    double p=0;
+    for(double d:diff){
+        if(d>rmsdiff){
+            p+=1;
+        }
+    }
+    
+    p/=numSamples;
+    return p;
+}
+
+
+
+//random variable: (\overline{X_1}-\mu_1)-(\overline{X_2}-\mu_2)
+//is centered approx around 0
+//null hypothesis: \mu_1-\mu_2=0
+//so \delta_\mu is a realization of this random variable
+//how probable is it to get our value of \delta_\mu?
+//->p-value
+double PlotAlignmentValidation::resampleTestOfEqualMeans(TH1F* h1, TH1F* h2, int numSamples){
+//vector to store realization of random variable
+    vector<double> diff;
+    diff.clear();
+//"true" (in bootstrap terms) difference of the samples' means
+    double meandiff = abs(h1->GetMean()-h2->GetMean());
+//realization of random variable
+    double d1 = 0;
+    double d2=0;
+//mean of random variable
+    double test_mean=0;
+    for(int i=0;i<numSamples;i++){
+        d1=0;
+        d2=0;
+        for(int i=0;i<h1->GetEntries();i++){
+            d1+=h1->GetRandom();
+        }
+        for(int i=0;i<h2->GetEntries();i++){
+            d2+=h2->GetRandom();
+        }
+        d1/=h1->GetEntries();
+        d2/=h2->GetEntries();
+        diff.push_back(abs(d1-d2-meandiff));
+        test_mean+=abs(d1-d2-meandiff);
+    }
+    test_mean/=numSamples;
+//p-value
+    double p=0;
+    for(double d:diff){
+        if(d>meandiff){
+            p+=1;
+        }
+    }
+    
+    p/=numSamples;
+    return p;
+}
+
+
+
+float PlotAlignmentValidation::twotailedStudentTTestEqualMean(float t, float v){
+return 2*(1-ROOT::Math::tdistribution_cdf(abs(t),v));
+}
+
+const TString PlotAlignmentValidation::summaryfilename = "OfflineValidationSummary";
+
+
+
+vector <TH1*>  PlotAlignmentValidation::findmodule (TFile* f, unsigned int moduleid){
+		
+		
+		//TFile *f = TFile::Open(filename, "READ");
+		TString histnamex;
+		TString histnamey;
+        //read necessary branch/folder
+        auto t = (TTree*)f->Get("TrackerOfflineValidationStandalone/TkOffVal");
+
+        TkOffTreeVariables *variables=0;
+        t->SetBranchAddress("TkOffTreeVariables", &variables);
+        unsigned int number_of_entries=t->GetEntries();
+        for (unsigned int i=0;i<number_of_entries;i++){
+                t->GetEntry(i);
+                 if (variables->moduleId==moduleid){
+                        histnamex=variables->histNameX;
+                        histnamey=variables->histNameY;
+						break;
+                        }
+        }
+		 
+	vector <TH1*> h;
+		
+        auto h1 = (TH1*)f->FindObjectAny(histnamex);
+	auto h2 = (TH1*)f->FindObjectAny(histnamey);
+        
+	h1->SetDirectory(0);
+	h2->SetDirectory(0);
+        
+	h.push_back(h1);
+	h.push_back(h2);
+		
+	return h;
+ }
+
+void PlotAlignmentValidation::residual_by_moduleID( unsigned int moduleid){
+	TCanvas *cx = new TCanvas("x_residual");
+	TCanvas *cy = new TCanvas("y_residual");
+	TLegend *legendx =new TLegend(0.55, 0.7, 1, 0.9);
+        TLegend *legendy =new TLegend(0.55, 0.7, 1, 0.9);
+	
+    	legendx->SetTextSize(0.016);
+	legendx->SetTextAlign(12);
+        legendy->SetTextSize(0.016);
+        legendy->SetTextAlign(12);
+
+	
+	
+	
+	for (auto it : sourceList) {
+		TFile* file = it->getFile();
+		int color = it->getLineColor();
+		int linestyle = it->getLineStyle();   //this you set by doing h->SetLineStyle(linestyle)
+		TString legendname = it->getName(); //this goes in the legend
+	    	vector<TH1*> hist = findmodule(file, moduleid);
+			
+		TString histnamex = legendname+" NEntries: "+to_string(int(hist[0]->GetEntries()));
+        	hist[0]->SetTitle(histnamex);
+        	hist[0]->SetStats(0);
+        	hist[0]->Rebin(50);
+        	hist[0]->SetBit(TH1::kNoTitle);
+        	hist[0]->SetLineColor(color);
+        	hist[0]->SetLineStyle(linestyle);
+        	cx->cd();
+		hist[0]->Draw("Same");
+		legendx->AddEntry(hist[0], histnamex, "l");
+				
+			
+		TString histnamey = legendname+" NEntries: "+to_string(int(hist[1]->GetEntries()));
+        	hist[1]->SetTitle(histnamey);
+        	hist[1]->SetStats(0);
+        	hist[1]->Rebin(50);
+        	hist[1]->SetBit(TH1::kNoTitle);
+        	hist[1]->SetLineColor(color);
+        	hist[1]->SetLineStyle(linestyle);
+        	cy->cd();
+		hist[1]->Draw("Same");
+		legendy->AddEntry(hist[1], histnamey, "l");
+	
+	}
+	
+	TString filenamex = "x_residual_"+to_string(moduleid);
+        TString filenamey = "y_residual_"+to_string(moduleid);
+        cx->cd();
+	legendx->Draw();
+        cx->SaveAs(outputDir + "/" +filenamex+".root");
+        cx->SaveAs(outputDir + "/" +filenamex+".pdf");
+        cx->SaveAs(outputDir + "/" +filenamex+".png");
+        cx->SaveAs(outputDir + "/" +filenamex+".eps");
+
+        cy->cd();
+	legendy->Draw();
+        cy->SaveAs(outputDir + "/" +filenamey+".root");
+        cy->SaveAs(outputDir + "/" +filenamey+".pdf");
+        cy->SaveAs(outputDir + "/" +filenamey+".png");
+        cy->SaveAs(outputDir + "/" +filenamey+".eps");
+	
+
 }

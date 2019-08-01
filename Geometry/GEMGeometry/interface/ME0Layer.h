@@ -12,13 +12,13 @@ public:
   ME0Layer(ME0DetId id, const ReferenceCountingPointer<BoundPlane>& plane);
 
   /// Destructor
-  virtual ~ME0Layer();
+  ~ME0Layer() override;
 
   /// Return the ME0DetId of this layer
   ME0DetId id() const;
 
   // Which subdetector
-  virtual SubDetector subDetector() const {return GeomDetEnumerators::ME0;}
+  SubDetector subDetector() const override { return GeomDetEnumerators::ME0; }
 
   /// equal if the id is the same
   bool operator==(const ME0Layer& ch) const;
@@ -27,16 +27,16 @@ public:
   void add(const ME0EtaPartition* roll);
 
   /// Return the rolls in the layer
-  virtual std::vector<const GeomDet*> components() const;
+  std::vector<const GeomDet*> components() const override;
 
   /// Return the sub-component (roll) with a given id in this layer
-  virtual const GeomDet* component(DetId id) const;
+  const GeomDet* component(DetId id) const override;
 
-  /// Return the eta partition corresponding to the given id 
+  /// Return the eta partition corresponding to the given id
   const ME0EtaPartition* etaPartition(ME0DetId id) const;
 
   const ME0EtaPartition* etaPartition(int isl) const;
-  
+
   /// Return the eta partitions
   const std::vector<const ME0EtaPartition*>& etaPartitions() const;
 
@@ -44,11 +44,9 @@ public:
   int nEtaPartitions() const;
 
 private:
-
   ME0DetId detId_;
 
   // vector of eta partitions for a layer
   std::vector<const ME0EtaPartition*> etaPartitions_;
-
 };
 #endif

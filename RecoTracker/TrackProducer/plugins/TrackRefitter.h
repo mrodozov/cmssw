@@ -13,19 +13,17 @@
 
 class TrackRefitter : public KfTrackProducerBase, public edm::stream::EDProducer<> {
 public:
-
   /// Constructor
   explicit TrackRefitter(const edm::ParameterSet& iConfig);
 
   /// Implementation of produce method
-  virtual void produce(edm::Event&, const edm::EventSetup&) override;
+  void produce(edm::Event&, const edm::EventSetup&) override;
 
 private:
   TrackProducerAlgorithm<reco::Track> theAlgo;
   enum Constraint { none, momentum, vertex, trackParameters };
   Constraint constraint_;
   edm::EDGetToken trkconstrcoll_;
-
 };
 
 #endif

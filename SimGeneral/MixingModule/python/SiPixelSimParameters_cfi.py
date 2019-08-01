@@ -20,7 +20,8 @@ def _modifyPixelDigitizerForPhase1Pixel( digitizer ) :
     digitizer.NumPixelEndcap = cms.int32(3)
     digitizer.ThresholdInElectrons_FPix = cms.double(2000.0)
     digitizer.ThresholdInElectrons_BPix = cms.double(2000.0)
-    digitizer.ThresholdInElectrons_BPix_L1 = cms.double(2000.0)
+    digitizer.ThresholdInElectrons_BPix_L1 = cms.double(3000.0)
+    digitizer.ThresholdInElectrons_BPix_L2 = cms.double(2600.0)
     digitizer.FPix_SignalResponse_p0 = cms.double(0.00171)
     digitizer.FPix_SignalResponse_p1 = cms.double(0.711)
     digitizer.FPix_SignalResponse_p2 = cms.double(203.)
@@ -29,9 +30,27 @@ def _modifyPixelDigitizerForPhase1Pixel( digitizer ) :
     digitizer.BPix_SignalResponse_p1 = cms.double(0.711)
     digitizer.BPix_SignalResponse_p2 = cms.double(203.)
     digitizer.BPix_SignalResponse_p3 = cms.double(148.)
+    # gains and offsets are ints in the Clusterizer, so round to the same value
+    digitizer.ElectronsPerVcal           = cms.double(47)   # L2-4: 47  +- 4.7
+    digitizer.ElectronsPerVcal_L1        = cms.double(50)   # L1:   49.6 +- 2.6
+    digitizer.ElectronsPerVcal_Offset    = cms.double(-60)  # L2-4: -60 +- 130
+    digitizer.ElectronsPerVcal_L1_Offset = cms.double(-670) # L1:   -670 +- 220
+    digitizer.UseReweighting = cms.bool(True)
+    digitizer.KillBadFEDChannels = cms.bool(True)
 
+def _modifyPixelDigitizerForRun3( digitizer ):
+
+    digitizer.ThresholdInElectrons_FPix = cms.double(1600.0)
+    digitizer.ThresholdInElectrons_BPix = cms.double(1600.0)
+    digitizer.ThresholdInElectrons_BPix_L1 = cms.double(1300.0)
+    digitizer.ThresholdInElectrons_BPix_L2 = cms.double(1600.0)
 
 SiPixelSimBlock = cms.PSet(
+    SiPixelQualityLabel = cms.string(''),
+    KillBadFEDChannels = cms.bool(False),
+    UseReweighting = cms.bool(False),
+    PrintClusters = cms.bool(False),
+    PrintTemplates = cms.bool(False),
     DoPixelAging = cms.bool(False),
     ReadoutNoiseInElec = cms.double(350.0),
     deltaProductionCut = cms.double(0.03),
@@ -44,10 +63,12 @@ SiPixelSimBlock = cms.PSet(
     ThresholdInElectrons_FPix = cms.double(3000.0), 
     ThresholdInElectrons_BPix = cms.double(3500.0),
     ThresholdInElectrons_BPix_L1 = cms.double(3500.0),
+    ThresholdInElectrons_BPix_L2 = cms.double(3500.0),
     AddThresholdSmearing = cms.bool(True),
     ThresholdSmearing_FPix = cms.double(210.0),
     ThresholdSmearing_BPix = cms.double(245.0),
     ThresholdSmearing_BPix_L1 = cms.double(245.0),
+    ThresholdSmearing_BPix_L2 = cms.double(245.0),
     NoiseInElectrons = cms.double(175.0),
     MissCalibrate = cms.bool(True),
     FPix_SignalResponse_p0 = cms.double(0.0043),
@@ -59,12 +80,12 @@ SiPixelSimBlock = cms.PSet(
     BPix_SignalResponse_p2 = cms.double(97.4),
     BPix_SignalResponse_p3 = cms.double(126.5),
     ElectronsPerVcal = cms.double(65.5),
+    ElectronsPerVcal_L1 = cms.double(65.5),
     ElectronsPerVcal_Offset = cms.double(-414.0),
+    ElectronsPerVcal_L1_Offset = cms.double(-414.0),
     ElectronPerAdc = cms.double(135.0),
     TofUpperCut = cms.double(12.5),
     AdcFullScale = cms.int32(255),
-    AdcFullScaleStack = cms.int32(255),
-    FirstStackLayer = cms.int32(5),
     TofLowerCut = cms.double(-12.5),
     TanLorentzAnglePerTesla_FPix = cms.double(0.106),
     TanLorentzAnglePerTesla_BPix = cms.double(0.106),
@@ -84,11 +105,36 @@ SiPixelSimBlock = cms.PSet(
 ###    DeadModules = cms.VPSet()
 )
 
+# activate charge reweighing for 2016 pixel detector (UL 2016)
+from Configuration.Eras.Modifier_pixel_2016_cff import pixel_2016
+pixel_2016.toModify(SiPixelSimBlock,UseReweighting=True)
+
 #
 # Apply the changes for the different Run 2 running scenarios
 #
 from Configuration.Eras.Modifier_phase1Pixel_cff import phase1Pixel
 phase1Pixel.toModify( SiPixelSimBlock, func=_modifyPixelDigitizerForPhase1Pixel )
+
+# use Label 'forDigitizer' for years >= 2018
+from CalibTracker.SiPixelESProducers.SiPixelQualityESProducer_cfi import siPixelQualityESProducer
+from Configuration.Eras.Modifier_run2_SiPixel_2018_cff import run2_SiPixel_2018
+run2_SiPixel_2018.toModify(siPixelQualityESProducer,siPixelQualityLabel = 'forDigitizer',)
+run2_SiPixel_2018.toModify(SiPixelSimBlock, SiPixelQualityLabel = 'forDigitizer',)
+
+# change the digitizer threshold for Run3
+# - new layer1 installed: expected improvement in timing alignment of L1 and L2
+# - update the rest of the detector to 1600e 
+
+from Configuration.Eras.Modifier_run3_common_cff import run3_common
+run3_common.toModify(SiPixelSimBlock, func=_modifyPixelDigitizerForRun3)
+
+from Configuration.ProcessModifiers.premix_stage1_cff import premix_stage1
+premix_stage1.toModify(SiPixelSimBlock,
+    AddNoise = True,
+    AddNoisyPixels = False,
+    AddPixelInefficiency = False, #done in second step
+    KillBadFEDChannels = False, #done in second step
+)
 
 # Threshold in electrons are the Official CRAFT09 numbers:
 # FPix(smearing)/BPix(smearing) = 2480(160)/2730(200)

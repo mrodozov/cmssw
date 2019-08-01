@@ -3,12 +3,14 @@ import sys
 import os
 import FWCore.ParameterSet.Config as cms
 
-process = cms.Process("electronPostValidation")
 
-process.options = cms.untracked.PSet( 
-#    SkipEvent = cms.untracked.vstring('ProductNotFound'),
-#    Rethrow = cms.untracked.vstring('ProductNotFound')
-)
+#process = cms.Process("electronValidation")
+#from Configuration.Eras.Era_Run2_2017_cff import Run2_2017
+#process = cms.Process("electronPostValidation",Run2_2017)
+from Configuration.Eras.Era_Phase2_cff import Phase2
+process = cms.Process('electronPostValidation',Phase2) 
+
+process.options = cms.untracked.PSet( )
 
 process.DQMStore = cms.Service("DQMStore")
 process.load("Validation.RecoEgamma.ElectronMcSignalPostValidatorMiniAOD_cfi")
@@ -40,9 +42,9 @@ process.electronMcSignalPostValidatorMiniAOD.InputFolderName = cms.string("Egamm
 process.electronMcSignalPostValidatorMiniAOD.OutputFolderName = cms.string("EgammaV/ElectronMcSignalValidatorMiniAOD")
 
 from Configuration.AlCa.autoCond import autoCond
-process.GlobalTag.globaltag = os.environ['TEST_GLOBAL_TAG']#+'::All'
-#process.GlobalTag.globaltag = '75X_mcRun2_asymptotic_Queue'
-#process.GlobalTag.globaltag = '75X_mcRun2_startup_Queue'
+#process.GlobalTag.globaltag = os.environ['TEST_GLOBAL_TAG']#+'::All'
+process.GlobalTag.globaltag = '93X_upgrade2023_realistic_v0'
+#process.GlobalTag.globaltag = '93X_mc2017_realistic_v1'
 
 process.dqmSaver.workflow = '/electronHistos/' + t1[1] + '/RECO3'
 process.dqmsave_step = cms.Path(process.DQMSaver)

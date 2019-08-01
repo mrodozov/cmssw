@@ -12,18 +12,15 @@
 #include "CLHEP/Random/RandFlat.h"
 #include "CLHEP/Random/RandGauss.h"
 
-
 class SiStripNoisesBuilder : public edm::EDAnalyzer {
+public:
+  explicit SiStripNoisesBuilder(const edm::ParameterSet& iConfig);
 
- public:
+  ~SiStripNoisesBuilder() override{};
 
-  explicit SiStripNoisesBuilder( const edm::ParameterSet& iConfig);
+  void analyze(const edm::Event&, const edm::EventSetup&) override;
 
-  ~SiStripNoisesBuilder(){};
-
-  virtual void analyze(const edm::Event& , const edm::EventSetup& );
-
- private:
+private:
   edm::FileInPath fp_;
   uint32_t printdebug_;
 };

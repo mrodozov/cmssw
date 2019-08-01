@@ -21,16 +21,16 @@ class GlobalCosmicMuonProducer : public edm::stream::EDProducer<> {
 public:
   explicit GlobalCosmicMuonProducer(const edm::ParameterSet&);
 
-   ~GlobalCosmicMuonProducer();
-  
-  virtual void produce(edm::Event&, const edm::EventSetup&) override;
+  ~GlobalCosmicMuonProducer() override;
+
+  void produce(edm::Event&, const edm::EventSetup&) override;
 
 private:
   edm::EDGetTokenT<reco::TrackCollection> theTrackCollectionToken;
   MuonTrackFinder* theTrackFinder;
 
   /// the event setup proxy, it takes care the services update
-  MuonServiceProxy *theService;
+  MuonServiceProxy* theService;
 };
 
 #endif

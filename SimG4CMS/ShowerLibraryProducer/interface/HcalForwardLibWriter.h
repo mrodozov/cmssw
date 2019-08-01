@@ -24,21 +24,20 @@
 #include "TFile.h"
 #include "TTree.h"
 
-
 class HcalForwardLibWriter : public edm::one::EDAnalyzer<> {
 public:
-  struct FileHandle{
+  struct FileHandle {
     std::string name;
     std::string id;
     int momentum;
   };
   explicit HcalForwardLibWriter(const edm::ParameterSet&);
-  ~HcalForwardLibWriter();
+  ~HcalForwardLibWriter() override;
 
 private:
-  virtual void beginJob() ;
-  virtual void analyze(const edm::Event&, const edm::EventSetup&);
-  virtual void endJob() ;
+  void beginJob() override;
+  void analyze(const edm::Event&, const edm::EventSetup&) override;
+  void endJob() override;
   int readUserData();
   int nbins;
   int nshowers;
@@ -55,6 +54,5 @@ private:
   HFShowerLibraryEventInfo evtInfo;
   HFShowerPhotonCollection emColl;
   HFShowerPhotonCollection hadColl;
-
 };
 #endif

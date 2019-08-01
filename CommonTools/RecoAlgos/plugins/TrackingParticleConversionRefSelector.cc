@@ -9,32 +9,32 @@
 #include "SimDataFormats/TrackingAnalysis/interface/TrackingParticle.h"
 #include "SimDataFormats/TrackingAnalysis/interface/TrackingParticleFwd.h"
 
-class TrackingParticleConversionRefSelector: public edm::global::EDProducer<> {
+class TrackingParticleConversionRefSelector : public edm::global::EDProducer<> {
 public:
   TrackingParticleConversionRefSelector(const edm::ParameterSet& iConfig);
 
   static void fillDescriptions(edm::ConfigurationDescriptions& descriptions);
 
-  virtual void produce(edm::StreamID, edm::Event& iEvent, const edm::EventSetup& iSetup) const override;
+  void produce(edm::StreamID, edm::Event& iEvent, const edm::EventSetup& iSetup) const override;
 
 private:
   edm::EDGetTokenT<TrackingParticleCollection> tpToken_;
 };
 
-
-TrackingParticleConversionRefSelector::TrackingParticleConversionRefSelector(const edm::ParameterSet& iConfig):
-  tpToken_(consumes<TrackingParticleCollection>(iConfig.getParameter<edm::InputTag>("src")))
-{
+TrackingParticleConversionRefSelector::TrackingParticleConversionRefSelector(const edm::ParameterSet& iConfig)
+    : tpToken_(consumes<TrackingParticleCollection>(iConfig.getParameter<edm::InputTag>("src"))) {
   produces<TrackingParticleRefVector>();
 }
 
 void TrackingParticleConversionRefSelector::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
   edm::ParameterSetDescription desc;
   desc.add<edm::InputTag>("src", edm::InputTag("mix", "MergedTrackTruth"));
-  descriptions.add("trackingParticleConversionRefSelector", desc);
+  descriptions.add("trackingParticleConversionRefSelectorDefault", desc);
 }
 
-void TrackingParticleConversionRefSelector::produce(edm::StreamID, edm::Event& iEvent, const edm::EventSetup& iSetup) const {
+void TrackingParticleConversionRefSelector::produce(edm::StreamID,
+                                                    edm::Event& iEvent,
+                                                    const edm::EventSetup& iSetup) const {
   edm::Handle<TrackingParticleCollection> h_tps;
   iEvent.getByToken(tpToken_, h_tps);
 
@@ -43,11 +43,11 @@ void TrackingParticleConversionRefSelector::produce(edm::StreamID, edm::Event& i
   // Logic is similar to Validation/RecoEgamma/plugins/PhotonValidator.cc
   // and RecoEgamma/EgammaMCTools/src/PhotonMCTruthFinder.cc,
   // but implemented purely in terms of TrackingParticles (simpler and works for pileup too)
-  for(const auto& tp: *h_tps) {
-    if(tp.pdgId() == 22) {
-      for(const auto& vertRef: tp.decayVertices()) {
-        for(const auto& tpRef: vertRef->daughterTracks()) {
-          if(std::abs(tpRef->pdgId()) == 11) {
+  for (const auto& tp : *h_tps) {
+    if (tp.pdgId() == 22) {
+      for (const auto& vertRef : tp.decayVertices()) {
+        for (const auto& tpRef : vertRef->daughterTracks()) {
+          if (std::abs(tpRef->pdgId()) == 11) {
             ret->push_back(tpRef);
           }
         }

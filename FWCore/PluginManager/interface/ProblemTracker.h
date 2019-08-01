@@ -13,29 +13,27 @@ occur, good state information can be printed.
 
 **/
 
-namespace edm
-{
-  class ProblemTracker
-  {
+namespace edm {
+  class ProblemTracker {
   public:
     static ProblemTracker const* instance();
 
   private:
     ProblemTracker();
     ~ProblemTracker();
-    ProblemTracker(const ProblemTracker&);
+    ProblemTracker(const ProblemTracker&) = delete;
   };
 
-  class AssertHandler
-  {
+  class AssertHandler {
   public:
     AssertHandler();
     ~AssertHandler();
+
   private:
-    AssertHandler(const AssertHandler&);
+    AssertHandler(const AssertHandler&) = delete;
     ProblemTracker const* pt_;
   };
 
-}
+}  // namespace edm
 
 #endif

@@ -1,5 +1,8 @@
 import FWCore.ParameterSet.Config as cms
 
+#to resolve the refToPSet_
+from TrackingTools.TrajectoryFiltering.TrajectoryFilter_cff import CkfBaseTrajectoryFilter_block
+
 GroupedCkfTrajectoryBuilder = cms.PSet(
     ComponentType = cms.string('GroupedCkfTrajectoryBuilder'),
     bestHitOnly = cms.bool(True),
@@ -34,7 +37,8 @@ GroupedCkfTrajectoryBuilder = cms.PSet(
 #    propagatorOpposite = cms.string('PropagatorWithMaterialParabolicMfOpposite'),
     # Out-in tracking will not be attempted unless this many hits
     # are on track after in-out tracking phase.
-    minNrOfHitsForRebuild = cms.int32(5)
+    minNrOfHitsForRebuild = cms.int32(5),
+    seedAs5DHit  = cms.bool(False)
 )
 
 

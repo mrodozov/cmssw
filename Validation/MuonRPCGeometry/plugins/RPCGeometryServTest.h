@@ -26,20 +26,17 @@
 #include <iomanip>
 #include <set>
 
-
 class RPCGeometryServTest : public edm::EDAnalyzer {
+public:
+  RPCGeometryServTest(const edm::ParameterSet& pset);
 
- public: 
-  RPCGeometryServTest( const edm::ParameterSet& pset);
+  ~RPCGeometryServTest() override;
 
-  ~RPCGeometryServTest();
+  void analyze(const edm::Event&, const edm::EventSetup&) override;
 
-  virtual void analyze( const edm::Event&, const edm::EventSetup& );
- 
-  const std::string& myName() { return myName_;}
+  const std::string& myName() { return myName_; }
 
- private: 
-
+private:
   const int dashedLineWidth_;
   const std::string dashedLine_;
   const std::string myName_;
@@ -47,5 +44,3 @@ class RPCGeometryServTest : public edm::EDAnalyzer {
   std::map<int, std::pair<double, double> > forRranges;
   std::map<int, std::pair<double, double> > bacRranges;
 };
-
-

@@ -1,5 +1,8 @@
 import FWCore.ParameterSet.Config as cms
 
+#to resolve the refToPSet_
+from TrackingTools.TrajectoryFiltering.TrajectoryFilter_cff import CkfBaseTrajectoryFilter_block
+
 CkfTrajectoryBuilder = cms.PSet(
     ComponentType = cms.string('CkfTrajectoryBuilder'),
     propagatorAlong = cms.string('PropagatorWithMaterial'),
@@ -15,8 +18,8 @@ CkfTrajectoryBuilder = cms.PSet(
     propagatorOpposite = cms.string('PropagatorWithMaterialOpposite'),
 #    propagatorOpposite = cms.string('PropagatorWithMaterialParabolicMfOpposite'),
     lostHitPenalty = cms.double(30.0),
-    #SharedSeedCheck = cms.bool(False)
-    produceSeedStopReasons = cms.bool(False), # useful only for ntuple/debugging
+    #SharedSeedCheck = cms.bool(False),
+    seedAs5DHit  = cms.bool(False)
 )
 
 

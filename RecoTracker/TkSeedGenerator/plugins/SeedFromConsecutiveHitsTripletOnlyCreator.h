@@ -5,23 +5,16 @@
 
 class dso_hidden SeedFromConsecutiveHitsTripletOnlyCreator final : public SeedFromConsecutiveHitsCreator {
 public:
-
-  SeedFromConsecutiveHitsTripletOnlyCreator( const edm::ParameterSet & cfg):
-    SeedFromConsecutiveHitsCreator(cfg) { }
+  SeedFromConsecutiveHitsTripletOnlyCreator(const edm::ParameterSet& cfg) : SeedFromConsecutiveHitsCreator(cfg) {}
 
   static void fillDescriptions(edm::ParameterSetDescription& desc) {
     SeedFromConsecutiveHitsCreator::fillDescriptions(desc);
   }
-  static const char *fillDescriptionsLabel() { return "ConsecutiveHitsTripletOnly"; }
+  static const char* fillDescriptionsLabel() { return "ConsecutiveHitsTripletOnly"; }
 
-  virtual ~SeedFromConsecutiveHitsTripletOnlyCreator(){}
+  ~SeedFromConsecutiveHitsTripletOnlyCreator() override {}
 
 private:
-
-  virtual bool initialKinematic(GlobalTrajectoryParameters & kine,
-				const SeedingHitSet & hits) const;
- 
-
+  bool initialKinematic(GlobalTrajectoryParameters& kine, const SeedingHitSet& hits) const override;
 };
 #endif
-

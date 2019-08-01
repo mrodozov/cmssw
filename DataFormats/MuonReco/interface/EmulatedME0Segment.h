@@ -15,62 +15,62 @@
 #include <iosfwd>
 
 class EmulatedME0Segment : public RecSegment {
-
 public:
+  /// Default constructor
+  EmulatedME0Segment() : theOrigin(0, 0, 0), theLocalDirection(0, 0, 0), theCovMatrix(4, 0), theChi2(0.) {}
 
-    /// Default constructor
- EmulatedME0Segment() : theOrigin(0,0,0), theLocalDirection(0,0,0), theCovMatrix(4,0),theChi2(0.) {}
-	
-    /// Constructor
-    EmulatedME0Segment(const LocalPoint& origin, const LocalVector& direction, const AlgebraicSymMatrix& errors, const double chi2);
-  
-    /// Destructor
-    virtual ~EmulatedME0Segment();
+  /// Constructor
+  EmulatedME0Segment(const LocalPoint& origin,
+                     const LocalVector& direction,
+                     const AlgebraicSymMatrix& errors,
+                     const double chi2);
 
-    //--- Base class interface
-    EmulatedME0Segment* clone() const { return new EmulatedME0Segment(*this); }
+  /// Destructor
+  ~EmulatedME0Segment() override;
 
-    virtual LocalPoint localPosition() const { return theOrigin; }
-    LocalError localPositionError() const ;
-	
-    LocalVector localDirection() const { return theLocalDirection; }
-    LocalError localDirectionError() const ;
+  //--- Base class interface
+  EmulatedME0Segment* clone() const override { return new EmulatedME0Segment(*this); }
 
-    /// Parameters of the segment, for the track fit in the order (dx/dz, dy/dz, x, y )
-    AlgebraicVector parameters() const;
+  LocalPoint localPosition() const override { return theOrigin; }
+  LocalError localPositionError() const override;
 
-    /// Covariance matrix of parameters()
-    virtual AlgebraicSymMatrix parametersError() const { return theCovMatrix; }
+  LocalVector localDirection() const override { return theLocalDirection; }
+  LocalError localDirectionError() const override;
 
-    /// The projection matrix relates the trajectory state parameters to the segment parameters(). 
-    AlgebraicMatrix projectionMatrix() const;
+  /// Parameters of the segment, for the track fit in the order (dx/dz, dy/dz, x, y )
+  AlgebraicVector parameters() const override;
 
-    virtual std::vector<const TrackingRecHit*> recHits() const {return std::vector<const TrackingRecHit*> (); }
+  /// Covariance matrix of parameters()
+  AlgebraicSymMatrix parametersError() const override { return theCovMatrix; }
 
-    virtual std::vector<TrackingRecHit*> recHits() {return std::vector<TrackingRecHit*>();}
+  /// The projection matrix relates the trajectory state parameters to the segment parameters().
+  AlgebraicMatrix projectionMatrix() const override;
 
-    virtual double chi2() const { return theChi2; }
+  std::vector<const TrackingRecHit*> recHits() const override { return std::vector<const TrackingRecHit*>(); }
 
-    virtual int dimension() const { return 4; }
+  std::vector<TrackingRecHit*> recHits() override { return std::vector<TrackingRecHit*>(); }
 
-    virtual int degreesOfFreedom() const { return -1;}	 //Maybe  change later?
+  double chi2() const override { return theChi2; }
 
-    //--- Extension of the interface
-        
-    int nRecHits() const { return 0;}  //theME0RecHits.size(); }        
+  int dimension() const override { return 4; }
 
-    void print() const;		
-    
- private:
-    
-    //std::vector<ME0RecHit2D> theME0RecHits;
-    //  CAVEAT: these "Local" paramaters will in fact be filled by global coordinates
-    LocalPoint theOrigin;   // in chamber frame - the GeomDet local coordinate system
-    LocalVector theLocalDirection; // in chamber frame - the GeomDet local coordinate system
-    AlgebraicSymMatrix theCovMatrix; // the covariance matrix
-    double theChi2;
+  int degreesOfFreedom() const override { return -1; }  //Maybe  change later?
+
+  //--- Extension of the interface
+
+  int nRecHits() const { return 0; }  //theME0RecHits.size(); }
+
+  void print() const;
+
+private:
+  //std::vector<ME0RecHit2D> theME0RecHits;
+  //  CAVEAT: these "Local" paramaters will in fact be filled by global coordinates
+  LocalPoint theOrigin;             // in chamber frame - the GeomDet local coordinate system
+  LocalVector theLocalDirection;    // in chamber frame - the GeomDet local coordinate system
+  AlgebraicSymMatrix theCovMatrix;  // the covariance matrix
+  double theChi2;
 };
 
 std::ostream& operator<<(std::ostream& os, const EmulatedME0Segment& seg);
 
-#endif // ME0RecHit_EmulatedME0Segment_h
+#endif  // ME0RecHit_EmulatedME0Segment_h

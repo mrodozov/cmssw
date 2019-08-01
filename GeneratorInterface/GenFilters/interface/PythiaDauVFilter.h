@@ -4,7 +4,7 @@
 //
 // Package:    PythiaDauVFilter
 // Class:      PythiaDauVFilter
-// 
+//
 /**\class PythiaDauVFilter PythiaDauVFilter.cc 
 
  Description: Filter events using MotherId and ChildrenIds infos
@@ -18,19 +18,19 @@
 //
 //
 
-
 // system include files
 #include <memory>
 
 // user include files
 #include "FWCore/Framework/interface/Frameworkfwd.h"
-#include "FWCore/Framework/interface/EDFilter.h"
+#include "FWCore/Framework/interface/global/EDFilter.h"
 
 #include "FWCore/Framework/interface/Event.h"
 #include "FWCore/Framework/interface/MakerMacros.h"
 
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 
+#include "Pythia8/Pythia.h"
 
 //
 // class decleration
@@ -39,28 +39,25 @@ namespace edm {
   class HepMCProduct;
 }
 
-class PythiaDauVFilter : public edm::EDFilter {
- public:
+class PythiaDauVFilter : public edm::global::EDFilter<> {
+public:
   explicit PythiaDauVFilter(const edm::ParameterSet&);
-  ~PythiaDauVFilter();
-  
-  
-  virtual bool filter(edm::Event&, const edm::EventSetup&);
- private:
-  int fVerbose;  
-  edm::EDGetTokenT<edm::HepMCProduct> token_;
+  ~PythiaDauVFilter() override;
+
+  bool filter(edm::StreamID, edm::Event&, const edm::EventSetup&) const override;
+
+private:
+  const int fVerbose;
+  const edm::EDGetTokenT<edm::HepMCProduct> token_;
   std::vector<int> dauIDs;
-  int particleID;
-  int motherID;
-  bool chargeconju; 
-  int ndaughters;
+  const int particleID;
+  const int motherID;
+  const bool chargeconju;
+  const int ndaughters;
   std::vector<double> minptcut;
-  double maxptcut;
+  const double maxptcut;
   std::vector<double> minetacut;
   std::vector<double> maxetacut;
+  std::unique_ptr<Pythia8::Pythia> fLookupGen;  // this instance is for accessing particleData information
 };
-#define PYCOMP pycomp_
-extern "C" {
-  int PYCOMP(int& ip);
-} 
 #endif

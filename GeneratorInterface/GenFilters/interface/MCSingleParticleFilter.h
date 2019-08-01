@@ -4,7 +4,7 @@
 //
 // Package:    MCSingleParticleFilter
 // Class:      MCSingleParticleFilter
-// 
+//
 /* 
 
  Description: filter events based on the Pythia particleID and the Pt_hat
@@ -18,19 +18,17 @@
 //
 //
 
-
 // system include files
 #include <memory>
 
 // user include files
 #include "FWCore/Framework/interface/Frameworkfwd.h"
-#include "FWCore/Framework/interface/EDFilter.h"
+#include "FWCore/Framework/interface/global/EDFilter.h"
 
 #include "FWCore/Framework/interface/Event.h"
 #include "FWCore/Framework/interface/MakerMacros.h"
 
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
-
 
 //
 // class decleration
@@ -39,21 +37,23 @@ namespace edm {
   class HepMCProduct;
 }
 
-class MCSingleParticleFilter : public edm::EDFilter {
-   public:
-      explicit MCSingleParticleFilter(const edm::ParameterSet&);
-      ~MCSingleParticleFilter();
+class MCSingleParticleFilter : public edm::global::EDFilter<> {
+public:
+  explicit MCSingleParticleFilter(const edm::ParameterSet&);
+  ~MCSingleParticleFilter() override;
 
+  bool filter(edm::StreamID, edm::Event&, const edm::EventSetup&) const override;
 
-      virtual bool filter(edm::Event&, const edm::EventSetup&);
-   private:
-      // ----------member data ---------------------------
-      
-       edm::EDGetTokenT<edm::HepMCProduct> token_;
-       std::vector<int> particleID;  
-       std::vector<double> ptMin;
-       std::vector<double> etaMin;  
-       std::vector<double> etaMax;
-       std::vector<int> status;
+private:
+  // ----------memeber function----------------------
+  // ----------member data ---------------------------
+
+  const edm::EDGetTokenT<edm::HepMCProduct> token_;
+  std::vector<int> particleID;
+  std::vector<double> ptMin;
+  std::vector<double> etaMin;
+  std::vector<double> etaMax;
+  std::vector<int> status;
+  const double betaBoost;
 };
 #endif

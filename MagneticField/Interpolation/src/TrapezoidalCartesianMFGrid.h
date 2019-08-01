@@ -18,24 +18,20 @@ class binary_ifstream;
 
 class dso_internal TrapezoidalCartesianMFGrid : public MFGrid3D {
 public:
+  TrapezoidalCartesianMFGrid(binary_ifstream& istr, const GloballyPositioned<float>& vol);
 
-  TrapezoidalCartesianMFGrid( binary_ifstream& istr, 
-			      const GloballyPositioned<float>& vol);
+  LocalVector uncheckedValueInTesla(const LocalPoint& p) const override;
 
-  virtual LocalVector uncheckedValueInTesla( const LocalPoint& p) const;
+  void dump() const override;
 
-  void dump() const;
+  void toGridFrame(const LocalPoint& p, double& a, double& b, double& c) const override;
 
-  virtual void toGridFrame( const LocalPoint& p, double& a, double& b, double& c) const;
-
-  virtual LocalPoint fromGridFrame( double a, double b, double c) const;
+  LocalPoint fromGridFrame(double a, double b, double c) const override;
 
 private:
-
   Trapezoid2RectangleMappingX mapping_;
   bool increasingAlongX;
   bool convertToLocal;
-  
 };
 
 #endif

@@ -36,40 +36,33 @@
 #include "DQM/HcalTasks/interface/RecoRunSummary.h"
 #include "DQM/HcalTasks/interface/TPRunSummary.h"
 
-class HcalOfflineHarvesting : public hcaldqm::DQHarvester
-{
-	public:
-		HcalOfflineHarvesting(edm::ParameterSet const&);
-		virtual ~HcalOfflineHarvesting(){}
+class HcalOfflineHarvesting : public hcaldqm::DQHarvester {
+public:
+  HcalOfflineHarvesting(edm::ParameterSet const &);
+  ~HcalOfflineHarvesting() override {}
 
-		virtual void beginRun(edm::Run const&,
-			edm::EventSetup const&);
+  void beginRun(edm::Run const &, edm::EventSetup const &) override;
 
-	protected:
-		virtual void _dqmEndLuminosityBlock(DQMStore::IBooker&,
-			DQMStore::IGetter&, edm::LuminosityBlock const&,
-			edm::EventSetup const&);
-		virtual void _dqmEndJob(DQMStore::IBooker&,
-			DQMStore::IGetter&);
+protected:
+  void _dqmEndLuminosityBlock(DQMStore::IBooker &,
+                              DQMStore::IGetter &,
+                              edm::LuminosityBlock const &,
+                              edm::EventSetup const &) override;
+  void _dqmEndJob(DQMStore::IBooker &, DQMStore::IGetter &) override;
 
-		enum Summary
-		{
-			fRaw=0,
-			fDigi=1,
-			fReco=2,
-			fTP=3,
-			nSummary=4
-		};
+  enum Summary { fRaw = 0, fDigi = 1, fReco = 2, fTP = 3, nSummary = 4 };
 
-		//	vector of Summary Generators and marks of being present
-		//	by default all false
-		std::vector<hcaldqm::DQClient*> _vsumgen;
-		std::vector<bool> _vmarks;
-		std::vector<std::string> _vnames;
-		
-		//	reportSummaryMap
-		MonitorElement *_reportSummaryMap;
-		MonitorElement *me;
+  std::vector<Summary> _summaryList;
+
+  //	vector of Summary Generators and marks of being present
+  //	by default all false
+  std::map<Summary, hcaldqm::DQClient *> _sumgen;
+  std::map<Summary, bool> _summarks;
+  std::map<Summary, std::string> _sumnames;
+
+  //	reportSummaryMap
+  MonitorElement *_reportSummaryMap;
+  MonitorElement *me;
 };
 
 #endif

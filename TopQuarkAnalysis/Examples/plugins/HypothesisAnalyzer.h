@@ -9,17 +9,14 @@
 #include "AnalysisDataFormats/TopObjects/interface/TtSemiLeptonicEvent.h"
 
 class HypothesisAnalyzer : public edm::EDAnalyzer {
-
- public:
-
+public:
   explicit HypothesisAnalyzer(const edm::ParameterSet&);
-  ~HypothesisAnalyzer(){};
+  ~HypothesisAnalyzer() override{};
 
- private:
-
-  virtual void beginJob() ;
-  virtual void analyze(const edm::Event&, const edm::EventSetup&);
-  virtual void endJob();
+private:
+  void beginJob() override;
+  void analyze(const edm::Event&, const edm::EventSetup&) override;
+  void endJob() override;
 
   const edm::EDGetTokenT<TtSemiLeptonicEvent> semiLepEvtToken_;
   const std::string hypoClassKey_;
@@ -67,7 +64,6 @@ class HypothesisAnalyzer : public edm::EDAnalyzer {
 
   TH2F* genMatchDrVsHadTopPullMass_;
   TH2F* kinFitProbVsHadTopPullMass_;
-
 };
 
 #endif

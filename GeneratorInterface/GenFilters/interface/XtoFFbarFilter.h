@@ -30,26 +30,22 @@
 class XtoFFbarFilter : public edm::EDFilter {
 public:
   XtoFFbarFilter(const edm::ParameterSet&);
-  ~XtoFFbarFilter() {}
-  
-  virtual bool filter(edm::Event& iEvent, const edm::EventSetup& iSetup);
-  
+  ~XtoFFbarFilter() override {}
+
+  bool filter(edm::Event& iEvent, const edm::EventSetup& iSetup) override;
+
 private:
-  
   // Check if given integer is present in vector.
-  bool found(const std::vector<int>& v, int j) {
-    return std::find(v.begin(), v.end(), j) != v.end();
-  }
-  
-  // Check if given particle is X-->f fbar
-  bool foundXtoFFbar(const reco::GenParticleRef& moth, 
-                     const std::vector<int>& idMotherX,
-		     const std::vector<int>& idDaughterF);
+  bool found(const std::vector<int>& v, int j) { return std::find(v.begin(), v.end(), j) != v.end(); }
 
-  virtual void endJob();
+  // Check if given particle is X-->f fbar
+  bool foundXtoFFbar(const reco::GenParticleRef& moth,
+                     const std::vector<int>& idMotherX,
+                     const std::vector<int>& idDaughterF);
+
+  void endJob() override;
 
 private:
-
   edm::InputTag src_;
   std::vector<int> idMotherX_;
   std::vector<int> idDaughterF_;

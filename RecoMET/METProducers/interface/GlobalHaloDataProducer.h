@@ -4,10 +4,9 @@
 /*
   [class]:GlobalHaloDataProducer
   [authors]: R. Remington, The University of Florida
-  [description]: EDProducer which runs the GlobalHaloAlgo and stores the GlobalHaloData object to the event. 
+  [description]: EDProducer which runs the GlobalHaloAlgo and stores the GlobalHaloData object to the event.
   [date]: October 15, 2009
-*/  
-
+*/
 
 //Standard C++ classes
 #include <iostream>
@@ -79,7 +78,7 @@
 #include "DataFormats/EgammaCandidates/interface/PhotonFwd.h"
 #include "DataFormats/HcalDetId/interface/HcalDetId.h"
 #include "DataFormats/HcalDetId/interface/HcalSubdetector.h"
-#include "DataFormats/HepMCCandidate/interface/PdfInfo.h" 
+#include "DataFormats/HepMCCandidate/interface/PdfInfo.h"
 #include "DataFormats/GeometrySurface/interface/Cylinder.h"
 #include "DataFormats/GeometrySurface/interface/Plane.h"
 #include "DataFormats/GeometrySurface/interface/Cone.h"
@@ -163,7 +162,6 @@
 
 #include "L1Trigger/CSCTrackFinder/interface/CSCSectorReceiverLUT.h"
 #include "L1Trigger/CSCTrackFinder/interface/CSCSectorReceiverLUT.h"
-#include "L1Trigger/CSCCommonTrigger/interface/CSCTriggerGeometry.h"
 #include "MagneticField/Records/interface/IdealMagneticFieldRecord.h"
 #include "MagneticField/Engine/interface/MagneticField.h"
 
@@ -177,18 +175,15 @@
 #include "TrackPropagation/SteppingHelixPropagator/interface/SteppingHelixPropagator.h"
 #include "TrackingTools/TransientTrack/interface/TransientTrack.h"
 
-namespace reco
-{
+namespace reco {
   class GlobalHaloDataProducer : public edm::stream::EDProducer<> {
-    
   public:
     explicit GlobalHaloDataProducer(const edm::ParameterSet&);
-    ~GlobalHaloDataProducer();
-    
+    ~GlobalHaloDataProducer() override;
+
   private:
-    
-    virtual void produce(edm::Event&, const edm::EventSetup&) override;
-    
+    void produce(edm::Event&, const edm::EventSetup&) override;
+
     GlobalHaloAlgo GlobalAlgo;
 
     edm::InputTag IT_CaloTower;
@@ -211,14 +206,13 @@ namespace reco
     edm::EDGetTokenT<HcalHaloData> hcalhalo_token_;
 
     float EcalMinMatchingRadius;
-    float  EcalMaxMatchingRadius;
+    float EcalMaxMatchingRadius;
     float HcalMinMatchingRadius;
     float HcalMaxMatchingRadius;
     float CaloTowerEtThreshold;
 
     bool ishlt;
   };
-}
+}  // namespace reco
 
 #endif
-  

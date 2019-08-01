@@ -20,39 +20,36 @@
 #include <boost/cstdint.hpp>
 
 class DTDDUFileReader : public edm::EDProducer {
- public:
+public:
   /// Constructor
   DTDDUFileReader(const edm::ParameterSet& pset);
 
   /// Destructor
-  virtual ~DTDDUFileReader();
+  ~DTDDUFileReader() override;
 
   /// Generate and fill FED raw data for a full event
   virtual int fillRawData(edm::Event& e,
-//			  edm::Timestamp& tstamp, 
-			  FEDRawDataCollection*& data);
+                          //			  edm::Timestamp& tstamp,
+                          FEDRawDataCollection*& data);
 
-  virtual void produce(edm::Event&, edm::EventSetup const&);
+  void produce(edm::Event&, edm::EventSetup const&) override;
 
   /// check for a 64 bits word to be a DDU header
   bool isHeader(uint64_t word, bool dataTag);
 
   /// check for a 64 bits word to be a DDU trailer
-  bool isTrailer(uint64_t word, bool dataTag, int wordCount);
+  bool isTrailer(uint64_t word, bool dataTag, unsigned int wordCount);
 
   /// pre-unpack the data if read via DMA
   //  std::pair<uint64_t,bool> dmaUnpack();
-  uint64_t dmaUnpack(bool & isData, int & nread);
-
+  uint64_t dmaUnpack(bool& isData, int& nread);
 
   /// swapping the lsBits with the msBits
-  void swap(uint64_t & word);
- 
+  void swap(uint64_t& word);
 
   virtual bool checkEndOfFile();
 
- private:
-
+private:
   RawFile inputFile;
 
   edm::RunNumber_t runNumber;
@@ -65,9 +62,5 @@ class DTDDUFileReader : public edm::EDProducer {
   int numberOfHeaderWords;
 
   static const int dduWordLength = 8;
-
 };
 #endif
-
-
-

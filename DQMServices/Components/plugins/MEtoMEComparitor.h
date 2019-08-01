@@ -2,7 +2,7 @@
 //
 // Package:    MEtoMEComparitor
 // Class:      MEtoMEComparitor
-// 
+//
 /**\class MEtoMEComparitor MEtoMEComparitor.cc DQMOffline/MEtoMEComparitor/src/MEtoMEComparitor.cc
 
  Description: [one line class summary]
@@ -15,7 +15,6 @@
 //         Created:  Tue Nov 30 18:55:50 CET 2010
 //
 //
-
 
 // system include files
 #include <memory>
@@ -33,13 +32,11 @@
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 
 #include "DataFormats/Common/interface/Handle.h"
-#include "DataFormats/Histograms/interface/MEtoEDMFormat.h"
 
 #include "FWCore/ServiceRegistry/interface/Service.h"
 #include "DQMServices/Core/interface/DQMStore.h"
 
 #include "FWCore/MessageLogger/interface/MessageLogger.h"
-
 
 #include <TH1F.h>
 #include <TH1D.h>
@@ -49,26 +46,31 @@
 //
 
 class MEtoMEComparitor : public edm::EDAnalyzer {
-   public:
-      explicit MEtoMEComparitor(const edm::ParameterSet&);
-      ~MEtoMEComparitor();
+  typedef dqm::legacy::DQMStore DQMStore;
+  typedef dqm::legacy::MonitorElement MonitorElement;
 
+public:
+  explicit MEtoMEComparitor(const edm::ParameterSet&);
+  ~MEtoMEComparitor() override;
 
-   private:
-      virtual void beginJob() ;
-      virtual void analyze(const edm::Event&, const edm::EventSetup&){}
-      virtual void beginRun(const edm::Run& iRun, const edm::EventSetup& iSetup);
-      virtual void endRun(const edm::Run& iRun, const edm::EventSetup& iSetup);
-      virtual void endLuminosityBlock(const edm::LuminosityBlock&, const edm::EventSetup&);
-      virtual void endJob() ;
+private:
+  void beginJob() override;
+  void analyze(const edm::Event&, const edm::EventSetup&) override {}
+  void beginRun(const edm::Run& iRun, const edm::EventSetup& iSetup) override;
+  void endRun(const edm::Run& iRun, const edm::EventSetup& iSetup) override;
+  void endLuminosityBlock(const edm::LuminosityBlock&, const edm::EventSetup&) override;
+  void endJob() override;
 
-  template <class W,class T> void compare(const W& where,const std::string & instance);
-  template <class T> void book(const std::string & directory,const std::string & type, const T * h);
-  template <class T> void keepBadHistograms(const std::string & directory, const T * h_new, const T * h_ref);
+  template <class W, class T>
+  void compare(const W& where, const std::string& instance);
+  template <class T>
+  void book(const std::string& directory, const std::string& type, const T* h);
+  template <class T>
+  void keepBadHistograms(const std::string& directory, const T* h_new, const T* h_ref);
 
-  DQMStore * _dbe;
+  DQMStore* _dbe;
   std::string _moduleLabel;
-  
+
   std::string _lumiInstance;
   std::string _runInstance;
 
@@ -80,5 +82,4 @@ class MEtoMEComparitor : public edm::EDAnalyzer {
   double _diffgoodness;
   unsigned int _dirDepth;
   double _overallgoodness;
-
 };

@@ -3,9 +3,10 @@
 
 #include <memory>
 #include "RecoLocalCalo/HcalRecAlgos/interface/AbsHFPhase1Algo.h"
+#include "FWCore/ParameterSet/interface/ParameterSetDescription.h"
 
 namespace edm {
-    class ParameterSet;
+  class ParameterSet;
 }
 
 //
@@ -15,7 +16,13 @@ namespace edm {
 // Update the implementation of this function if you need
 // to add a new algorithm to HFPhase1Reconstructor.
 //
-std::unique_ptr<AbsHFPhase1Algo>
-parseHFPhase1AlgoDescription(const edm::ParameterSet& ps);
+std::unique_ptr<AbsHFPhase1Algo> parseHFPhase1AlgoDescription(const edm::ParameterSet& ps);
 
-#endif // RecoLocalCalo_HcalRecAlgos_parseHFPhase1AlgoDescription_h
+//
+// Parameter descriptions for "parseHFPhase1AlgoDescription".
+// Keep implementation of this function is sync with
+// "parseHFPhase1AlgoDescription".
+//
+edm::ParameterSetDescription fillDescriptionForParseHFPhase1AlgoDescription();
+
+#endif  // RecoLocalCalo_HcalRecAlgos_parseHFPhase1AlgoDescription_h

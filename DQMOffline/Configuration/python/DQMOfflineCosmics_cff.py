@@ -16,7 +16,7 @@ from DQM.CastorMonitor.castor_dqm_sourceclient_offline_cff import *
 
 DQMOfflineCosmicsPreDPG = cms.Sequence( dqmDcsInfo *
                                         ecal_dqm_source_offline *
-                                        #hcalOfflineSourceSequence *
+                                        hcalOfflineSourceSequence *
                                         SiStripDQMTier0 *
                                         siPixelOfflineDQM_cosmics_source *
                                         dtSourcesCosmics *
@@ -40,7 +40,7 @@ DQMOfflineCosmicsPrePOG = cms.Sequence( TrackingDQMTier0 *
                                         muonCosmicMonitors *
                                         jetMETDQMOfflineSourceCosmic *
                                         egammaCosmicPhotonMonitors *
-#                                        l1TriggerDqmOffline * 
+                                        l1TriggerDqmOfflineCosmics *
                                         triggerCosmicOfflineDQMSource *
                                         dqmPhysicsCosmics
                                         )

@@ -1,6 +1,5 @@
 import FWCore.ParameterSet.Config as cms
 
-from CondTools.DQM.DQMReferenceHistogramRootFileEventSetupAnalyzer_cfi import *
 from DQMServices.Components.DQMMessageLoggerClient_cff import *
 from DQMServices.Components.DQMDcsInfoClient_cfi import *
 from DQMServices.Components.DQMFastTimerServiceClient_cfi import *
@@ -17,7 +16,7 @@ from DQM.HcalTasks.OfflineHarvestingSequence_cosmic import *
 
 DQMOfflineCosmics_SecondStep_PreDPG = cms.Sequence( dqmDcsInfoClient * 
                                                     ecal_dqm_client_offline *
-                                                    #hcalOfflineHarvesting *
+                                                    hcalOfflineHarvesting *
                                                     SiStripCosmicDQMClient *
                                                     PixelOfflineDQMClientNoDataCertification_cosmics *
                                                     dtClientsCosmics *
@@ -27,7 +26,7 @@ DQMOfflineCosmics_SecondStep_PreDPG = cms.Sequence( dqmDcsInfoClient *
                                                     dqmFEDIntegrityClient )
 
 
-DQMOfflineCosmics_SecondStepDPG = cms.Sequence( dqmRefHistoRootFileGetter *
+DQMOfflineCosmics_SecondStepDPG = cms.Sequence(
                                                 DQMOfflineCosmics_SecondStep_PreDPG *
                                                 DQMMessageLoggerClientSeq )
 
@@ -43,18 +42,26 @@ from DQM.TrackingMonitorClient.TrackingClientConfig_Tier0_Cosmic_cff import *
 DQMOfflineCosmics_SecondStep_PrePOG = cms.Sequence( TrackingCosmicDQMClient *
                                                     cosmicMuonQualityTests *
                                                     photonOfflineDQMClient *
-#                                                    l1TriggerDqmOfflineClient * 
+                                                    l1TriggerDqmOfflineCosmicsClient *
                                                     triggerOfflineDQMClient *
                                                     hltOfflineDQMClient *
                                                     SusyPostProcessorSequence )
- 
+
 DQMOfflineCosmics_SecondStep_PrePOG.remove(fsqClient)
-DQMOfflineCosmics_SecondStepPOG = cms.Sequence( dqmRefHistoRootFileGetter *
+DQMOfflineCosmics_SecondStepPOG = cms.Sequence(
                                                 DQMOfflineCosmics_SecondStep_PrePOG *
                                                 DQMMessageLoggerClientSeq *
                                                 dqmFastTimerServiceClient)
 
-DQMOfflineCosmics_SecondStep = cms.Sequence( dqmRefHistoRootFileGetter *
+DQMOfflineCosmics_SecondStep = cms.Sequence( 
                                              DQMOfflineCosmics_SecondStep_PreDPG *
                                              DQMOfflineCosmics_SecondStep_PrePOG *
                                              DQMMessageLoggerClientSeq )
+
+DQMOfflineCosmics_SecondStep_FakeHLT = cms.Sequence(DQMOfflineCosmics_SecondStep_PreDPG *
+                                                    TrackingCosmicDQMClient *
+                                                    cosmicMuonQualityTests *
+                                                    photonOfflineDQMClient *
+                                                    l1TriggerDqmOfflineCosmicsClient *
+                                                    SusyPostProcessorSequence*
+                                                    DQMMessageLoggerClientSeq)

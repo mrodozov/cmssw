@@ -5,9 +5,9 @@
 namespace reco {
   namespace parser {
     class AnyObjSelector : public SelectorBase {
-      virtual bool operator()(const edm::ObjectWithDict & c) const { return true; }
+      bool operator()(const edm::ObjectWithDict& c) const override { return true; }
     };
-  }
-}
+  }  // namespace parser
+}  // namespace reco
 
 #endif

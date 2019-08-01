@@ -10,15 +10,13 @@ namespace edm {
   class Event;
   class EventSetup;
   class HepMCProduct;
-}
+}  // namespace edm
 
 class GeneratorSmearedProducer : public edm::global::EDProducer<> {
-
 public:
-
   explicit GeneratorSmearedProducer(edm::ParameterSet const& p);
 
-  virtual void produce(edm::StreamID, edm::Event& e, edm::EventSetup const& c) const override;
+  void produce(edm::StreamID, edm::Event& e, edm::EventSetup const& c) const override;
   static void fillDescriptions(edm::ConfigurationDescriptions& descriptions);
 
 private:

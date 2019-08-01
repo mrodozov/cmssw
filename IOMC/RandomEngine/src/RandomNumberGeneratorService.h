@@ -50,20 +50,18 @@ namespace edm {
     class SystemBounds;
 
     class RandomNumberGeneratorService : public RandomNumberGenerator {
-
     public:
-
       RandomNumberGeneratorService(ParameterSet const& pset, ActivityRegistry& activityRegistry);
-      virtual ~RandomNumberGeneratorService();
+      ~RandomNumberGeneratorService() override;
 
       /// Use the next 2 functions to get the random number engine.
       /// These are the only functions most modules should call.
 
       /// Use this engine in event methods
-      virtual CLHEP::HepRandomEngine& getEngine(StreamID const& streamID) override;
+      CLHEP::HepRandomEngine& getEngine(StreamID const& streamID) override;
 
       /// Use this engine in the global begin luminosity block method
-      virtual CLHEP::HepRandomEngine& getEngine(LuminosityBlockIndex const& luminosityBlockIndex) override;
+      CLHEP::HepRandomEngine& getEngine(LuminosityBlockIndex const& luminosityBlockIndex) override;
 
       // This returns the seed from the configuration. In the unusual case where an
       // an engine type takes multiple seeds to initialize a sequence, this function
@@ -76,16 +74,15 @@ namespace edm {
       // Because it is dangerous and could be misused, this function might be deleted
       // someday if we ever find time to delete all uses of it in CMSSW. There are of
       // order 10 last time I checked ...
-      virtual std::uint32_t mySeed() const override;
+      std::uint32_t mySeed() const override;
 
       static void fillDescriptions(ConfigurationDescriptions& descriptions);
 
       void preModuleConstruction(ModuleDescription const& description);
       void preallocate(SystemBounds const&);
-      void postForkReacquireResources(unsigned childIndex, unsigned kMaxChildren);
 
-      virtual void preBeginLumi(LuminosityBlock const& lumi) override;
-      virtual void postEventRead(Event const& event) override;
+      void preBeginLumi(LuminosityBlock const& lumi) override;
+      void postEventRead(Event const& event) override;
 
       /// These next 12 functions are only used to check that random numbers are not
       /// being generated in these methods when enable checking is configured on.
@@ -108,27 +105,29 @@ namespace edm {
       void postModuleStreamEndLumi(StreamContext const& sc, ModuleCallingContext const& mcc);
 
       /// These two are used by the RandomEngineStateProducer
-      virtual std::vector<RandomEngineState> const& getLumiCache(LuminosityBlockIndex const&) const override;
-      virtual std::vector<RandomEngineState> const& getEventCache(StreamID const&) const override;
+      std::vector<RandomEngineState> const& getLumiCache(LuminosityBlockIndex const&) const override;
+      std::vector<RandomEngineState> const& getEventCache(StreamID const&) const override;
 
-      virtual void consumes(ConsumesCollector&& iC) const override;
+      void consumes(ConsumesCollector&& iC) const override;
 
       /// For debugging
-      virtual void print(std::ostream& os) const override;
+      void print(std::ostream& os) const override;
 
     private:
-
       typedef std::vector<std::uint32_t> VUint32;
 
       class LabelAndEngine {
       public:
-        LabelAndEngine(std::string const& theLabel, VUint32 const& theSeeds, std::shared_ptr<CLHEP::HepRandomEngine> const& theEngine) :
-          label_(theLabel), seeds_(theSeeds), engine_(theEngine) { }
+        LabelAndEngine(std::string const& theLabel,
+                       VUint32 const& theSeeds,
+                       std::shared_ptr<CLHEP::HepRandomEngine> const& theEngine)
+            : label_(theLabel), seeds_(theSeeds), engine_(theEngine) {}
         std::string const& label() const { return label_; }
         VUint32 const& seeds() const { return seeds_; }
         std::shared_ptr<CLHEP::HepRandomEngine const> engine() const { return get_underlying_safe(engine_); }
         std::shared_ptr<CLHEP::HepRandomEngine>& engine() { return get_underlying_safe(engine_); }
         void setSeed(std::uint32_t v, unsigned int index) { seeds_.at(index) = v; }
+
       private:
         std::string label_;
         VUint32 seeds_;
@@ -140,8 +139,8 @@ namespace edm {
       // one to one association between LabelAndEngine objects and ModuleIDToEngine objects.
       class ModuleIDToEngine {
       public:
-        ModuleIDToEngine(LabelAndEngine* theLabelAndEngine, unsigned int theModuleID) :
-          engineState_(), labelAndEngine_(theLabelAndEngine), moduleID_(theModuleID) { }
+        ModuleIDToEngine(LabelAndEngine* theLabelAndEngine, unsigned int theModuleID)
+            : engineState_(), labelAndEngine_(theLabelAndEngine), moduleID_(theModuleID) {}
 
         std::vector<unsigned long> const& engineState() const { return engineState_; }
         LabelAndEngine const* labelAndEngine() const { return get_underlying_safe(labelAndEngine_); }
@@ -150,8 +149,9 @@ namespace edm {
         void setEngineState(std::vector<unsigned long> const& v) { engineState_ = v; }
         // Used to sort so binary lookup can be used on a container of these.
         bool operator<(ModuleIDToEngine const& r) const { return moduleID() < r.moduleID(); }
+
       private:
-        std::vector<unsigned long> engineState_; // Used only for check in stream transitions
+        std::vector<unsigned long> engineState_;  // Used only for check in stream transitions
         edm::propagate_const<LabelAndEngine*> labelAndEngine_;
         unsigned int moduleID_;
       };
@@ -166,8 +166,7 @@ namespace edm {
       void readFromEvent(Event const& event);
 
       void snapShot(std::vector<LabelAndEngine> const& engines, std::vector<RandomEngineState>& cache);
-      void restoreFromCache(std::vector<RandomEngineState> const& cache,
-                            std::vector<LabelAndEngine>& engines);
+      void restoreFromCache(std::vector<RandomEngineState> const& cache, std::vector<LabelAndEngine>& engines);
 
       void checkEngineType(std::string const& typeFromConfig,
                            std::string const& typeFromEvent,
@@ -176,16 +175,12 @@ namespace edm {
       void saveStatesToFile(std::string const& fileName,
                             StreamID const& streamID,
                             LuminosityBlockIndex const& lumiIndex);
-      void writeStates(std::vector<RandomEngineState> const& v,
-                       std::ofstream& outFile);
-      void writeVector(VUint32 const& v,
-                       std::ofstream& outFile);
+      void writeStates(std::vector<RandomEngineState> const& v, std::ofstream& outFile);
+      void writeVector(VUint32 const& v, std::ofstream& outFile);
       std::string constructSaveFileName() const;
 
-      void readEventStatesFromTextFile(std::string const& fileName,
-                                       std::vector<RandomEngineState>& cache);
-      void readLumiStatesFromTextFile(std::string const& fileName,
-                                      std::vector<RandomEngineState>& cache);
+      void readEventStatesFromTextFile(std::string const& fileName, std::vector<RandomEngineState>& cache);
+      void readLumiStatesFromTextFile(std::string const& fileName, std::vector<RandomEngineState>& cache);
       void readStatesFromFile(std::string const& fileName,
                               std::vector<RandomEngineState>& cache,
                               std::string const& whichStates);
@@ -212,12 +207,12 @@ namespace edm {
 
       // This exists because we can look things up faster using the moduleID
       // than using string comparisons with the moduleLabel
-      std::vector<std::vector<ModuleIDToEngine> > streamModuleIDToEngine_; // streamID, sorted by moduleID
-      std::vector<std::vector<ModuleIDToEngine> > lumiModuleIDToEngine_; // luminosityBlockIndex, sortedByModuleID
+      std::vector<std::vector<ModuleIDToEngine>> streamModuleIDToEngine_;  // streamID, sorted by moduleID
+      std::vector<std::vector<ModuleIDToEngine>> lumiModuleIDToEngine_;    // luminosityBlockIndex, sortedByModuleID
 
       // Holds the engines, plus the seeds and module label also
-      std::vector<std::vector<LabelAndEngine> > streamEngines_; // streamID, sorted by label
-      std::vector<std::vector<LabelAndEngine> > lumiEngines_; // luminosityBlockIndex, sorted by label
+      std::vector<std::vector<LabelAndEngine>> streamEngines_;  // streamID, sorted by label
+      std::vector<std::vector<LabelAndEngine>> lumiEngines_;    // luminosityBlockIndex, sorted by label
 
       // These hold the input tags needed to retrieve the states
       // of the random number engines stored in a previous process.
@@ -226,8 +221,8 @@ namespace edm {
       edm::InputTag restoreStateTag_;
       edm::InputTag restoreStateBeginLumiTag_;
 
-      std::vector<std::vector<RandomEngineState> > eventCache_; // streamID, sorted by module label
-      std::vector<std::vector<RandomEngineState> > lumiCache_; // luminosityBlockIndex, sorted by module label
+      std::vector<std::vector<RandomEngineState>> eventCache_;  // streamID, sorted by module label
+      std::vector<std::vector<RandomEngineState>> lumiCache_;   // luminosityBlockIndex, sorted by module label
 
       // This is used to keep track of the seeds and engine name from
       // the configuration. The map key is the module label.
@@ -235,12 +230,13 @@ namespace edm {
       // It is left as max unsigned if the module is never constructed and not in the process
       class SeedsAndName {
       public:
-        SeedsAndName(VUint32 const& theSeeds, std::string const& theEngineName) :
-          seeds_(theSeeds), engineName_(theEngineName), moduleID_(std::numeric_limits<unsigned int>::max()) { }
+        SeedsAndName(VUint32 const& theSeeds, std::string const& theEngineName)
+            : seeds_(theSeeds), engineName_(theEngineName), moduleID_(std::numeric_limits<unsigned int>::max()) {}
         VUint32 const& seeds() const { return seeds_; }
         std::string const& engineName() const { return engineName_; }
         unsigned int moduleID() const { return moduleID_; }
         void setModuleID(unsigned int v) { moduleID_ = v; }
+
       private:
         VUint32 seeds_;
         std::string engineName_;
@@ -254,7 +250,7 @@ namespace edm {
       // the save file name has been recorded in the job report.
       std::string saveFileName_;
       std::atomic<bool> saveFileNameRecorded_;
-      std::vector<edm::propagate_const<std::shared_ptr<std::ofstream>>> outFiles_; // streamID
+      std::vector<edm::propagate_const<std::shared_ptr<std::ofstream>>> outFiles_;  // streamID
 
       // Keep the name of the file from which we restore the state
       // of all declared engines at the beginning of a run. A
@@ -266,10 +262,6 @@ namespace edm {
       // beginStream, beginRun, endLuminosityBlock, or endRun.
       bool enableChecking_;
 
-      // In a multiprocess job this will have the index of the child process
-      // incremented by one as each child is forked
-      unsigned childIndex_;
-
       std::uint32_t eventSeedOffset_;
 
       bool verbose_;
@@ -280,6 +272,6 @@ namespace edm {
       static const std::uint32_t maxSeedHepJames;
       static const std::uint32_t maxSeedTRandom3;
     };
-  }
-}
+  }  // namespace service
+}  // namespace edm
 #endif

@@ -2,7 +2,7 @@
 //
 // Package:    EgammaHLTProducers
 // Class:      EgammaHLTR9IDProducer
-// 
+//
 /**\class EgammaHLTR9IDProducer EgammaHLTR9IDProducer.cc RecoEgamma/EgammaHLTProducers/interface/EgammaHLTR9IDProducer.h
 */
 //
@@ -12,7 +12,6 @@
 //         modified by Chris Tully (Princeton)
 //
 //
-
 
 // system include files
 #include <memory>
@@ -38,16 +37,15 @@ class RecoEcalCandidateProducers;
 class EgammaHLTR9IDProducer : public edm::global::EDProducer<> {
 public:
   explicit EgammaHLTR9IDProducer(const edm::ParameterSet&);
-  ~EgammaHLTR9IDProducer();
-  
+  ~EgammaHLTR9IDProducer() override;
+
   static void fillDescriptions(edm::ConfigurationDescriptions& descriptions);
   void produce(edm::StreamID sid, edm::Event&, const edm::EventSetup&) const override;
 
 private:
   // ----------member data ---------------------------
-  
+
   const edm::EDGetTokenT<reco::RecoEcalCandidateCollection> recoEcalCandidateProducer_;
   const edm::EDGetTokenT<EcalRecHitCollection> ecalRechitEBToken_;
   const edm::EDGetTokenT<EcalRecHitCollection> ecalRechitEEToken_;
 };
-

@@ -1,7 +1,6 @@
 #ifndef PYTHIAFILTERMULTIMOTHER_h
 #define PYTHIAFILTERMULTIMOTHER_h
 
-
 // system include files
 #include <memory>
 
@@ -14,7 +13,6 @@
 
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 
-
 //
 // class decleration
 //
@@ -23,32 +21,34 @@ namespace edm {
 }
 
 class PythiaFilterMultiMother : public edm::EDFilter {
-   public:
-      explicit PythiaFilterMultiMother(const edm::ParameterSet&);
-      ~PythiaFilterMultiMother();
+public:
+  explicit PythiaFilterMultiMother(const edm::ParameterSet&);
+  ~PythiaFilterMultiMother() override;
 
+  bool filter(edm::Event&, const edm::EventSetup&) override;
 
-      virtual bool filter(edm::Event&, const edm::EventSetup&);
-   private:
-      // ----------member data ---------------------------
+private:
+  // ----------member data ---------------------------
 
-       edm::EDGetTokenT<edm::HepMCProduct> token_;
-       int particleID;
-       double minpcut;
-       double maxpcut;
-       double minptcut;
-       double maxptcut;
-       double minetacut;
-       double maxetacut;
-       double minrapcut;
-       double maxrapcut;
-       double minphicut;
-       double maxphicut;
+  edm::EDGetTokenT<edm::HepMCProduct> token_;
+  int particleID;
+  double minpcut;
+  double maxpcut;
+  double minptcut;
+  double maxptcut;
+  double minetacut;
+  double maxetacut;
+  double minrapcut;
+  double maxrapcut;
+  double minphicut;
+  double maxphicut;
 
-       double rapidity;
+  double rapidity;
 
-       int status;
-       std::vector<int> motherIDs;
-       int processID;
+  int status;
+  std::vector<int> motherIDs;
+  int processID;
+
+  double betaBoost;
 };
 #endif

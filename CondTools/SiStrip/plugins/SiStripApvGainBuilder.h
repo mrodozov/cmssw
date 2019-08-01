@@ -13,18 +13,15 @@
 #include "CLHEP/Random/RandFlat.h"
 #include "CLHEP/Random/RandGauss.h"
 
-
 class SiStripApvGainBuilder : public edm::EDAnalyzer {
+public:
+  explicit SiStripApvGainBuilder(const edm::ParameterSet& iConfig);
 
- public:
+  ~SiStripApvGainBuilder() override{};
 
-  explicit SiStripApvGainBuilder( const edm::ParameterSet& iConfig);
+  void analyze(const edm::Event&, const edm::EventSetup&) override;
 
-  ~SiStripApvGainBuilder(){};
-
-  virtual void analyze(const edm::Event& , const edm::EventSetup& );
-
- private:
+private:
   edm::FileInPath fp_;
   bool printdebug_;
 };

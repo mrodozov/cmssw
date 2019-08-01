@@ -18,6 +18,7 @@
 #include "DataFormats/TrackerRecHit2D/interface/BaseTrackerRecHit.h"
 #include "DataFormats/TrackingRecHit/interface/mayown_ptr.h"
 
+#include "MagneticField/UniformEngine/interface/UniformMagneticField.h"
 
 #include <utility>
 #include <vector>
@@ -25,56 +26,61 @@
 class HitPairGeneratorFromLayerPair;
 
 class dso_hidden MultiHitGeneratorFromChi2 final : public MultiHitGeneratorFromPairAndLayers {
-
-typedef CombinedMultiHitGenerator::LayerCacheType       LayerCacheType;
+  typedef CombinedMultiHitGenerator::LayerCacheType LayerCacheType;
 
 public:
   MultiHitGeneratorFromChi2(const edm::ParameterSet& cfg);
 
-  virtual ~MultiHitGeneratorFromChi2();
+  ~MultiHitGeneratorFromChi2() override;
 
   static void fillDescriptions(edm::ParameterSetDescription& desc);
-  static const char *fillDescriptionsLabel() { return "multiHitFromChi2"; }
+  static const char* fillDescriptionsLabel() { return "multiHitFromChi2"; }
 
+  void initES(const edm::EventSetup& es) override;
 
-  void initES(const edm::EventSetup& es) override; 
+  void hitSets(const TrackingRegion& region,
+               OrderedMultiHits& trs,
+               const edm::Event& ev,
+               const edm::EventSetup& es,
+               SeedingLayerSetsHits::SeedingLayerSet pairLayers,
+               std::vector<SeedingLayerSetsHits::SeedingLayer> thirdLayers) override;
 
-  virtual void hitSets( const TrackingRegion& region, OrderedMultiHits & trs, 
-                        const edm::Event & ev, const edm::EventSetup& es,
-                        SeedingLayerSetsHits::SeedingLayerSet pairLayers,
-                        std::vector<SeedingLayerSetsHits::SeedingLayer> thirdLayers) override;
-
-  void hitSets(const TrackingRegion& region, OrderedMultiHits& trs,
-               const edm::Event& ev, const edm::EventSetup& es,
+  void hitSets(const TrackingRegion& region,
+               OrderedMultiHits& trs,
+               const edm::Event& ev,
+               const edm::EventSetup& es,
                const HitDoublets& doublets,
                const std::vector<SeedingLayerSetsHits::SeedingLayer>& thirdLayers,
                LayerCacheType& layerCache,
                cacheHits& refittedHitStorage);
 
-  void hitTriplets(
-		   const TrackingRegion& region, 
-		   OrderedMultiHits & result,
-		   const edm::EventSetup & es,
-		   const HitDoublets & doublets,
-		   const RecHitsSortedInPhi ** thirdHitMap,
-		   const std::vector<const DetLayer *> & thirdLayerDetLayer,
-		   const int nThirdLayers)override;
+  void hitTriplets(const TrackingRegion& region,
+                   OrderedMultiHits& result,
+                   const edm::EventSetup& es,
+                   const HitDoublets& doublets,
+                   const RecHitsSortedInPhi** thirdHitMap,
+                   const std::vector<const DetLayer*>& thirdLayerDetLayer,
+                   const int nThirdLayers) override;
 
-  void hitSets(const TrackingRegion& region, OrderedMultiHits& result,
+  void hitSets(const TrackingRegion& region,
+               OrderedMultiHits& result,
                const edm::EventSetup& es,
                const HitDoublets& doublets,
-               const RecHitsSortedInPhi **thirdHitMap,
-               const std::vector<const DetLayer *>& thirdLayerDetLayer,
+               const RecHitsSortedInPhi** thirdHitMap,
+               const std::vector<const DetLayer*>& thirdLayerDetLayer,
                const int nThirdLayers,
                cacheHits& refittedHitStorage);
+
 private:
   using HitOwnPtr = mayown_ptr<BaseTrackerRecHit>;
 
-  void refit2Hits(HitOwnPtr & hit0,
-		  HitOwnPtr & hit1,
-		  TrajectoryStateOnSurface& tsos0,
-		  TrajectoryStateOnSurface& tsos1,
-		  const TrackingRegion& region, float nomField, bool isDebug);
+  void refit2Hits(HitOwnPtr& hit0,
+                  HitOwnPtr& hit1,
+                  TrajectoryStateOnSurface& tsos0,
+                  TrajectoryStateOnSurface& tsos1,
+                  const TrackingRegion& region,
+                  float nomField,
+                  bool isDebug);
   /*
   void refit3Hits(HitOwnPtr & hit0,
 		  HitOwnPtr & hit1,
@@ -86,7 +92,7 @@ private:
   */
 private:
   const ClusterShapeHitFilter* filter;
-  TkTransientTrackingRecHitBuilder const * builder;
+  TkTransientTrackingRecHitBuilder const* builder;
   TkClonerImpl cloner;
 
   bool useFixedPreFiltering;
@@ -97,6 +103,7 @@ private:
   float extraPhiKDBox;
   float dphi;
   const MagneticField* bfield;
+  UniformMagneticField ufield = 0.;
   float nomField;
   double nSigmaRZ, nSigmaPhi, fnSigmaRZ;
   bool chi2VsPtCut;
@@ -111,10 +118,5 @@ private:
   std::string mfName_;
 
   std::vector<int> detIdsToDebug;
-
-
-
 };
 #endif
-
-

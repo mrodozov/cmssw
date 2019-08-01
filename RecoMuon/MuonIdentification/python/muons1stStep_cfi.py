@@ -4,6 +4,7 @@ import FWCore.ParameterSet.Config as cms
 from RecoMuon.MuonIdentification.isolation_cff import *
 from RecoMuon.MuonIdentification.caloCompatibility_cff import *
 from RecoMuon.MuonIdentification.MuonTimingFiller_cfi import *
+from RecoMuon.MuonIdentification.MuonShowerDigiFiller_cfi import *
 from RecoMuon.MuonIdentification.TrackerKinkFinder_cfi import *
 from TrackingTools.TrackAssociator.default_cfi import *
 muons1stStep = cms.EDProducer("MuonIdProducer",
@@ -15,12 +16,16 @@ muons1stStep = cms.EDProducer("MuonIdProducer",
     MIdIsoExtractorPSetBlock,
     # MuonTiming
     TimingFillerBlock,
+    # MuonShowerDigi
+    MuonShowerDigiFillerBlock,
     # Kink finder
     TrackerKinkFinderParametersBlock,
 
     fillEnergy = cms.bool(True),
+    storeCrossedHcalRecHits = cms.bool(True),
+
     # OR
-    maxAbsPullX = cms.double(4.0),
+    maxAbsPullX = cms.double(3.0),
     maxAbsEta = cms.double(3.0),
 
     # Selection parameters
@@ -53,6 +58,7 @@ muons1stStep = cms.EDProducer("MuonIdProducer",
     writeIsoDeposits = cms.bool(True),
     minNumberOfMatches = cms.int32(1),
     fillMatching = cms.bool(True),
+    fillShowerDigis = cms.bool(True),
 
     # global fit for candidate p4 requirements
     ptThresholdToFillCandidateP4WithGlobalFit = cms.double(200.0),
@@ -77,7 +83,10 @@ muons1stStep = cms.EDProducer("MuonIdProducer",
                                           OverlapDTheta = cms.double(0.02), # 1.14 degrees
                                           ClusterDPhi   = cms.double(0.6), # 34 degrees
                                           ClusterDTheta = cms.double(0.02) # 1.14
-    )
+    ),
+
+    # tracker muon arbitration
+    arbitrateTrackerMuons = cms.bool(True)
 )
 
 from Configuration.Eras.Modifier_run3_GEM_cff import run3_GEM
@@ -89,4 +98,13 @@ muonEcalDetIds = cms.EDProducer("InterestingEcalDetIdProducer",
                                 inputCollection = cms.InputTag("muons1stStep")
 )
 
+from Configuration.Eras.Modifier_pp_on_AA_2018_cff import pp_on_AA_2018
+pp_on_AA_2018.toModify(muons1stStep, minPt = 0.8)
 
+from Configuration.ProcessModifiers.recoFromReco_cff import recoFromReco
+recoFromReco.toModify(muons1stStep,fillShowerDigis = False)
+
+
+
+
+   

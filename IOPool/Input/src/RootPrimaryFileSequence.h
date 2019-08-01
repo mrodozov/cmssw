@@ -31,29 +31,28 @@ namespace edm {
   class PoolSource;
   class RootFile;
 
-  class RootPrimaryFileSequence : public RootInputFileSequence{
+  class RootPrimaryFileSequence : public RootInputFileSequence {
   public:
-    explicit RootPrimaryFileSequence(ParameterSet const& pset,
-                                   PoolSource& input,
-                                   InputFileCatalog const& catalog);
-    virtual ~RootPrimaryFileSequence();
+    explicit RootPrimaryFileSequence(ParameterSet const& pset, PoolSource& input, InputFileCatalog const& catalog);
+    ~RootPrimaryFileSequence() override;
 
-    RootPrimaryFileSequence(RootPrimaryFileSequence const&) = delete; // Disallow copying and moving
-    RootPrimaryFileSequence& operator=(RootPrimaryFileSequence const&) = delete; // Disallow copying and moving
+    RootPrimaryFileSequence(RootPrimaryFileSequence const&) = delete;             // Disallow copying and moving
+    RootPrimaryFileSequence& operator=(RootPrimaryFileSequence const&) = delete;  // Disallow copying and moving
 
     std::unique_ptr<FileBlock> readFile_();
-    virtual void closeFile_() override;
+    void closeFile_() override;
     void endJob();
     InputSource::ItemType getNextItemType(RunNumber_t& run, LuminosityBlockNumber_t& lumi, EventNumber_t& event);
     bool skipEvents(int offset);
     bool goToEvent(EventID const& eventID);
     void rewind_();
-    static void fillDescription(ParameterSetDescription & desc);
+    static void fillDescription(ParameterSetDescription& desc);
     ProcessingController::ForwardState forwardState() const;
     ProcessingController::ReverseState reverseState() const;
+
   private:
-    virtual void initFile_(bool skipBadFiles) override;
-    virtual RootFileSharedPtr makeRootFile(std::shared_ptr<InputFile> filePtr) override; 
+    void initFile_(bool skipBadFiles) override;
+    RootFileSharedPtr makeRootFile(std::shared_ptr<InputFile> filePtr) override;
     bool nextFile();
     bool previousFile();
     void rewindFile();
@@ -66,10 +65,10 @@ namespace edm {
     BranchDescription::MatchMode branchesMustMatch_;
     std::vector<ProcessHistoryID> orderedProcessHistoryIDs_;
 
-    std::shared_ptr<EventSkipperByID const> eventSkipperByID() const {return get_underlying_safe(eventSkipperByID_);}
-    std::shared_ptr<EventSkipperByID>& eventSkipperByID() {return get_underlying_safe(eventSkipperByID_);}
-    std::shared_ptr<DuplicateChecker const> duplicateChecker() const {return get_underlying_safe(duplicateChecker_);}
-    std::shared_ptr<DuplicateChecker>& duplicateChecker() {return get_underlying_safe(duplicateChecker_);}
+    std::shared_ptr<EventSkipperByID const> eventSkipperByID() const { return get_underlying_safe(eventSkipperByID_); }
+    std::shared_ptr<EventSkipperByID>& eventSkipperByID() { return get_underlying_safe(eventSkipperByID_); }
+    std::shared_ptr<DuplicateChecker const> duplicateChecker() const { return get_underlying_safe(duplicateChecker_); }
+    std::shared_ptr<DuplicateChecker>& duplicateChecker() { return get_underlying_safe(duplicateChecker_); }
 
     edm::propagate_const<std::shared_ptr<EventSkipperByID>> eventSkipperByID_;
     int initialNumberOfEventsToSkip_;
@@ -78,6 +77,6 @@ namespace edm {
     edm::propagate_const<std::shared_ptr<DuplicateChecker>> duplicateChecker_;
     bool usingGoToEvent_;
     bool enablePrefetching_;
-  }; // class RootPrimaryFileSequence
-}
+  };  // class RootPrimaryFileSequence
+}  // namespace edm
 #endif

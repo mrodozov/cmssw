@@ -7,20 +7,17 @@
 namespace edm {
 
   class FlatRandomMultiParticlePGunProducer : public BaseFlatGunProducer {
-  
   public:
-    FlatRandomMultiParticlePGunProducer(const ParameterSet & pset);
-    virtual ~FlatRandomMultiParticlePGunProducer();
-    
-    virtual void produce(Event &e, const EventSetup& es) override;
+    FlatRandomMultiParticlePGunProducer(const ParameterSet& pset);
+    ~FlatRandomMultiParticlePGunProducer() override;
+
+    void produce(Event& e, const EventSetup& es) override;
 
   private:
-    
     // data members
     std::vector<double> fProbParticle_;
-    double              fMinP_;
-    double              fMaxP_;
-    
+    double fMinP_;
+    double fMaxP_;
   };
-} 
+}  // namespace edm
 #endif

@@ -21,19 +21,19 @@
 #include <boost/cstdint.hpp>
 
 class DTROS25FileReader : public edm::EDProducer {
- public:
+public:
   /// Constructor
   DTROS25FileReader(const edm::ParameterSet& pset);
 
   /// Destructor
-  virtual ~DTROS25FileReader();
+  ~DTROS25FileReader() override;
 
   /// Generate and fill FED raw data for a full event
   virtual int fillRawData(edm::Event& e,
-//			  edm::Timestamp& tstamp, 
-			  FEDRawDataCollection*& data);
+                          //			  edm::Timestamp& tstamp,
+                          FEDRawDataCollection*& data);
 
-  virtual void produce(edm::Event&, edm::EventSetup const&);
+  void produce(edm::Event&, edm::EventSetup const&) override;
 
   /// check for a 32 bits word to be a ROS25 header
   bool isHeader(uint32_t word);
@@ -42,23 +42,16 @@ class DTROS25FileReader : public edm::EDProducer {
   bool isTrailer(uint32_t word);
 
   /// swapping the lsBits with the msBits
-  void swap(uint32_t & word);
- 
+  void swap(uint32_t& word);
 
   virtual bool checkEndOfFile();
 
- private:
-
-
+private:
   RawFile inputFile;
 
   edm::RunNumber_t runNumber;
   edm::EventNumber_t eventNumber;
 
   static const int rosWordLenght = 4;
-
 };
 #endif
-
-
-

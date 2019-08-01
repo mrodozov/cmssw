@@ -7,7 +7,7 @@
 #include "FWCore/Framework/interface/EventSetup.h"
 #include "FWCore/Framework/interface/ESHandle.h"
 
-#include "RecoLocalCalo/EcalRecProducers/interface/EcalUncalibRecHitWorkerBaseClass.h"
+#include "RecoLocalCalo/EcalRecProducers/interface/EcalUncalibRecHitWorkerRunOneDigiBase.h"
 
 #include "RecoLocalCalo/EcalRecAlgos/interface/EcalUncalibRecHitRecAnalFitAlgo.h"
 
@@ -18,30 +18,30 @@
 #include "CondFormats/EcalObjects/interface/EcalPedestals.h"
 
 namespace edm {
-        class Event;
-        class EventSetup;
-        class ParameterSet;
-	class ParameterSetDescription;
-}
+  class Event;
+  class EventSetup;
+  class ParameterSet;
+  class ParameterSetDescription;
+}  // namespace edm
 
-class EcalUncalibRecHitWorkerAnalFit : public EcalUncalibRecHitWorkerBaseClass {
+class EcalUncalibRecHitWorkerAnalFit : public EcalUncalibRecHitWorkerRunOneDigiBase {
+public:
+  EcalUncalibRecHitWorkerAnalFit(const edm::ParameterSet& ps, edm::ConsumesCollector& c);
+  EcalUncalibRecHitWorkerAnalFit(){};
+  ~EcalUncalibRecHitWorkerAnalFit() override{};
 
-        public:
-                EcalUncalibRecHitWorkerAnalFit(const edm::ParameterSet& ps,edm::ConsumesCollector& c);
-                EcalUncalibRecHitWorkerAnalFit() {};
-                ~EcalUncalibRecHitWorkerAnalFit() {};
+  void set(const edm::EventSetup& es) override;
+  bool run(const edm::Event& evt,
+           const EcalDigiCollection::const_iterator& digi,
+           EcalUncalibratedRecHitCollection& result) override;
 
-                void set(const edm::EventSetup& es);
-                bool run(const edm::Event& evt, const EcalDigiCollection::const_iterator & digi, EcalUncalibratedRecHitCollection & result);
-		
-		edm::ParameterSetDescription getAlgoDescription();
+  edm::ParameterSetDescription getAlgoDescription() override;
 
-        private:
-                EcalUncalibRecHitRecAnalFitAlgo<EBDataFrame> algoEB_;
-                EcalUncalibRecHitRecAnalFitAlgo<EEDataFrame> algoEE_;
+private:
+  EcalUncalibRecHitRecAnalFitAlgo<EBDataFrame> algoEB_;
+  EcalUncalibRecHitRecAnalFitAlgo<EEDataFrame> algoEE_;
 
-                
-                edm::ESHandle<EcalGainRatios> pRatio;
-                edm::ESHandle<EcalPedestals> pedHandle;
+  edm::ESHandle<EcalGainRatios> pRatio;
+  edm::ESHandle<EcalPedestals> pedHandle;
 };
 #endif

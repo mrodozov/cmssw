@@ -15,55 +15,50 @@
 #include "CondFormats/JetMETObjects/interface/JetCorrectorParameters.h"
 #include "DataFormats/BTauReco/interface/SoftLeptonTagInfo.h"
 
-
-class L6SLBCorrector : public JetCorrector
-{
+class L6SLBCorrector : public JetCorrector {
   //
   // construction / destruction
   //
 public:
-  L6SLBCorrector (const JetCorrectorParameters& fParam, const edm::ParameterSet& fConfig);
-  virtual ~L6SLBCorrector ();
-  
+  L6SLBCorrector(const JetCorrectorParameters& fParam, const edm::ParameterSet& fConfig);
+  ~L6SLBCorrector() override;
 
   //
   // member functions
   //
 public:
   /// apply correction using Jet information only
-  virtual double correction (const LorentzVector& fJet) const;
+  double correction(const LorentzVector& fJet) const override;
   /// apply correction using Jet information only
-  virtual double correction (const reco::Jet& fJet) const;
+  double correction(const reco::Jet& fJet) const override;
   /// apply correction using all event information
-  virtual double correction (const reco::Jet& fJet,
-			     const edm::RefToBase<reco::Jet>& refToRawJet,
-			     const edm::Event& fEvent, 
-			     const edm::EventSetup& fSetup) const;
-  
+  double correction(const reco::Jet& fJet,
+                    const edm::RefToBase<reco::Jet>& refToRawJet,
+                    const edm::Event& fEvent,
+                    const edm::EventSetup& fSetup) const override;
+
   /// if correction needs event information
-  virtual bool eventRequired () const {return true;} 
+  bool eventRequired() const override { return true; }
 
   //----- if correction needs a jet reference -------------
-  virtual bool refRequired () const {return true;} 
-  
+  bool refRequired() const override { return true; }
+
   //
   // private member functions
   //
 private:
   int getBTagInfoIndex(const edm::RefToBase<reco::Jet>& refToRawJet,
-		       const std::vector<reco::SoftLeptonTagInfo>& tags) const;
-  
-  
+                       const std::vector<reco::SoftLeptonTagInfo>& tags) const;
+
   //
   // member data
   //
 private:
-  std::string             tagName_;
-  bool                    addMuonToJet_;
-  edm::InputTag           srcBTagInfoElec_;
-  edm::InputTag           srcBTagInfoMuon_;
+  std::string tagName_;
+  bool addMuonToJet_;
+  edm::InputTag srcBTagInfoElec_;
+  edm::InputTag srcBTagInfoMuon_;
   FactorizedJetCorrectorCalculator* corrector_;
-  
 };
 
 #endif

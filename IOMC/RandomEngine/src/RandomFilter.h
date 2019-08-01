@@ -2,7 +2,7 @@
 //
 // Package:    RandomEngine
 // Class:      RandomFilter
-// 
+//
 /**\class RandomFilter RandomFilter.h IOMC/RandomEngine/src/RandomFilter.h
 
  Description: The output of this module is used for test purposes.
@@ -28,13 +28,12 @@ namespace edm {
   class RandomFilter : public edm::EDFilter {
   public:
     explicit RandomFilter(edm::ParameterSet const& ps);
-    virtual ~RandomFilter();
+    ~RandomFilter() override;
 
-    virtual bool filter(edm::Event& e, edm::EventSetup const& c) override;
+    bool filter(edm::Event& e, edm::EventSetup const& c) override;
 
   private:
-
     // value between 0 and 1
     double acceptRate_;
   };
-}
+}  // namespace edm

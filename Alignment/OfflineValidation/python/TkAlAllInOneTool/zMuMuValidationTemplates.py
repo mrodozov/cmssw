@@ -1,49 +1,4 @@
 ZMuMuValidationTemplate="""
-import FWCore.ParameterSet.Config as cms
-
-process = cms.Process("ONLYHISTOS")
-
-
-# Messages
-process.load("FWCore.MessageService.MessageLogger_cfi")
-process.MessageLogger.destinations = ['cout', 'cerr']
-process.MessageLogger.cerr.FwkReport.reportEvery = 5000
-
-
-########### DATA FILES  ####################################
-.oO[datasetDefinition]Oo.
-# process.load("Alignment.OfflineValidation..oO[dataset]Oo._cff")
-
-#process.load("Geometry.CMSCommonData.cmsIdealGeometryXML_cfi")
-#process.load("Geometry.CommonDetUnit.globalTrackingGeometry_cfi")
-process.load("RecoMuon.DetLayers.muonDetLayerGeometry_cfi")
-process.load("Geometry.MuonNumbering.muonNumberingInitialization_cfi")
-process.load("RecoMuon.TrackingTools.MuonServiceProxy_cff")
-
-########### standard includes ##############################
-process.load("Configuration.StandardSequences..oO[magneticField]Oo._cff")
-process.load("Configuration.StandardSequences.Reconstruction_cff")
-process.load("Configuration.Geometry.GeometryRecoDB_cff")
-
-
-########### DATABASE conditions ############################
-.oO[LoadGlobalTagTemplate]Oo.
-
-.oO[condLoad]Oo.
-
-########### TRACK REFITTER #################################
-process.load("RecoTracker.TrackProducer.TrackRefitters_cff")
-if ".oO[resonance]Oo." == "Z":
-   process.TrackRefitter.src = 'ALCARECOTkAlZMuMu'
-elif ".oO[resonance]Oo." == "JPsi":
-   process.TrackRefitter.src = 'ALCARECOTkAlJpsiMuMu'
-elif ".oO[resonance]Oo." == "Y1S" or ".oO[resonance]Oo." == "Y2S" or ".oO[resonance]Oo." == "Y3S":
-   process.TrackRefitter.src = 'ALCARECOTkAlUpsilonMuMu'
-else:
-   process.TrackRefitter.src = 'ALCARECOTkAlZMuMu'
-process.TrackRefitter.TrajectoryInEvent = True
-process.TrackRefitter.TTRHBuilder = "WithAngleAndTemplate"
-process.TrackRefitter.NavigationSchool = ""
 
 ###### MuSclFit SETTINGS  ##############################################
 
@@ -200,8 +155,8 @@ process.looper = cms.Looper(
 
     ########## TO BE ENABLED ################################
     # Set the cuts on muons to be used in the fit
-    MinMuonPt = cms.untracked.double(0.),
-    MaxMuonPt = cms.untracked.double(1000.),
+    MinMuonPt = cms.untracked.double(.oO[minpt]Oo.),
+    MaxMuonPt = cms.untracked.double(.oO[maxpt]Oo.),
     MinMuonEtaFirstRange = cms.untracked.double(.oO[etaminneg]Oo.),
     MaxMuonEtaFirstRange = cms.untracked.double(.oO[etamaxneg]Oo.),
     MinMuonEtaSecondRange = cms.untracked.double(.oO[etaminpos]Oo.),
@@ -218,21 +173,33 @@ process.looper = cms.Looper(
     debug = cms.untracked.int32(0),
 )
 
-###### FINAL SEQUENCE ##############################################
-
-process.p = cms.Path(
-    process.offlineBeamSpot*process.TrackRefitter
-    )
-
 """
 
 
 ####################################################################
 ####################################################################
-zMuMuScriptTemplate="""
-#!/bin/bash
+LoadMuonModules = """
+process.load("RecoMuon.DetLayers.muonDetLayerGeometry_cfi")
+process.load("Geometry.MuonNumbering.muonNumberingInitialization_cfi")
+process.load("RecoMuon.TrackingTools.MuonServiceProxy_cff")
+process.load("Configuration.StandardSequences.Reconstruction_cff")
+"""
+
+
+####################################################################
+####################################################################
+ZMuMuPath = """
+process.p = cms.Path(
+    process.offlineBeamSpot*process.TrackRefitter
+    )
+"""
+
+
+####################################################################
+####################################################################
+zMuMuScriptTemplate="""#!/bin/bash
 source /afs/cern.ch/cms/caf/setup.sh
-eos='/afs/cern.ch/project/eos/installation/cms/bin/eos.select'
+export X509_USER_PROXY=.oO[scriptsdir]Oo./.user_proxy
 
 echo  -----------------------
 echo  Job started at `date`
@@ -244,15 +211,15 @@ export SCRAM_ARCH=.oO[SCRAM_ARCH]Oo.
 eval `scram runtime -sh`
 cd $cwd
 
-rfmkdir -p .oO[datadir]Oo.
-rfmkdir -p .oO[workingdir]Oo.
-rfmkdir -p .oO[logdir]Oo.
+mkdir -p .oO[datadir]Oo.
+mkdir -p .oO[workingdir]Oo.
+mkdir -p .oO[logdir]Oo.
 rm -f .oO[logdir]Oo./*.stdout
 rm -f .oO[logdir]Oo./*.stderr
 
-if [[ $HOSTNAME = lxplus[0-9]*\.cern\.ch ]] # check for interactive mode
+if [[ $HOSTNAME = lxplus[0-9]*[.a-z0-9]* ]] # check for interactive mode
 then
-    rfmkdir -p .oO[workdir]Oo.
+    mkdir -p .oO[workdir]Oo.
     rm -f .oO[workdir]Oo./*
     cd .oO[workdir]Oo.
 else
@@ -281,17 +248,17 @@ cp  .oO[MuonAnalysis/MomentumScaleCalibration]Oo./test/Macros/RooFit/MultiHistoO
 if [[ .oO[zmumureference]Oo. == *store* ]]; then xrdcp -f .oO[zmumureference]Oo. BiasCheck_Reference.root; else ln -fs .oO[zmumureference]Oo. ./BiasCheck_Reference.root; fi
 root -q -b -l MultiHistoOverlap_.oO[resonance]Oo..C
 
-$eos mkdir -p /store/caf/user/$USER/.oO[eosdir]Oo./plots/
+eos mkdir -p /store/group/alca_trackeralign/AlignmentValidation/.oO[eosdir]Oo./plots/
 for RootOutputFile in $(ls *root )
 do
-    xrdcp -f ${RootOutputFile}  root://eoscms//eos/cms/store/caf/user/$USER/.oO[eosdir]Oo./
-    rfcp ${RootOutputFile}  .oO[workingdir]Oo.
+    xrdcp -f ${RootOutputFile}  root://eoscms//eos/cms/store/group/alca_trackeralign/AlignmentValidation/.oO[eosdir]Oo./
+    cp ${RootOutputFile}  .oO[workingdir]Oo.
 done
 
 mkdir -p .oO[plotsdir]Oo.
 for PngOutputFile in $(ls *png ); do
-    xrdcp -f ${PngOutputFile}  root://eoscms//eos/cms/store/caf/user/$USER/.oO[eosdir]Oo./plots/
-    rfcp ${PngOutputFile}  .oO[plotsdir]Oo.
+    xrdcp -f ${PngOutputFile}  root://eoscms//eos/cms/store/group/alca_trackeralign/AlignmentValidation/.oO[eosdir]Oo./plots/
+    cp ${PngOutputFile}  .oO[plotsdir]Oo.
 done
 
 
@@ -307,7 +274,7 @@ echo  -----------------------
 mergeZmumuPlotsExecution="""
 #merge Z->mumu histograms
 
-rfcp .oO[mergeZmumuPlotsScriptPath]Oo. .
+cp .oO[mergeZmumuPlotsScriptPath]Oo. .
 root -l -x -b -q TkAlMergeZmumuPlots.C++
 
 """
@@ -331,7 +298,7 @@ template <typename T> string separatebycommas(vector<T> v){
 void TkAlMergeZmumuPlots(){
   vector<string> filenames; vector<string> titles; vector<int> colors; vector<int> linestyles;
 
-  .oO[mergeZmumuPlotsInstantiation]Oo.
+.oO[PlottingInstantiation]Oo.
 
   vector<int> linestyles_new, markerstyles_new;
   for (unsigned int j=0; j<linestyles.size(); j++){ linestyles_new.push_back(linestyles.at(j) % 100); markerstyles_new.push_back(linestyles.at(j) / 100); }
@@ -339,6 +306,6 @@ void TkAlMergeZmumuPlots(){
   TkAlStyle::legendheader = ".oO[legendheader]Oo.";
   TkAlStyle::set(.oO[publicationstatus]Oo., .oO[era]Oo., ".oO[customtitle]Oo.", ".oO[customrighttitle]Oo.");
 
-  MultiHistoOverlapAll_.oO[resonance]Oo.(separatebycommas(filenames), separatebycommas(titles), separatebycommas(colors), separatebycommas(linestyles_new), separatebycommas(markerstyles_new), ".oO[datadir]Oo./.oO[resonance]Oo.MuMuPlots", .oO[switchONfit]Oo.);
+  MultiHistoOverlapAll_.oO[resonance]Oo.(separatebycommas(filenames), separatebycommas(titles), separatebycommas(colors), separatebycommas(linestyles_new), separatebycommas(markerstyles_new), ".oO[datadir]Oo./.oO[PlotsDirName]Oo.", .oO[switchONfit]Oo., .oO[AutoSetRange]Oo., .oO[CustomMinY]Oo., .oO[CustomMaxY]Oo.);
 }
 """

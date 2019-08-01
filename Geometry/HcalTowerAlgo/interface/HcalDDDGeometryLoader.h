@@ -1,5 +1,5 @@
 #ifndef Geometry_HcalTowerAlgo_HcalDDDGeometryLoader_H
-#define Geometry_HcalTowerAlgo_HcalDDDGeometryLoader_H 1
+#define Geometry_HcalTowerAlgo_HcalDDDGeometryLoader_H
 
 #include "Geometry/CaloGeometry/interface/CaloVGeometryLoader.h"
 #include "Geometry/HcalCommonData/interface/HcalDDDRecConstants.h"
@@ -19,33 +19,27 @@ class HcalDDDGeometry;
 */
 
 class HcalDDDGeometryLoader {
-
 public:
-
-  explicit HcalDDDGeometryLoader(const HcalDDDRecConstants * hcons);
+  explicit HcalDDDGeometryLoader(const HcalDDDRecConstants* hcons);
   virtual ~HcalDDDGeometryLoader();
-  
-  typedef CaloSubdetectorGeometry* ReturnType ;
-  ReturnType load(const HcalTopology& topo, DetId::Detector , int );
+
+  typedef CaloSubdetectorGeometry* ReturnType;
+  ReturnType load(const HcalTopology& topo, DetId::Detector, int);
   /// Load all of HCAL
   ReturnType load(const HcalTopology& topo);
-  
+
+  HcalDDDGeometryLoader() = delete;
+
 private:
-
-  HcalDDDGeometryLoader();
-
   /// helper functions to make all the ids and cells, and put them into the
   /// vectors and mpas passed in.
   void fill(HcalSubdetector, HcalDDDGeometry*);
-  
-  void makeCell( const HcalDetId &, 
-		 const HcalCellType& , double, 
-		 double, HcalDDDGeometry* geom) const;
-  
-  const HcalDDDRecConstants* hcalConstants;
 
-  HcalTopology* dummyTopology_;
-  bool          isBH_;
+  void makeCell(const HcalDetId&, const HcalCellType&, double, double, HcalDDDGeometry* geom) const;
+
+  const HcalDDDRecConstants* hcalConstants_;
+
+  bool isBH_;
 };
 
 #endif

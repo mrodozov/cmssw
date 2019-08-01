@@ -1,7 +1,7 @@
 // -*- C++ -*-
 //
 // Class:      TestMix
-// 
+//
 /**\class TestMix
 
  Description: test of Mixing Module
@@ -33,8 +33,7 @@
 #include <vector>
 #include <string>
 
-namespace edm
-{
+namespace edm {
 
   //
   // class declaration
@@ -43,9 +42,9 @@ namespace edm
   class TestMix : public edm::one::EDAnalyzer<> {
   public:
     explicit TestMix(const edm::ParameterSet&);
-    virtual ~TestMix();
+    ~TestMix() override;
 
-    virtual void analyze(const edm::Event&, const edm::EventSetup&) override;
+    void analyze(const edm::Event&, const edm::EventSetup&) override;
 
   private:
     int level_;
@@ -63,6 +62,5 @@ namespace edm
     edm::EDGetTokenT<CrossingFrame<SimTrack>> SimTrackToken_;
     edm::EDGetTokenT<CrossingFrame<SimVertex>> SimVertexToken_;
     edm::EDGetTokenT<CrossingFrame<HepMCProduct>> HepMCToken_;
-
   };
-}//edm
+}  // namespace edm

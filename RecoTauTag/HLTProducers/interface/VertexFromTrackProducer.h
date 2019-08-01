@@ -2,7 +2,7 @@
 //
 // Package:    VertexFromTrackProducer
 // Class:      VertexFromTrackProducer
-// 
+//
 /**\class VertexFromTrackProducer VertexFromTrackProducer.cc RecoVertex/PrimaryVertexProducer/src/VertexFromTrackProducer.cc
 
  Description: produces a primary vertex extrapolating the track of a candidate on the beam axis
@@ -15,7 +15,6 @@
 //         Created:  Tue Dec 6 17:16:45 CET 2011
 //
 //
-
 
 // system include files
 #include <memory>
@@ -47,9 +46,9 @@
 class VertexFromTrackProducer : public edm::global::EDProducer<> {
 public:
   explicit VertexFromTrackProducer(const edm::ParameterSet&);
-  ~VertexFromTrackProducer();
-  
-  virtual void produce(edm::StreamID, edm::Event&, const edm::EventSetup&) const override;
+  ~VertexFromTrackProducer() override;
+
+  void produce(edm::StreamID, edm::Event&, const edm::EventSetup&) const override;
 
   static void fillDescriptions(edm::ConfigurationDescriptions& descriptions);
 
@@ -61,7 +60,7 @@ private:
   const edm::EDGetTokenT<trigger::TriggerFilterObjectWithRefs> triggerFilterMuonsSrc;
   const edm::EDGetTokenT<edm::View<reco::Vertex> > vertexLabel;
   const edm::EDGetTokenT<reco::BeamSpot> beamSpotLabel;
-  
+
   // ----------member data ---------------------------
   const bool fIsRecoCandidate;
   const bool fUseBeamSpot;

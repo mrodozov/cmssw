@@ -19,18 +19,17 @@
 #include "CondFormats/DataRecord/interface/SiStripPedestalsRcd.h"
 
 #include <iostream>
-#include <stdio.h>
+#include <cstdio>
 #include <sys/time.h>
 
 class SiStripPedestalsReader : public edm::EDAnalyzer {
+public:
+  explicit SiStripPedestalsReader(const edm::ParameterSet&);
+  ~SiStripPedestalsReader() override;
 
- public:
-  explicit SiStripPedestalsReader( const edm::ParameterSet& );
-  ~SiStripPedestalsReader();
-  
-  void analyze( const edm::Event&, const edm::EventSetup& );
+  void analyze(const edm::Event&, const edm::EventSetup&) override;
 
- private:
+private:
   uint32_t printdebug_;
 };
 #endif

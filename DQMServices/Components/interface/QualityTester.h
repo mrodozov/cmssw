@@ -21,41 +21,38 @@
 #include <FWCore/Framework/interface/LuminosityBlock.h>
 #include "CondFormats/Common/interface/FileBlob.h"
 #include "CondFormats/DataRecord/interface/DQMXMLFileRcd.h"
+#include "DQMServices/Core/interface/DQMStore.h"
 
 #include <memory>
 #include <iostream>
 #include <string>
 
-class DQMStore;
 class QTestHandle;
 
-
-class QualityTester: public edm::EDAnalyzer{
-
+class QualityTester : public edm::EDAnalyzer {
 public:
+  typedef dqm::harvesting::DQMStore DQMStore;
+  typedef dqm::harvesting::MonitorElement MonitorElement;
 
   /// Constructor
   QualityTester(const edm::ParameterSet& ps);
-  
+
   /// Destructor
-  virtual ~QualityTester();
+  ~QualityTester() override;
 
 protected:
-
   /// Analyze
-  void analyze(const edm::Event& e, const edm::EventSetup& c) ;
+  void analyze(const edm::Event& e, const edm::EventSetup& c) override;
 
   /// perform the actual quality tests
-  void endLuminosityBlock(edm::LuminosityBlock const& lumiSeg, edm::EventSetup const& c);
-  void beginRun(const edm::Run&, const edm::EventSetup&) ;
-  void endRun(const edm::Run& r, const edm::EventSetup& c);
-  void endJob();
+  void endLuminosityBlock(edm::LuminosityBlock const& lumiSeg, edm::EventSetup const& c) override;
+  void beginRun(const edm::Run&, const edm::EventSetup&) override;
+  void endRun(const edm::Run& r, const edm::EventSetup& c) override;
+  void endJob() override;
 
 private:
+  void performTests();
 
-
-  void performTests(void);
-  
   int nEvents;
   int prescaleFactor;
   bool getQualityTestsFromFile;
@@ -67,9 +64,9 @@ private:
   std::string reportThreshold;
   bool verboseQT;
 
-  DQMStore * bei;
+  DQMStore* bei;
 
-  QTestHandle * qtHandler;
+  QTestHandle* qtHandler;
 };
 
 #endif

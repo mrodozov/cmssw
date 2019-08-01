@@ -16,7 +16,6 @@
 //
 //
 
-
 // system include files
 #include <memory>
 #include <iostream>
@@ -42,30 +41,27 @@ namespace AlCaGammaJet {
     Counters() : nProcessed_(0), nSelected_(0) {}
     mutable std::atomic<unsigned int> nProcessed_, nSelected_;
   };
-}
-
+}  // namespace AlCaGammaJet
 
 class AlCaGammaJetSelector : public edm::stream::EDFilter<edm::GlobalCache<AlCaGammaJet::Counters> > {
-
 public:
   explicit AlCaGammaJetSelector(const edm::ParameterSet&, const AlCaGammaJet::Counters* count);
-  ~AlCaGammaJetSelector();
-  
-  static std::unique_ptr<AlCaGammaJet::Counters> initializeGlobalCache(edm::ParameterSet const& ) {
+  ~AlCaGammaJetSelector() override;
+
+  static std::unique_ptr<AlCaGammaJet::Counters> initializeGlobalCache(edm::ParameterSet const&) {
     return std::make_unique<AlCaGammaJet::Counters>();
   }
 
   static void fillDescriptions(edm::ConfigurationDescriptions& descriptions);
-  virtual bool filter(edm::Event&, const edm::EventSetup&) override;
-  virtual void endStream() override;
-  static  void globalEndJob(const AlCaGammaJet::Counters* counters);
+  bool filter(edm::Event&, const edm::EventSetup&) override;
+  void endStream() override;
+  static void globalEndJob(const AlCaGammaJet::Counters* counters);
 
 private:
-
-  virtual void beginRun(edm::Run const&, edm::EventSetup const&) override {}
-  virtual void endRun(edm::Run const&, edm::EventSetup const&) override {}
-  virtual void beginLuminosityBlock(edm::LuminosityBlock const&, edm::EventSetup const&) override {}
-  virtual void endLuminosityBlock(edm::LuminosityBlock const&, edm::EventSetup const&) override {}
+  void beginRun(edm::Run const&, edm::EventSetup const&) override {}
+  void endRun(edm::Run const&, edm::EventSetup const&) override {}
+  void beginLuminosityBlock(edm::LuminosityBlock const&, edm::EventSetup const&) override {}
+  void endLuminosityBlock(edm::LuminosityBlock const&, edm::EventSetup const&) override {}
   bool select(const reco::PhotonCollection&, const reco::PFJetCollection&);
 
   // ----------member data ---------------------------
@@ -76,7 +72,6 @@ private:
   double minPtJet_, minPtPhoton_;
   edm::EDGetTokenT<reco::PhotonCollection> tok_Photon_;
   edm::EDGetTokenT<reco::PFJetCollection> tok_PFJet_;
-
 };
 
 //
@@ -95,18 +90,17 @@ AlCaGammaJetSelector::AlCaGammaJetSelector(const edm::ParameterSet& iConfig, con
   nSelected_ = 0;
 
   // get input
-  labelPhoton_     = iConfig.getParameter<edm::InputTag>("PhoInput");
-  labelPFJet_      = iConfig.getParameter<edm::InputTag>("PFjetInput");
-  minPtJet_        = iConfig.getParameter<double>("MinPtJet");
-  minPtPhoton_     = iConfig.getParameter<double>("MinPtPhoton");
+  labelPhoton_ = iConfig.getParameter<edm::InputTag>("PhoInput");
+  labelPFJet_ = iConfig.getParameter<edm::InputTag>("PFjetInput");
+  minPtJet_ = iConfig.getParameter<double>("MinPtJet");
+  minPtPhoton_ = iConfig.getParameter<double>("MinPtPhoton");
 
   // Register consumption
   tok_Photon_ = consumes<reco::PhotonCollection>(labelPhoton_);
-  tok_PFJet_  = consumes<reco::PFJetCollection>(labelPFJet_);
-
+  tok_PFJet_ = consumes<reco::PFJetCollection>(labelPFJet_);
 }
 
-AlCaGammaJetSelector::~AlCaGammaJetSelector() { }
+AlCaGammaJetSelector::~AlCaGammaJetSelector() {}
 
 //
 // member functions
@@ -130,60 +124,57 @@ bool AlCaGammaJetSelector::filter(edm::Event& iEvent, const edm::EventSetup& iSe
 
   // Access the collections from iEvent
   edm::Handle<reco::PhotonCollection> phoHandle;
-  iEvent.getByToken(tok_Photon_,phoHandle);
+  iEvent.getByToken(tok_Photon_, phoHandle);
   if (!phoHandle.isValid()) {
     edm::LogWarning("AlCaGammaJet") << "AlCaGammaJetProducer: Error! can't get the product " << labelPhoton_;
-    return false; // do not filter
+    return false;  // do not filter
   }
   const reco::PhotonCollection photons = *(phoHandle.product());
 
   edm::Handle<reco::PFJetCollection> pfjetHandle;
-  iEvent.getByToken(tok_PFJet_,pfjetHandle);
+  iEvent.getByToken(tok_PFJet_, pfjetHandle);
   if (!pfjetHandle.isValid()) {
     edm::LogWarning("AlCaGammaJet") << "AlCaGammaJetProducer: Error! can't get product " << labelPFJet_;
-    return false; // do not filter
+    return false;  // do not filter
   }
   const reco::PFJetCollection pfjets = *(pfjetHandle.product());
 
   // Check the conditions for a good event
-  if (!(select(photons, pfjets))) return false;
+  if (!(select(photons, pfjets)))
+    return false;
 
   //std::cout << "good event\n";
   nSelected_++;
   return true;
-
 }
 
 void AlCaGammaJetSelector::endStream() {
   globalCache()->nProcessed_ += nProcessed_;
-  globalCache()->nSelected_  += nSelected_;
+  globalCache()->nSelected_ += nSelected_;
 }
 
 // ------------ method called once each job just after ending the event loop  ------------
 
 void AlCaGammaJetSelector::globalEndJob(const AlCaGammaJet::Counters* count) {
-  edm::LogWarning("AlCaGammaJet") << "Finds " << count->nSelected_ 
-				  <<" good events out of "
-				  << count->nProcessed_;
+  edm::LogWarning("AlCaGammaJet") << "Finds " << count->nSelected_ << " good events out of " << count->nProcessed_;
 }
 
-bool AlCaGammaJetSelector::select (const reco::PhotonCollection &photons,
-				   const reco::PFJetCollection &jets) {
-
+bool AlCaGammaJetSelector::select(const reco::PhotonCollection& photons, const reco::PFJetCollection& jets) {
   // Check the requirement for minimum pT
-  if (photons.size() == 0) return false;
+  if (photons.empty())
+    return false;
   bool ok(false);
-  for (reco::PFJetCollection::const_iterator itr=jets.begin();
-       itr!=jets.end(); ++itr) {
+  for (reco::PFJetCollection::const_iterator itr = jets.begin(); itr != jets.end(); ++itr) {
     if (itr->pt() >= minPtJet_) {
       ok = true;
       break;
     }
   }
-  if (!ok) return ok;
-  for (reco::PhotonCollection::const_iterator itr=photons.begin();
-       itr!=photons.end(); ++itr) {
-    if (itr->pt() >= minPtPhoton_) return ok;
+  if (!ok)
+    return ok;
+  for (reco::PhotonCollection::const_iterator itr = photons.begin(); itr != photons.end(); ++itr) {
+    if (itr->pt() >= minPtPhoton_)
+      return ok;
   }
   return false;
 }

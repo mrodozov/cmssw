@@ -8,37 +8,29 @@ namespace edm {
 
   std::string const Run::emptyString_;
 
-  Run::Run(RunPrincipal const& rp, ModuleDescription const& md,
-           ModuleCallingContext const* moduleCallingContext) :
-        provRecorder_(rp, md),
-        aux_(rp.aux()),
-        moduleCallingContext_(moduleCallingContext)  {
-  }
+  Run::Run(RunPrincipal const& rp,
+           ModuleDescription const& md,
+           ModuleCallingContext const* moduleCallingContext,
+           bool isAtEnd)
+      : provRecorder_(rp, md, isAtEnd), aux_(rp.aux()), moduleCallingContext_(moduleCallingContext) {}
 
-  Run::~Run() {
-  }
+  Run::~Run() {}
 
-  Run::CacheIdentifier_t
-  Run::cacheIdentifier() const {return runPrincipal().cacheIdentifier();}
+  Run::CacheIdentifier_t Run::cacheIdentifier() const { return runPrincipal().cacheIdentifier(); }
 
-  RunIndex Run::index() const { return runPrincipal().index();}
-  
-  RunPrincipal const&
-  Run::runPrincipal() const {
-    return dynamic_cast<RunPrincipal const&>(provRecorder_.principal());
-  }
+  RunIndex Run::index() const { return runPrincipal().index(); }
 
-  Provenance
-  Run::getProvenance(BranchID const& bid) const {
+  RunPrincipal const& Run::runPrincipal() const { return dynamic_cast<RunPrincipal const&>(provRecorder_.principal()); }
+
+  Provenance Run::getProvenance(BranchID const& bid) const {
     return runPrincipal().getProvenance(bid, moduleCallingContext_);
   }
 
-  void
-  Run::getAllStableProvenance(std::vector<StableProvenance const*>& provenances) const {
+  void Run::getAllStableProvenance(std::vector<StableProvenance const*>& provenances) const {
     runPrincipal().getAllStableProvenance(provenances);
   }
 
-/* Not yet fully implemented
+  /* Not yet fully implemented
   bool
   Run::getProcessParameterSet(std::string const& processName, std::vector<ParameterSet>& psets) const {
     // Get the relevant ProcessHistoryIDs
@@ -75,24 +67,31 @@ namespace edm {
   }
 */
 
-  void
-  Run::commit_(std::vector<edm::ProductResolverIndex> const& iShouldPut) {
-    RunPrincipal const& rp = runPrincipal();
-    ProductPtrVec::iterator pit(putProducts().begin());
-    ProductPtrVec::iterator pie(putProducts().end());
+  void Run::setProducer(ProducerBase const* iProducer) {
+    provRecorder_.setProducer(iProducer);
+    //set appropriate size
+    putProducts_.resize(provRecorder_.putTokenIndexToProductResolverIndex().size());
+  }
 
-    while(pit != pie) {
-        rp.put(*pit->second, std::move(get_underlying_safe(pit->first)));
-        ++pit;
+  void Run::commit_(std::vector<edm::ProductResolverIndex> const& iShouldPut) {
+    RunPrincipal const& rp = runPrincipal();
+    size_t nPut = 0;
+    for (size_t i = 0; i < putProducts().size(); ++i) {
+      auto& p = get_underlying_safe(putProducts()[i]);
+      if (p) {
+        rp.put(provRecorder_.putTokenIndexToProductResolverIndex()[i], std::move(p));
+        ++nPut;
+      }
     }
 
     auto sz = iShouldPut.size();
-    if(sz !=0 and sz != putProducts().size()) {
+    if (sz != 0 and sz != nPut) {
       //some were missed
       auto& p = provRecorder_.principal();
-      for(auto index: iShouldPut){
+      for (auto index : iShouldPut) {
         auto resolver = p.getProductResolverByIndex(index);
-        if(not resolver->productResolved()) {
+        if (not resolver->productResolved() and isEndTransition(provRecorder_.transition()) ==
+                                                    resolver->branchDescription().availableOnlyAtEndTransition()) {
           resolver->putProduct(std::unique_ptr<WrapperBase>());
         }
       }
@@ -102,19 +101,14 @@ namespace edm {
     putProducts().clear();
   }
 
-  ProcessHistoryID const&
-  Run::processHistoryID() const {
-    return runPrincipal().processHistoryID();
-  }
+  ProcessHistoryID const& Run::processHistoryID() const { return runPrincipal().processHistoryID(); }
 
-  ProcessHistory const&
-  Run::processHistory() const {
-    return provRecorder_.processHistory();
-  }
+  ProcessHistory const& Run::processHistory() const { return provRecorder_.processHistory(); }
 
-  BasicHandle
-  Run::getByLabelImpl(std::type_info const&, std::type_info const& iProductType, const InputTag& iTag) const {
+  BasicHandle Run::getByLabelImpl(std::type_info const&,
+                                  std::type_info const& iProductType,
+                                  const InputTag& iTag) const {
     BasicHandle h = provRecorder_.getByLabel_(TypeID(iProductType), iTag, moduleCallingContext_);
     return h;
   }
-}
+}  // namespace edm

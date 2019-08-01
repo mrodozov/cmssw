@@ -18,12 +18,13 @@
 #include "IOMC/ParticleGuns/interface/MultiParticleInConeGunProducer.h"
 #include "IOMC/ParticleGuns/interface/RandomtXiGunProducer.h"
 #include "IOMC/ParticleGuns/interface/FlatRandomPtAndDxyGunProducer.h"
-
+#include "IOMC/ParticleGuns/interface/RandomMultiParticlePGunProducer.h"
+#include "IOMC/ParticleGuns/interface/CloseByParticleGunProducer.h"
+#include "IOMC/ParticleGuns/interface/RandomXiThetaGunProducer.h"
 
 // particle gun prototypes
 //
-  
-  
+
 /*
 using edm::FlatEGunASCIIWriter;
 DEFINE_FWK_MODULE(FlatEGunASCIIWriter);
@@ -55,3 +56,9 @@ using edm::RandomtXiGunProducer;
 DEFINE_FWK_MODULE(RandomtXiGunProducer);
 using edm::FlatRandomPtAndDxyGunProducer;
 DEFINE_FWK_MODULE(FlatRandomPtAndDxyGunProducer);
+using edm::RandomMultiParticlePGunProducer;
+DEFINE_FWK_MODULE(RandomMultiParticlePGunProducer);
+using edm::CloseByParticleGunProducer;
+DEFINE_FWK_MODULE(CloseByParticleGunProducer);
+using edm::RandomXiThetaGunProducer;
+DEFINE_FWK_MODULE(RandomXiThetaGunProducer);

@@ -21,7 +21,7 @@
 #include "DataFormats/TrackerCommon/interface/TrackerTopology.h"
 #include "SimTracker/SiPhase2Digitizer/plugins/Phase2TrackerDigitizerFwd.h"
 #include "FWCore/Framework/interface/ESWatcher.h"
-#include "FWCore/Framework/interface/stream/EDProducerBase.h"
+#include "FWCore/Framework/interface/ProducerBase.h"
 #include "Geometry/TrackerGeometryBuilder/interface/TrackerGeometry.h"
 
 #include <unordered_map>
@@ -35,9 +35,10 @@ namespace edm {
   class Event;
   class EventSetup;
   class ParameterSet;
-  template<typename T> class Handle;
+  template <typename T>
+  class Handle;
   class ConsumesCollector;
-}
+}  // namespace edm
 
 class MagneticField;
 class PileUpEventPrincipal;
@@ -45,46 +46,41 @@ class PSimHit;
 class Phase2TrackerDigitizerAlgorithm;
 class TrackerDigiGeometryRecord;
 
-namespace cms 
-{
-  class Phase2TrackerDigitizer: public DigiAccumulatorMixMod {
-
+namespace cms {
+  class Phase2TrackerDigitizer : public DigiAccumulatorMixMod {
   public:
-    typedef std::unordered_map<unsigned, TrackerGeometry::ModuleType>  ModuleTypeCache;
+    typedef std::unordered_map<unsigned, TrackerGeometry::ModuleType> ModuleTypeCache;
 
-    explicit Phase2TrackerDigitizer(const edm::ParameterSet& iConfig, edm::stream::EDProducerBase& mixMod, edm::ConsumesCollector& iC);
-    virtual ~Phase2TrackerDigitizer();
-    virtual void initializeEvent(edm::Event const& e, edm::EventSetup const& c) override;
-    virtual void accumulate(edm::Event const& e, edm::EventSetup const& c) override;
-    virtual void accumulate(PileUpEventPrincipal const& e, edm::EventSetup const& c, edm::StreamID const&) override;
-    virtual void finalizeEvent(edm::Event& e, edm::EventSetup const& c) override;
+    explicit Phase2TrackerDigitizer(const edm::ParameterSet& iConfig,
+                                    edm::ProducerBase& mixMod,
+                                    edm::ConsumesCollector& iC);
+    ~Phase2TrackerDigitizer() override;
+    void initializeEvent(edm::Event const& e, edm::EventSetup const& c) override;
+    void accumulate(edm::Event const& e, edm::EventSetup const& c) override;
+    void accumulate(PileUpEventPrincipal const& e, edm::EventSetup const& c, edm::StreamID const&) override;
+    void finalizeEvent(edm::Event& e, edm::EventSetup const& c) override;
     virtual void beginJob() {}
-    virtual void beginLuminosityBlock(edm::LuminosityBlock const& lumi, edm::EventSetup const& iSetup) override;
-    virtual void endLuminosityBlock(edm::LuminosityBlock const& lumi, edm::EventSetup const& iSetup) override; 
+    void beginLuminosityBlock(edm::LuminosityBlock const& lumi, edm::EventSetup const& iSetup) override;
 
     template <class T>
     void accumulate_local(T const& iEvent, edm::EventSetup const& iSetup);
 
-  
+    // For premixing
+    void loadAccumulator(const std::map<unsigned int, std::map<int, float> >& accumulator);
+
   private:
-    using vstring = std::vector<std::string> ;
+    using vstring = std::vector<std::string>;
 
     // constants of different algorithm types
-    enum class AlgorithmType {
-      InnerPixel,
-      PixelinPS,
-      StripinPS,
-      TwoStrip,
-      Unknown   
-    };
-    AlgorithmType getAlgoType(unsigned int idet); 
+    enum class AlgorithmType { InnerPixel, PixelinPS, StripinPS, TwoStrip, Unknown };
+    AlgorithmType getAlgoType(unsigned int idet);
 
-    void accumulatePixelHits(edm::Handle<std::vector<PSimHit> >, 
-			     size_t globalSimHitIndex,
-			     const unsigned int tofBin);   
+    void accumulatePixelHits(edm::Handle<std::vector<PSimHit> >, size_t globalSimHitIndex, const unsigned int tofBin);
     void addPixelCollection(edm::Event& iEvent, const edm::EventSetup& iSetup, const bool ot_analog);
+
+    // Templated for premixing
+    template <typename DigiType>
     void addOuterTrackerCollection(edm::Event& iEvent, const edm::EventSetup& iSetup);
-   
 
     bool first_;
 
@@ -96,7 +92,7 @@ namespace cms
      * hit in a given crossing. This assumes that the crossings are processed in the same order here as they are
      * put into the crossing frame, which I'm pretty sure is true.<br/>
      * The key is the name of the sim hit collection. */
-    std::map<std::string,size_t> crossingSimHitIndexOffset_; 
+    std::map<std::string, size_t> crossingSimHitIndexOffset_;
     std::map<AlgorithmType, std::unique_ptr<Phase2TrackerDigitizerAlgorithm> > algomap_;
     const std::string hitsProducer_;
     const vstring trackerContainers_;
@@ -104,14 +100,13 @@ namespace cms
     edm::ESHandle<TrackerGeometry> pDD_;
     edm::ESHandle<MagneticField> pSetup_;
     std::map<unsigned int, const Phase2TrackerGeomDetUnit*> detectorUnits_;
-    CLHEP::HepRandomEngine* rndEngine_;
     edm::ESHandle<TrackerTopology> tTopoHand;
     edm::ESWatcher<TrackerDigiGeometryRecord> theTkDigiGeomWatcher;
-    const edm::ParameterSet& iconfig_;
-
+    const bool isOuterTrackerReadoutAnalog;
+    const bool premixStage1_;
+    const bool makeDigiSimLinks_;
     // cache for detector types
     ModuleTypeCache moduleTypeCache_;
-    
   };
-}
+}  // namespace cms
 #endif

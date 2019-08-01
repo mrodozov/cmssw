@@ -31,14 +31,13 @@ namespace edm {
 // class declaration
 //
 class TriggerSummaryProducerRAW : public edm::stream::EDProducer<> {
-  
- public:
+public:
   explicit TriggerSummaryProducerRAW(const edm::ParameterSet&);
-  virtual ~TriggerSummaryProducerRAW();
-  static  void fillDescriptions(edm::ConfigurationDescriptions & descriptions);
-  virtual void produce(edm::Event&, const edm::EventSetup&) override;
+  ~TriggerSummaryProducerRAW() override;
+  static void fillDescriptions(edm::ConfigurationDescriptions& descriptions);
+  void produce(edm::Event&, const edm::EventSetup&) override;
 
- private:
+private:
   /// process name
   std::string pn_;
 

@@ -1,8 +1,8 @@
 #ifndef SimTracker_VertexAssociation_VertexAssociatorByPositionAndTracks_h
 #define SimTracker_VertexAssociation_VertexAssociatorByPositionAndTracks_h
 
-#include "SimDataFormats/Associations/interface/VertexToTrackingVertexAssociatorBaseImpl.h"
 #include "DataFormats/RecoCandidate/interface/TrackAssociation.h"
+#include "SimDataFormats/Associations/interface/VertexToTrackingVertexAssociatorBaseImpl.h"
 
 /**
  * This class associates reco::Vertices and TrackingVertices by their
@@ -19,9 +19,9 @@ public:
                                       double absZ,
                                       double sigmaZ,
                                       double maxRecoZ,
-				      double absT,
-				      double sigmaT,
-				      double maxRecoT,
+                                      double absT,
+                                      double sigmaT,
+                                      double maxRecoT,
                                       double sharedTrackFraction,
                                       const reco::RecoToSimCollection *trackRecoToSimAssociation,
                                       const reco::SimToRecoCollection *trackSimToRecoAssociation);
@@ -34,18 +34,18 @@ public:
                                       const reco::RecoToSimCollection *trackRecoToSimAssociation,
                                       const reco::SimToRecoCollection *trackSimToRecoAssociation);
 
-  virtual ~VertexAssociatorByPositionAndTracks();
+  ~VertexAssociatorByPositionAndTracks() override;
 
   /* Associate TrackingVertex to RecoVertex By Hits */
-  virtual reco::VertexRecoToSimCollection associateRecoToSim(const edm::Handle<edm::View<reco::Vertex> >& vCH, 
-                                                             const edm::Handle<TrackingVertexCollection>& tVCH) const;
+  reco::VertexRecoToSimCollection associateRecoToSim(const edm::Handle<edm::View<reco::Vertex>> &vCH,
+                                                     const edm::Handle<TrackingVertexCollection> &tVCH) const override;
 
-  virtual reco::VertexSimToRecoCollection associateSimToReco(const edm::Handle<edm::View<reco::Vertex> >& vCH, 
-                                                             const edm::Handle<TrackingVertexCollection>& tVCH) const;
+  reco::VertexSimToRecoCollection associateSimToReco(const edm::Handle<edm::View<reco::Vertex>> &vCH,
+                                                     const edm::Handle<TrackingVertexCollection> &tVCH) const override;
 
 private:
   // ----- member data
-  const edm::EDProductGetter * productGetter_;
+  const edm::EDProductGetter *productGetter_;
 
   const double absZ_;
   const double sigmaZ_;

@@ -13,41 +13,41 @@
 #include "FWCore/Framework/interface/Frameworkfwd.h"
 #include "FWCore/Framework/interface/EDAnalyzer.h"
 #include "FWCore/Framework/interface/ESHandle.h"
+#include "DQMServices/Core/interface/DQMStore.h"
 
 #include <DQMServices/Core/interface/DQMEDHarvester.h>
 
 #include <map>
 
-class DQMStore;
-class MonitorElement;
 class DTReadOutMapping;
 
 class DTDAQInfo : public DQMEDHarvester {
 public:
   /// Constructor
-  DTDAQInfo(const edm::ParameterSet& pset);
+  DTDAQInfo(const edm::ParameterSet &pset);
 
   /// Destructor
-  virtual ~DTDAQInfo();
+  ~DTDAQInfo() override;
 
   // Operations
 
 protected:
-  void dqmEndLuminosityBlock(DQMStore::IBooker &, DQMStore::IGetter &, edm::LuminosityBlock const &, 
-                                                      edm::EventSetup const &);
-  void dqmEndJob(DQMStore::IBooker &, DQMStore::IGetter &);
+  void dqmEndLuminosityBlock(DQMStore::IBooker &,
+                             DQMStore::IGetter &,
+                             edm::LuminosityBlock const &,
+                             edm::EventSetup const &) override;
+  void dqmEndJob(DQMStore::IBooker &, DQMStore::IGetter &) override;
 
 private:
-
   bool bookingdone;
-  
-  MonitorElement*  totalDAQFraction;
-  MonitorElement*  daqMap;
-  std::map<int, MonitorElement*> daqFractions;
-  edm::ESHandle<DTReadOutMapping> mapping;
 
+  // Check FEDs from uROS, otherwise standard ROS
+  bool checkUros;
+
+  MonitorElement *totalDAQFraction;
+  MonitorElement *daqMap;
+  std::map<int, MonitorElement *> daqFractions;
+  edm::ESHandle<DTReadOutMapping> mapping;
 };
 
-
 #endif
-

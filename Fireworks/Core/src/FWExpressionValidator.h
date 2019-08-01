@@ -21,42 +21,40 @@
 // system include files
 #include <vector>
 #include <memory>
-#include "FWCore/Utilities/interface/TypeWithDict.h"
+#include "FWCore/Reflection/interface/TypeWithDict.h"
 
 // user include files
 #include "Fireworks/Core/src/FWValidatorBase.h"
 
 // forward declarations
 namespace fireworks {
-   class OptionNode;
+  class OptionNode;
 }
 
 class FWExpressionValidator : public FWValidatorBase {
-
 public:
-   FWExpressionValidator();
-   virtual ~FWExpressionValidator();
+  FWExpressionValidator();
+  ~FWExpressionValidator() override;
 
-   // ---------- const member functions ---------------------
-   virtual void fillOptions(const char* iBegin, const char* iEnd,
-                            std::vector<std::pair<std::shared_ptr<std::string>, std::string> >& oOptions) const;
+  // ---------- const member functions ---------------------
+  void fillOptions(const char* iBegin,
+                   const char* iEnd,
+                   std::vector<std::pair<std::shared_ptr<std::string>, std::string> >& oOptions) const override;
 
-   // ---------- static member functions --------------------
+  // ---------- static member functions --------------------
 
-   // ---------- member functions ---------------------------
-   void setType(const edm::TypeWithDict&);
+  // ---------- member functions ---------------------------
+  void setType(const edm::TypeWithDict&);
 
 private:
-   FWExpressionValidator(const FWExpressionValidator&); // stop default
+  FWExpressionValidator(const FWExpressionValidator&) = delete;  // stop default
 
-   const FWExpressionValidator& operator=(const FWExpressionValidator&); // stop default
+  const FWExpressionValidator& operator=(const FWExpressionValidator&) = delete;  // stop default
 
-   // ---------- member data --------------------------------
-   edm::TypeWithDict m_type;
-   std::vector<std::shared_ptr<fireworks::OptionNode> > m_options;
-   std::vector<std::shared_ptr<fireworks::OptionNode> > m_builtins;
-
+  // ---------- member data --------------------------------
+  edm::TypeWithDict m_type;
+  std::vector<std::shared_ptr<fireworks::OptionNode> > m_options;
+  std::vector<std::shared_ptr<fireworks::OptionNode> > m_builtins;
 };
-
 
 #endif

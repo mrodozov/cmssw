@@ -24,24 +24,18 @@
 #include <string>
 #include <vector>
 
-class ShiftedParticleMETcorrInputProducer : public edm::global::EDProducer<>
-{
- public:
-
+class ShiftedParticleMETcorrInputProducer : public edm::global::EDProducer<> {
+public:
   explicit ShiftedParticleMETcorrInputProducer(const edm::ParameterSet&);
-  ~ShiftedParticleMETcorrInputProducer();
+  ~ShiftedParticleMETcorrInputProducer() override;
 
- private:
+private:
   typedef edm::View<reco::Candidate> CandidateView;
 
-  void produce(edm::StreamID, edm::Event&, const edm::EventSetup&) const;
+  void produce(edm::StreamID, edm::Event&, const edm::EventSetup&) const override;
 
   const edm::EDGetTokenT<CandidateView> srcOriginalToken_;
   const edm::EDGetTokenT<CandidateView> srcShiftedToken_;
 };
 
 #endif
-
-
-
-

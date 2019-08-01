@@ -4,7 +4,7 @@
 //
 // Package:    MCParticlePairFilter
 // Class:      MCParticlePairFilter
-// 
+//
 /* 
 
  Description: filter events based on the Pythia particle information
@@ -18,19 +18,17 @@
 //
 //
 
-
 // system include files
 #include <memory>
 
 // user include files
 #include "FWCore/Framework/interface/Frameworkfwd.h"
-#include "FWCore/Framework/interface/EDFilter.h"
+#include "FWCore/Framework/interface/global/EDFilter.h"
 
 #include "FWCore/Framework/interface/Event.h"
 #include "FWCore/Framework/interface/MakerMacros.h"
 
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
-
 
 //
 // class decleration
@@ -38,40 +36,35 @@
 namespace edm {
   class HepMCProduct;
 }
-namespace HepMC {
-   class FourVector;
-}
 
-class MCParticlePairFilter : public edm::EDFilter {
-   public:
-      explicit MCParticlePairFilter(const edm::ParameterSet&);
-      ~MCParticlePairFilter();
+class MCParticlePairFilter : public edm::global::EDFilter<> {
+public:
+  explicit MCParticlePairFilter(const edm::ParameterSet&);
+  ~MCParticlePairFilter() override;
 
+  bool filter(edm::StreamID, edm::Event&, const edm::EventSetup&) const override;
 
-      virtual bool filter(edm::Event&, const edm::EventSetup&);
-   private:
-      // ----------memeber function----------------------
-       int charge(const int& Id);
-       HepMC::FourVector zboost(const HepMC::FourVector&);
+private:
+  // ----------memeber function----------------------
+  int charge(int Id) const;
 
-      // ----------member data ---------------------------
-      
-       edm::EDGetTokenT<edm::HepMCProduct> token_;
-       std::vector<int> particleID1;
-       std::vector<int> particleID2;
-       std::vector<double> ptMin;
-       std::vector<double> pMin;
-       std::vector<double> etaMin;  
-       std::vector<double> etaMax;
-       std::vector<int> status;
-       int particleCharge;
-       double minInvMass;
-       double maxInvMass;
-       double minDeltaPhi;
-       double maxDeltaPhi;
-       double minDeltaR;
-       double maxDeltaR;
-       double betaBoost;
-       
+  // ----------member data ---------------------------
+
+  const edm::EDGetTokenT<edm::HepMCProduct> token_;
+  std::vector<int> particleID1;
+  std::vector<int> particleID2;
+  std::vector<double> ptMin;
+  std::vector<double> pMin;
+  std::vector<double> etaMin;
+  std::vector<double> etaMax;
+  std::vector<int> status;
+  const int particleCharge;
+  const double minInvMass;
+  const double maxInvMass;
+  const double minDeltaPhi;
+  const double maxDeltaPhi;
+  const double minDeltaR;
+  const double maxDeltaR;
+  const double betaBoost;
 };
 #endif

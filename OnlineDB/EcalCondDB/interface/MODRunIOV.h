@@ -11,14 +11,14 @@
 typedef int subrun_t;
 
 class MODRunIOV : public IIOV {
- public:
+public:
   friend class EcalCondDBInterface;
 
   MODRunIOV();
-  ~MODRunIOV();
+  ~MODRunIOV() override;
 
   void setID(int id);
-  int getID(){ return m_ID;} ;
+  int getID() { return m_ID; };
 
   // Methods for user data
   void setRunIOV(const RunIOV& iov);
@@ -31,21 +31,18 @@ class MODRunIOV : public IIOV {
   Tm getSubRunEnd() const;
 
   // Methods from IUniqueDBObject
-  int fetchID() noexcept(false);
-  void setByID(int id) noexcept(false);
+  int fetchID() noexcept(false) override;
+  void setByID(int id) noexcept(false) override;
 
   // Operators
-  inline bool operator==(const MODRunIOV &m) const
-    {
-      return ( m_runIOV      == m.m_runIOV &&
-	       m_subRunNum   == m.m_subRunNum &&
-	       m_subRunStart == m.m_subRunStart &&
-	       m_subRunEnd   == m.m_subRunEnd );
-    }
+  inline bool operator==(const MODRunIOV& m) const {
+    return (m_runIOV == m.m_runIOV && m_subRunNum == m.m_subRunNum && m_subRunStart == m.m_subRunStart &&
+            m_subRunEnd == m.m_subRunEnd);
+  }
 
-  inline bool operator!=(const MODRunIOV &m) const { return !(*this == m); }
+  inline bool operator!=(const MODRunIOV& m) const { return !(*this == m); }
 
- private:
+private:
   // User data for this IOV
   RunIOV m_runIOV;
   subrun_t m_subRunNum;

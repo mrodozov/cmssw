@@ -23,46 +23,40 @@
 // C++ Headers --
 //---------------
 
-
 //              ---------------------
 //              -- Class Interface --
 //              ---------------------
 
-class BPHParticleEtaSelect: public BPHRecoSelect {
-
- public:
-
+class BPHParticleEtaSelect : public BPHRecoSelect {
+public:
   /** Constructor
    */
-  BPHParticleEtaSelect( double eta ): etaMax( eta ) {}
+  BPHParticleEtaSelect(double eta) : etaMax(eta) {}
 
   /** Destructor
    */
-  virtual ~BPHParticleEtaSelect() {}
+  ~BPHParticleEtaSelect() override {}
 
   /** Operations
    */
   /// select particle
-  virtual bool accept( const reco::Candidate& cand ) const {
-    return ( fabs( cand.p4().eta() ) < etaMax );
-  }
+  bool accept(const reco::Candidate& cand) const override { return (fabs(cand.p4().eta()) < etaMax); }
 
   /// set eta max
-  void setEtaMax( double eta ) { etaMax = eta; return; }
+  void setEtaMax(double eta) {
+    etaMax = eta;
+    return;
+  }
 
   /// get current eta max
   double getEtaMax() const { return etaMax; }
 
- private:
-
+private:
   // private copy and assigment constructors
-  BPHParticleEtaSelect           ( const BPHParticleEtaSelect& x );
-  BPHParticleEtaSelect& operator=( const BPHParticleEtaSelect& x );
+  BPHParticleEtaSelect(const BPHParticleEtaSelect& x) = delete;
+  BPHParticleEtaSelect& operator=(const BPHParticleEtaSelect& x) = delete;
 
   double etaMax;
-
 };
 
-
 #endif
-

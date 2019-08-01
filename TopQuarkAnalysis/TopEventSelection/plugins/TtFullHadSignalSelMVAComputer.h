@@ -16,24 +16,20 @@ MVA_COMPUTER_CONTAINER_DEFINE(TtFullHadSignalSelMVA);  // defines TopFullHadLepS
 #endif
 
 class TtFullHadSignalSelMVAComputer : public edm::EDProducer {
-
- public:
-
+public:
   explicit TtFullHadSignalSelMVAComputer(const edm::ParameterSet&);
-  ~TtFullHadSignalSelMVAComputer();
+  ~TtFullHadSignalSelMVAComputer() override;
 
- private:
+private:
+  void beginJob() override;
+  void produce(edm::Event& evt, const edm::EventSetup& setup) override;
+  void endJob() override;
 
-  virtual void beginJob();
-  virtual void produce(edm::Event& evt, const edm::EventSetup& setup);
-  virtual void endJob();
-
-  edm::EDGetTokenT< std::vector<pat::Jet> > jetsToken_;
+  edm::EDGetTokenT<std::vector<pat::Jet> > jetsToken_;
 
   PhysicsTools::MVAComputerCache mvaComputer;
 
   double DiscSel;
-
 };
 
 #endif

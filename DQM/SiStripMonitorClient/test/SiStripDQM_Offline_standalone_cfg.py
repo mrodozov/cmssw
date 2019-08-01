@@ -23,8 +23,10 @@ process.GlobalTag.globaltag = "GR09_P_V2::All"
 # DQM Environment
 process.load("DQMServices.Core.DQM_cfg")
 
-process.TkDetMap = cms.Service("TkDetMap")
-process.SiStripDetInfoFileReader = cms.Service("SiStripDetInfoFileReader")
+process.load("Configuration.Geometry.GeometryExtended2017_cff")
+process.load("CalibTracker.SiStripCommon.TkDetMapESProducer_cfi")
+process.load("Geometry.TrackerGeometryBuilder.trackerParameters_cfi")
+process.trackerTopology = cms.ESProducer("TrackerTopologyEP")
 
 # SiStrip Offline DQM Client
 # SiStrip Offline DQM Client

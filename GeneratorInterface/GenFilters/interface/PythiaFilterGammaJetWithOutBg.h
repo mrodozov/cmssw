@@ -28,30 +28,28 @@ namespace edm {
 }
 
 class PythiaFilterGammaJetWithOutBg : public edm::EDFilter {
-   public:
-      explicit PythiaFilterGammaJetWithOutBg(const edm::ParameterSet&);
-      ~PythiaFilterGammaJetWithOutBg();
+public:
+  explicit PythiaFilterGammaJetWithOutBg(const edm::ParameterSet&);
+  ~PythiaFilterGammaJetWithOutBg() override;
 
-      virtual bool filter(edm::Event&, const edm::EventSetup&);
+  bool filter(edm::Event&, const edm::EventSetup&) override;
 
-   private:
-      
-       edm::EDGetTokenT<edm::HepMCProduct> token_;
-       double etaMax;
-       double ptSeed;
-       double ptMin;
-       double ptMax;
-       double dphiMin;
-       double detaMax;
-       double etaPhotonCut2;
+private:
+  edm::EDGetTokenT<edm::HepMCProduct> token_;
+  double etaMax;
+  double ptSeed;
+  double ptMin;
+  double ptMax;
+  double dphiMin;
+  double detaMax;
+  double etaPhotonCut2;
 
-       double cone;
-       double ebEtaMax;
-       double deltaEB;
-       double deltaEE;
+  double cone;
+  double ebEtaMax;
+  double deltaEB;
+  double deltaEE;
 
-       int theNumberOfSelected;
-       int maxnumberofeventsinrun;
-
+  int theNumberOfSelected;
+  int maxnumberofeventsinrun;
 };
 #endif

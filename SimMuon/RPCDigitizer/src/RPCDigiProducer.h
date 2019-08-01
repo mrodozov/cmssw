@@ -18,35 +18,30 @@ class RPCGeometry;
 class RPCSimSetUp;
 class RPCSynchronizer;
 
-class RPCDigiProducer : public edm::stream::EDProducer<>
-{
+class RPCDigiProducer : public edm::stream::EDProducer<> {
 public:
-
   typedef RPCDigitizer::RPCDigiSimLinks RPCDigitizerSimLinks;
 
   explicit RPCDigiProducer(const edm::ParameterSet& ps);
-  virtual ~RPCDigiProducer();
+  ~RPCDigiProducer() override;
 
-  virtual void beginRun(const edm::Run&, const edm::EventSetup&) override;
+  void beginRun(const edm::Run&, const edm::EventSetup&) override;
 
   /**Produces the EDM products,*/
-  virtual void produce(edm::Event& e, const edm::EventSetup& c) override;
+  void produce(edm::Event& e, const edm::EventSetup& c) override;
 
   void setRPCSetUp(const std::vector<RPCStripNoises::NoiseItem>&, const std::vector<double>&);
 
 private:
-
   RPCDigitizer* theDigitizer;
   RPCSimSetUp* theRPCSimSetUp;
 
-  //Name of Collection used for create the XF 
+  //Name of Collection used for create the XF
   std::string mix_;
   std::string collection_for_XF;
 
   //Token for accessing data
   edm::EDGetTokenT<CrossingFrame<PSimHit>> crossingFrameToken;
-
 };
 
 #endif
-

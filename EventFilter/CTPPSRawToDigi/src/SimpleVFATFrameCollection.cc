@@ -6,28 +6,15 @@
 *    
 ****************************************************************************/
 
-
 #include "EventFilter/CTPPSRawToDigi/interface/SimpleVFATFrameCollection.h"
-
-//----------------------------------------------------------------------------------------------------
 
 using namespace std;
 
-SimpleVFATFrameCollection::SimpleVFATFrameCollection()
-{
-}
+SimpleVFATFrameCollection::SimpleVFATFrameCollection() {}
 
-//----------------------------------------------------------------------------------------------------
+SimpleVFATFrameCollection::~SimpleVFATFrameCollection() { data.clear(); }
 
-SimpleVFATFrameCollection::~SimpleVFATFrameCollection()
-{
-  data.clear();
-}
-
-//----------------------------------------------------------------------------------------------------
-
-const VFATFrame* SimpleVFATFrameCollection::GetFrameByID(unsigned int ID) const
-{
+const VFATFrame* SimpleVFATFrameCollection::GetFrameByID(unsigned int ID) const {
   // first convert ID to 12bit form
   ID = ID & 0xFFF;
 
@@ -36,44 +23,30 @@ const VFATFrame* SimpleVFATFrameCollection::GetFrameByID(unsigned int ID) const
       if (it->second.checkFootprint() && it->second.checkCRC())
         return &(it->second);
 
-  return NULL;
+  return nullptr;
 }
 
-//----------------------------------------------------------------------------------------------------
-
-const VFATFrame* SimpleVFATFrameCollection::GetFrameByIndex(TotemFramePosition index) const
-{
+const VFATFrame* SimpleVFATFrameCollection::GetFrameByIndex(TotemFramePosition index) const {
   MapType::const_iterator it = data.find(index);
   if (it != data.end())
     return &(it->second);
   else
-    return NULL;
+    return nullptr;
 }
 
-//----------------------------------------------------------------------------------------------------
-
-VFATFrameCollection::value_type SimpleVFATFrameCollection::BeginIterator() const
-{
+VFATFrameCollection::value_type SimpleVFATFrameCollection::BeginIterator() const {
   MapType::const_iterator it = data.begin();
-  return (it == data.end()) ? value_type(TotemFramePosition(), NULL) : value_type(it->first, &it->second);
+  return (it == data.end()) ? value_type(TotemFramePosition(), nullptr) : value_type(it->first, &it->second);
 }
 
-//----------------------------------------------------------------------------------------------------
-
-VFATFrameCollection::value_type SimpleVFATFrameCollection::NextIterator(const value_type &value) const
-{
+VFATFrameCollection::value_type SimpleVFATFrameCollection::NextIterator(const value_type& value) const {
   if (!value.second)
     return value;
 
   MapType::const_iterator it = data.find(value.first);
   it++;
 
-  return (it == data.end()) ? value_type(TotemFramePosition(), NULL) : value_type(it->first, &it->second);
+  return (it == data.end()) ? value_type(TotemFramePosition(), nullptr) : value_type(it->first, &it->second);
 }
 
-//----------------------------------------------------------------------------------------------------
-
-bool SimpleVFATFrameCollection::IsEndIterator(const value_type &value) const
-{
-  return (value.second == NULL);
-}
+bool SimpleVFATFrameCollection::IsEndIterator(const value_type& value) const { return (value.second == nullptr); }

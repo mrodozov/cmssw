@@ -11,13 +11,11 @@
 
 class ME0Geometry;
 
-class ME0PreRecoNoSmearModel: public ME0DigiPreRecoModel
-{
+class ME0PreRecoNoSmearModel : public ME0DigiPreRecoModel {
 public:
-
   ME0PreRecoNoSmearModel(const edm::ParameterSet&);
 
-  ~ME0PreRecoNoSmearModel() {}
+  ~ME0PreRecoNoSmearModel() override {}
 
   void simulateSignal(const ME0EtaPartition*, const edm::PSimHitContainer&, CLHEP::HepRandomEngine*) override;
 

@@ -4,7 +4,7 @@
 /**_________________________________________________________________
    class:   AlcaBeamSpotFromDB.h
    package: RecoVertex/TkAlCaRecoProducers
-   
+
 
 
  author: Francisco Yumiceva, Fermilab (yumiceva@fnal.gov)
@@ -12,27 +12,24 @@
 
 ________________________________________________________________**/
 
-
 // C++ standard
 #include <string>
 // CMS
-#include "FWCore/Framework/interface/Frameworkfwd.h"
 #include "FWCore/Framework/interface/Event.h"
-#include "FWCore/ParameterSet/interface/ParameterSet.h"
+#include "FWCore/Framework/interface/Frameworkfwd.h"
 #include "FWCore/Framework/interface/one/EDProducer.h"
+#include "FWCore/ParameterSet/interface/ParameterSet.h"
 
 class AlcaBeamSpotFromDB : public edm::one::EDProducer<edm::EndLuminosityBlockProducer> {
- public:
-  explicit AlcaBeamSpotFromDB(const edm::ParameterSet&);
-  ~AlcaBeamSpotFromDB();
+public:
+  explicit AlcaBeamSpotFromDB(const edm::ParameterSet &);
+  ~AlcaBeamSpotFromDB() override;
 
- private:
-  virtual void beginJob() override final;
-  virtual void endLuminosityBlockProduce(edm::LuminosityBlock& lumiSeg, const edm::EventSetup& iSetup) override final;
-  virtual void produce                  (edm::Event& iEvent, const edm::EventSetup& iSetup) override final;
-  virtual void endJob()  override final;
-
-
+private:
+  void beginJob() final;
+  void endLuminosityBlockProduce(edm::LuminosityBlock &lumiSeg, const edm::EventSetup &iSetup) final;
+  void produce(edm::Event &iEvent, const edm::EventSetup &iSetup) final;
+  void endJob() final;
 };
 
 #endif

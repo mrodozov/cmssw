@@ -1,18 +1,45 @@
 import FWCore.ParameterSet.Config as cms
+from DQMServices.Core.DQMEDHarvester import DQMEDHarvester
 
 #
 # This object is used to make changes for different running scenarios
 #
 
-SiPixelPhase1Summary_Online = cms.EDAnalyzer("SiPixelPhase1Summary",
+SiPixelPhase1SummaryOnline = DQMEDHarvester("SiPixelPhase1Summary",
     TopFolderName = cms.string('PixelPhase1/Phase1_MechanicalView/'),
     RunOnEndLumi = cms.bool(True),
     RunOnEndJob = cms.bool(True),
     SummaryMaps = cms.VPSet(
         cms.PSet(
-            MapName = cms.string("Grand"),
-            MapHist = cms.string("")
+            MapName = cms.string("Digi"),
+            MapHist = cms.string("mean_num_digis")
             ),
+        cms.PSet(
+            MapName = cms.string("ADC"),
+            MapHist = cms.string("mean_adc")
+            ),
+        cms.PSet(
+            MapName = cms.string("NClustsTotal"),
+            MapHist = cms.string("mean_num_clusters")
+            ),
+        cms.PSet(
+            MapName = cms.string("ClustWidthOnTrk"),
+            MapHist = cms.string("mean_size")
+            ),
+        cms.PSet(
+            MapName = cms.string("Charge"),
+            MapHist = cms.string("mean_charge")
+            )
+        ),
+    # Number of dead ROCs required to generate an error. Order must be layers 1-4, ring1, ring2.
+    DeadROCErrorThreshold = cms.vdouble(0.2,0.2,0.2,0.2,0.2,0.2)
+)
+
+SiPixelPhase1SummaryOffline = DQMEDHarvester("SiPixelPhase1Summary",
+    TopFolderName = cms.string('PixelPhase1/Phase1_MechanicalView/'),
+    RunOnEndLumi = cms.bool(False),
+    RunOnEndJob = cms.bool(True),
+    SummaryMaps = cms.VPSet(
         cms.PSet(
             MapName = cms.string("Digi"),
             MapHist = cms.string("mean_num_digis")
@@ -33,50 +60,16 @@ SiPixelPhase1Summary_Online = cms.EDAnalyzer("SiPixelPhase1Summary",
             MapName = cms.string("Charge"),
             MapHist = cms.string("mean_charge")
             )
-        )
+        ),
+        DeadROCErrorThreshold = cms.vdouble(0.2,0.2,0.2,0.2,0.2,0.2)
+
 )
 
-SiPixelPhase1Summary_Offline = cms.EDAnalyzer("SiPixelPhase1Summary",
+SiPixelPhase1SummaryCosmics = DQMEDHarvester("SiPixelPhase1Summary",
     TopFolderName = cms.string('PixelPhase1/Phase1_MechanicalView/'),
     RunOnEndLumi = cms.bool(False),
     RunOnEndJob = cms.bool(True),
     SummaryMaps = cms.VPSet(
-        cms.PSet(
-            MapName = cms.string("Grand"),
-            MapHist = cms.string("")
-            ),
-        cms.PSet(
-            MapName = cms.string("Digi"),
-            MapHist = cms.string("mean_num_digis")
-            ),
-        cms.PSet(
-            MapName = cms.string("ADC"),
-            MapHist = cms.string("mean_adc")
-            ),
-        cms.PSet(
-            MapName = cms.string("NClustsTotal"),
-            MapHist = cms.string("mean_num_clusters")
-            ),
-        cms.PSet(
-            MapName = cms.string("ClustWidthOnTrk"),
-            MapHist = cms.string("mean_size")
-            ),
-        cms.PSet(
-            MapName = cms.string("Charge"),
-            MapHist = cms.string("mean_charge")
-            )
-        )
-)
-
-SiPixelPhase1Summary_Cosmics = cms.EDAnalyzer("SiPixelPhase1Summary",
-    TopFolderName = cms.string('PixelPhase1/Phase1_MechanicalView/'),
-    RunOnEndLumi = cms.bool(False),
-    RunOnEndJob = cms.bool(True),
-    SummaryMaps = cms.VPSet(
-        cms.PSet(
-            MapName = cms.string("Grand"),
-            MapHist = cms.string("")
-            ),
         cms.PSet(
             MapName = cms.string("Digi"),
             MapHist = cms.string("mean_num_digis")
@@ -89,7 +82,8 @@ SiPixelPhase1Summary_Cosmics = cms.EDAnalyzer("SiPixelPhase1Summary",
             MapName = cms.string("Charge"),
             MapHist = cms.string("mean_charge")
             )
-        )
+        ),
+        DeadROCErrorThreshold = cms.vdouble(0.2,0.2,0.2,0.2,0.2,0.2)
 )
 
 ADCQTester = cms.EDAnalyzer("QualityTester",

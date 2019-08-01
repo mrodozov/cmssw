@@ -10,35 +10,33 @@
 #include <map>
 
 class ME0Geometry : public TrackingGeometry {
-
- public:
+public:
   /// Default constructor
   ME0Geometry();
 
   /// Destructor
-  virtual ~ME0Geometry();
+  ~ME0Geometry() override;
 
   // Return a vector of all det types
-  virtual const DetTypeContainer&  detTypes() const;
+  const DetTypeContainer& detTypes() const override;
 
   // Return a vector of all GeomDetUnit
-  virtual const DetUnitContainer& detUnits() const;
+  const DetContainer& detUnits() const override;
 
   // Return a vector of all GeomDet
-  virtual const DetContainer& dets() const;
-  
+  const DetContainer& dets() const override;
+
   // Return a vector of all GeomDetUnit DetIds
-  virtual const DetIdContainer& detUnitIds() const;
+  const DetIdContainer& detUnitIds() const override;
 
   // Return a vector of all GeomDet DetIds
-  virtual const DetIdContainer& detIds() const;
+  const DetIdContainer& detIds() const override;
 
   // Return the pointer to the GeomDetUnit corresponding to a given DetId
-  virtual const GeomDetUnit* idToDetUnit(DetId) const;
+  const GeomDet* idToDetUnit(DetId) const override;
 
   // Return the pointer to the GeomDet corresponding to a given DetId
-  virtual const GeomDet* idToDet(DetId) const;
-
+  const GeomDet* idToDet(DetId) const override;
 
   //---- Extension of the interface
 
@@ -50,7 +48,6 @@ class ME0Geometry : public TrackingGeometry {
 
   /// Return a chamber given its id
   const ME0Chamber* chamber(ME0DetId id) const;
-
 
   /// Return a vector of all ME0 eta partitions
   const std::vector<ME0EtaPartition const*>& etaPartitions() const;
@@ -70,20 +67,19 @@ class ME0Geometry : public TrackingGeometry {
   /// Add a ME0 Chamber  to the Geometry
   void add(ME0Chamber* chamber);
 
- private:
-  DetUnitContainer theEtaPartitions;
+private:
+  DetContainer theEtaPartitions;
   DetTypeContainer theEtaPartitionTypes;
-  DetIdContainer   theEtaPartitionIds;
-  DetIdContainer   theDetIds;
-  DetContainer     theDets;
-  
-  // Map for efficient lookup by DetId 
+  DetIdContainer theEtaPartitionIds;
+  DetIdContainer theDetIds;
+  DetContainer theDets;
+
+  // Map for efficient lookup by DetId
   mapIdToDet theMap;
 
-  std::vector<ME0EtaPartition const*> allEtaPartitions; // Are not owned by this class; are owned by their layer.
-  std::vector<ME0Layer const*> allLayers;               // Are not owned by this class; are owned by their chamber.
-  std::vector<ME0Chamber const*> allChambers;           // Are owned by this class.
-
+  std::vector<ME0EtaPartition const*> allEtaPartitions;  // Are not owned by this class; are owned by their layer.
+  std::vector<ME0Layer const*> allLayers;                // Are not owned by this class; are owned by their chamber.
+  std::vector<ME0Chamber const*> allChambers;            // Are owned by this class.
 };
 
 #endif

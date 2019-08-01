@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 // File: CastorTestAnalysis.h
 // Date: 02.07 Panos Katsas
-// Description: simulation analysis steering code 
+// Description: simulation analysis steering code
 //
 ///////////////////////////////////////////////////////////////////////////////
 #undef debug
@@ -28,8 +28,8 @@
 #include "SimG4Core/Notification/interface/Observer.h"
 #include "SimG4Core/Watcher/interface/SimWatcher.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
-
-#include "SimG4CMS/Forward/interface/CastorNumberingScheme.h"
+#include "SimG4CMS/Calo/interface/CaloG4Hit.h"
+#include "SimG4CMS/Calo/interface/CaloG4HitCollection.h"
 
 #include <cassert>
 #include <iostream>
@@ -39,7 +39,7 @@
 #include <memory>
 #include <vector>
 
-#include <CLHEP/Random/Randomize.h> 
+#include <CLHEP/Random/Randomize.h>
 
 #include "TROOT.h"
 #include "TFile.h"
@@ -54,38 +54,36 @@
 #include "TMath.h"
 #include "TF1.h"
 
-
 class G4Step;
 class BeginOfJob;
 class BeginOfRun;
 class EndOfRun;
 class BeginOfEvent;
 class EndOfEvent;
+class CastorNumberingScheme;
 
 class CastorTestAnalysis : public SimWatcher,
-			public Observer<const BeginOfJob *>, 
-			public Observer<const BeginOfRun *>,
-			public Observer<const EndOfRun *>,
-			public Observer<const BeginOfEvent *>, 
-			public Observer<const EndOfEvent *>, 
-			public Observer<const G4Step *> {
-  
+                           public Observer<const BeginOfJob *>,
+                           public Observer<const BeginOfRun *>,
+                           public Observer<const EndOfRun *>,
+                           public Observer<const BeginOfEvent *>,
+                           public Observer<const EndOfEvent *>,
+                           public Observer<const G4Step *> {
 public:
   CastorTestAnalysis(const edm::ParameterSet &p);
-  virtual ~CastorTestAnalysis();
+  ~CastorTestAnalysis() override;
 
 private:
   // observer classes
-  void update(const BeginOfJob * run);
-  void update(const BeginOfRun * run);
-  void update(const EndOfRun * run);
-  void update(const BeginOfEvent * evt);
-  void update(const EndOfEvent * evt);
-  void update(const G4Step * step);
-  
-private:
+  void update(const BeginOfJob *run) override;
+  void update(const BeginOfRun *run) override;
+  void update(const EndOfRun *run) override;
+  void update(const BeginOfEvent *evt) override;
+  void update(const EndOfEvent *evt) override;
+  void update(const G4Step *step) override;
 
-  void getCastorBranchData(const CaloG4HitCollection * hc);
+private:
+  void getCastorBranchData(const CaloG4HitCollection *hc);
   void Finish();
 
   int verbosity;
@@ -94,13 +92,13 @@ private:
   std::string stepNtFileName;
   std::string eventNtFileName;
 
-  TFile* castorOutputEventFile;
-  TFile* castorOutputStepFile;
+  TFile *castorOutputEventFile;
+  TFile *castorOutputStepFile;
 
-  TNtuple* castorstepntuple;
-  TNtuple* castoreventntuple;
-  
-  CastorNumberingScheme* theCastorNumScheme;
+  TNtuple *castorstepntuple;
+  TNtuple *castoreventntuple;
+
+  CastorNumberingScheme *theCastorNumScheme;
 
   int eventIndex;
   int stepIndex;
@@ -108,7 +106,6 @@ private:
 
   Float_t castorsteparray[14];
   Float_t castoreventarray[11];
-
 };
 
-#endif // CastorTestAnalysis_h
+#endif  // CastorTestAnalysis_h

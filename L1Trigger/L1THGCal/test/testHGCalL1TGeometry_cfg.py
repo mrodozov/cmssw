@@ -1,8 +1,8 @@
 import FWCore.ParameterSet.Config as cms
 
-from Configuration.StandardSequences.Eras import eras
 
-process = cms.Process('DIGI',eras.Phase2C2)
+from Configuration.Eras.Era_Phase2_cff import Phase2
+process = cms.Process('DIGI',Phase2)
 
 # import of standard configurations
 process.load('Configuration.StandardSequences.Services_cff')
@@ -10,8 +10,8 @@ process.load('SimGeneral.HepPDTESSource.pythiapdt_cfi')
 process.load('FWCore.MessageService.MessageLogger_cfi')
 process.load('Configuration.EventContent.EventContent_cff')
 process.load('SimGeneral.MixingModule.mixNoPU_cfi')
-process.load('Configuration.Geometry.GeometryExtended2023D4Reco_cff')
-process.load('Configuration.Geometry.GeometryExtended2023D4_cff')
+process.load('Configuration.Geometry.GeometryExtended2023D17Reco_cff')
+process.load('Configuration.Geometry.GeometryExtended2023D17_cff')
 process.load('Configuration.StandardSequences.MagneticField_cff')
 process.load('Configuration.StandardSequences.Generator_cff')
 process.load('IOMC.EventVertexGenerators.VtxSmearedHLLHC14TeV_cfi')
@@ -102,12 +102,6 @@ process.FEVTDEBUGoutput_step = cms.EndPath(process.FEVTDEBUGoutput)
 
 process.load('L1Trigger.L1THGCal.hgcalTriggerPrimitives_cff')
 # Eventually modify default geometry parameters
-process.hgcalTriggerGeometryESProducer.TriggerGeometry.TriggerGeometryName = cms.string('HGCalTriggerGeometryHexImp2')
-process.hgcalTriggerGeometryESProducer.TriggerGeometry.L1TCellsMapping = cms.FileInPath("L1Trigger/L1THGCal/data/triggercell_mapping.txt")
-process.hgcalTriggerGeometryESProducer.TriggerGeometry.L1TModulesMapping = cms.FileInPath("L1Trigger/L1THGCal/data/module_mapping_PairsRing_V7_0.txt")
-process.hgcalTriggerGeometryESProducer.TriggerGeometry.eeSDName = cms.string('HGCalEESensitive')
-process.hgcalTriggerGeometryESProducer.TriggerGeometry.fhSDName = cms.string('HGCalHESiliconSensitive')
-process.hgcalTriggerGeometryESProducer.TriggerGeometry.bhSDName = cms.string('HGCalHEScintillatorSensitive')
 
 process.hgcaltriggergeomtester = cms.EDAnalyzer(
     "HGCalTriggerGeomTester"

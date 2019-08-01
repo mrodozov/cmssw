@@ -10,15 +10,14 @@
 #include <TFile.h>
 #include <string>
 
-
 class DBWriter : public edm::EDAnalyzer {
 public:
   explicit DBWriter(const edm::ParameterSet&);
-  ~DBWriter();
-  
-private:
-  virtual void analyze(const edm::Event&, const edm::EventSetup&);
-  virtual void endJob() {};
+  ~DBWriter() override;
 
-  std::auto_ptr<BaseFunction> corrector_;
+private:
+  void analyze(const edm::Event&, const edm::EventSetup&) override;
+  void endJob() override{};
+
+  std::unique_ptr<BaseFunction> corrector_;
 };

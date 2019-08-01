@@ -1,6 +1,5 @@
-
+from __future__ import print_function
 import os, sys, time
-import random
 
 from Configuration.PyReleaseValidation.WorkFlow import WorkFlow
 from Configuration.PyReleaseValidation.WorkFlowRunner import WorkFlowRunner
@@ -28,48 +27,47 @@ class MatrixRunner(object):
 
         return nActive
 
-        
+
     def runTests(self, opt):
 
         testList=opt.testList
         dryRun=opt.dryRun
         cafVeto=opt.cafVeto
-        
+
         startDir = os.getcwd()
 
-    	report=''
+        report=''
         noRun=(self.maxThreads==0)
         if noRun:
-            print 'Not running the wf, only creating cfgs and logs'
-            print 'resetting to default number of threads'
+            print('Not running the wf, only creating cfgs and logs')
+            print('resetting to default number of threads')
             self.maxThreads=4
 
-    	print 'Running in %s thread(s)' % self.maxThreads
+        print('Running in %s thread(s)' % self.maxThreads)
 
-            
+
         for wf in self.workFlows:
 
             if testList and float(wf.numId) not in [float(x) for x in testList]: continue
 
             item = wf.nameId
             if os.path.islink(item) : continue # ignore symlinks
-            
-    	    # make sure we don't run more than the allowed number of threads:
-    	    while self.activeThreads() >= self.maxThreads:
-    	        time.sleep(10)
-                continue
-    	    
-    	    print '\nPreparing to run %s %s' % (wf.numId, item)
+
+            # make sure we don't run more than the allowed number of threads:
+            while self.activeThreads() >= self.maxThreads:
+                time.sleep(1)
+
+            print('\nPreparing to run %s %s' % (wf.numId, item))
             sys.stdout.flush()
             current = WorkFlowRunner(wf,noRun,dryRun,cafVeto, opt.dasOptions, opt.jobReports, opt.nThreads, opt.maxSteps)
-    	    self.threadList.append(current)
-    	    current.start()
+            self.threadList.append(current)
+            current.start()
             if not dryRun:
-                time.sleep(random.randint(1,5)) # try to avoid race cond by sleeping random amount of time [1,5] sec
+                time.sleep(0.5) # try to avoid race cond by sleeping 0.5 sec
 
-    	# wait until all threads are finished
+        # wait until all threads are finished
         while self.activeThreads() > 0:
-    	    time.sleep(0.5)
+            time.sleep(0.5)
 
 
         #wrap up !
@@ -81,7 +79,7 @@ class MatrixRunner(object):
                 collect.append(0)
             for i,c in enumerate(result):
                 collect[i]+=c
-                
+
         for pingle in self.threadList:
             pingle.join()
             try:
@@ -92,9 +90,9 @@ class MatrixRunner(object):
             except Exception as e:
                 msg = "ERROR retrieving info from thread: " + str(e)
                 report += msg
-                
+
         report+=' '.join(map(str,totpassed))+' tests passed, '+' '.join(map(str,totfailed))+' failed\n'
-        print report
+        print(report)
         sys.stdout.flush()
 
         runall_report_name='runall-report-step123-.log'
@@ -104,6 +102,6 @@ class MatrixRunner(object):
         os.chdir(startDir)
 
         anyFail=sum(totfailed)
-                                        
+
         return anyFail
 

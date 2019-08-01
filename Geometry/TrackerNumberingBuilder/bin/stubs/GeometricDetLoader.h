@@ -12,19 +12,18 @@ class GeometricDet;
 class PGeometricDet;
 
 class GeometricDetLoader : public edm::one::EDAnalyzer<edm::one::WatchRuns> {
-
- public:
-  explicit GeometricDetLoader( const edm::ParameterSet& iConfig );
-  ~GeometricDetLoader();
+public:
+  explicit GeometricDetLoader(const edm::ParameterSet& iConfig);
+  ~GeometricDetLoader() override;
 
   void beginJob() override {}
   void beginRun(edm::Run const& iEvent, edm::EventSetup const&) override;
   void analyze(edm::Event const& iEvent, edm::EventSetup const&) override {}
   void endRun(edm::Run const& iEvent, edm::EventSetup const&) override {}
   void endJob() override {}
-  
- private:
-  void putOne ( const GeometricDet* gd, PGeometricDet* pgd, int lev );
+
+private:
+  void putOne(const GeometricDet* gd, PGeometricDet* pgd, int lev);
 };
 
 #endif

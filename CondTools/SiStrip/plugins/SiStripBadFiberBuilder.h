@@ -14,25 +14,17 @@
 #include <ext/hash_map>
 
 class SiStripBadFiberBuilder : public ConditionDBWriter<SiStripBadStrip> {
-
 public:
-
   explicit SiStripBadFiberBuilder(const edm::ParameterSet&);
-  ~SiStripBadFiberBuilder();
-
-  void algoAnalyze(const edm::Event & event, const edm::EventSetup& iSetup);
+  ~SiStripBadFiberBuilder() override;
 
 private:
+  std::unique_ptr<SiStripBadStrip> getNewObject() override;
 
-  SiStripBadStrip* getNewObject(){return obj;}
-
-private:
   edm::FileInPath fp_;
   bool printdebug_;
-  SiStripBadStrip* obj ;
 
-  typedef std::vector< edm::ParameterSet > Parameters;
+  typedef std::vector<edm::ParameterSet> Parameters;
   Parameters BadComponentList_;
-
 };
 #endif

@@ -17,21 +17,20 @@
 
 #include <memory>
 
-
 class PFClusterProducer : public edm::stream::EDProducer<> {
   typedef RecHitTopologicalCleanerBase RHCB;
   typedef InitialClusteringStepBase ICSB;
   typedef PFClusterBuilderBase PFCBB;
   typedef PFCPositionCalculatorBase PosCalc;
- public:    
+
+public:
   PFClusterProducer(const edm::ParameterSet&);
-  ~PFClusterProducer() { }
-  
-  virtual void beginLuminosityBlock(const edm::LuminosityBlock&, 
-				    const edm::EventSetup&);
-  virtual void produce(edm::Event&, const edm::EventSetup&);
-  
- private:
+  ~PFClusterProducer() override = default;
+
+  void beginLuminosityBlock(const edm::LuminosityBlock&, const edm::EventSetup&) override;
+  void produce(edm::Event&, const edm::EventSetup&) override;
+
+private:
   // inputs
   edm::EDGetTokenT<reco::PFRecHitCollection> _rechitsLabel;
   // options

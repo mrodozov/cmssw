@@ -26,14 +26,13 @@
 #include "GeneratorInterface/GenFilters/interface/doubleEMEnrichingFilterAlgo.h"
 
 class doubleEMEnrichingFilter : public edm::EDFilter {
- public:
-  explicit doubleEMEnrichingFilter(const edm::ParameterSet&);
-  ~doubleEMEnrichingFilter();
-  
-  virtual bool filter(edm::Event&, const edm::EventSetup&);
-  
- private:
+public:
+  explicit doubleEMEnrichingFilter(const edm::ParameterSet &);
+  ~doubleEMEnrichingFilter() override;
+
+  bool filter(edm::Event &, const edm::EventSetup &) override;
+
+private:
   doubleEMEnrichingFilterAlgo *doubleEMEAlgo_;
-  
 };
 #endif

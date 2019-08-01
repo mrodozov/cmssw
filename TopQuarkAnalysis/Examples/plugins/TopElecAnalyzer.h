@@ -13,17 +13,14 @@
 #include "DataFormats/PatCandidates/interface/Electron.h"
 
 class TopElecAnalyzer : public edm::EDAnalyzer {
+public:
+  explicit TopElecAnalyzer(const edm::ParameterSet &);
+  ~TopElecAnalyzer() override;
 
- public:
-
-  explicit TopElecAnalyzer(const edm::ParameterSet&);
-  ~TopElecAnalyzer();
-
- private:
-
-  virtual void beginJob() ;
-  virtual void analyze(const edm::Event&, const edm::EventSetup&);
-  virtual void endJob() ;
+private:
+  void beginJob() override;
+  void analyze(const edm::Event &, const edm::EventSetup &) override;
+  void endJob() override;
 
   edm::EDGetTokenT<std::vector<pat::Electron> > inputToken_;
   bool verbose_;
@@ -33,7 +30,6 @@ class TopElecAnalyzer : public edm::EDAnalyzer {
   TH1F *pt_;
   TH1F *eta_;
   TH1F *phi_;
-
 };
 
 #endif

@@ -9,11 +9,12 @@
 //event
 #include "FWCore/Framework/interface/Event.h"
 #include "FWCore/Framework/interface/EventSetup.h"
+#include "HLTrigger/HLTcore/interface/HLTConfigProvider.h"
 
 //DQM
 #include "DQMServices/Core/interface/DQMEDAnalyzer.h"
 #include "DQMServices/Core/interface/DQMStore.h"
-#include "DQMServices/Core/interface/MonitorElement.h"
+#include "DQMOffline/L1Trigger/interface/HistDefinition.h"
 
 //Candidate handling
 #include "DataFormats/Candidate/interface/Candidate.h"
@@ -34,36 +35,39 @@
 // stage2 collections:
 #include "DataFormats/L1Trigger/interface/EGamma.h"
 
-class L1TEGammaOffline: public DQMEDAnalyzer {
-
+class L1TEGammaOffline : public DQMEDAnalyzer {
 public:
-
   L1TEGammaOffline(const edm::ParameterSet& ps);
-  virtual ~L1TEGammaOffline();
+  ~L1TEGammaOffline() override;
+
+  enum PlotConfig { nVertex, ETvsET, PHIvsPHI };
+
+  static const std::map<std::string, unsigned int> PlotConfigNames;
 
 protected:
-
-  void dqmBeginRun(edm::Run const &, edm::EventSetup const &) override;
-  void bookHistograms(DQMStore::IBooker &, edm::Run const &, edm::EventSetup const &) override;
-  void analyze(edm::Event const& e, edm::EventSetup const& eSetup);
-  void beginLuminosityBlock(edm::LuminosityBlock const& lumi, edm::EventSetup const& eSetup);
-  void endLuminosityBlock(edm::LuminosityBlock const& lumi, edm::EventSetup const& eSetup);
-  void endRun(edm::Run const& run, edm::EventSetup const& eSetup);
+  void dqmBeginRun(edm::Run const&, edm::EventSetup const&) override;
+  void bookHistograms(DQMStore::IBooker&, edm::Run const&, edm::EventSetup const&) override;
+  void analyze(edm::Event const& e, edm::EventSetup const& eSetup) override;
+  void endRun(edm::Run const& run, edm::EventSetup const& eSetup) override;
+  void endJob() override;
 
 private:
   bool passesLooseEleId(reco::GsfElectron const& electron) const;
   bool passesMediumEleId(reco::GsfElectron const& electron) const;
-  void bookElectronHistos(DQMStore::IBooker &);
-  void bookPhotonHistos(DQMStore::IBooker &);
+  void bookElectronHistos(DQMStore::IBooker&);
+  void bookPhotonHistos(DQMStore::IBooker&);
 
   //other functions
-  double Distance(const reco::Candidate & c1, const reco::Candidate & c2);
-  double DistancePhi(const reco::Candidate & c1, const reco::Candidate & c2);
+  double Distance(const reco::Candidate& c1, const reco::Candidate& c2);
+  double DistancePhi(const reco::Candidate& c1, const reco::Candidate& c2);
   double calcDeltaPhi(double phi1, double phi2);
 
   void fillElectrons(edm::Event const& e, const unsigned int nVertex);
   void fillPhotons(edm::Event const& e, const unsigned int nVertex);
   bool findTagAndProbePair(edm::Handle<reco::GsfElectronCollection> const& electrons);
+  bool matchesAnHLTObject(double eta, double phi) const;
+
+  void normalise2DHistogramsToBinArea();
 
   math::XYZPoint PVPoint_;
 
@@ -72,10 +76,10 @@ private:
   edm::EDGetTokenT<std::vector<reco::Photon> > thePhotonCollection_;
   edm::EDGetTokenT<reco::VertexCollection> thePVCollection_;
   edm::EDGetTokenT<reco::BeamSpot> theBSCollection_;
-  edm::EDGetTokenT<trigger::TriggerEvent> triggerEvent_;
-  edm::EDGetTokenT<edm::TriggerResults> triggerResults_;
-  edm::InputTag triggerFilter_;
-  std::string triggerPath_;
+  edm::EDGetTokenT<trigger::TriggerEvent> triggerInputTag_;
+  edm::EDGetTokenT<edm::TriggerResults> triggerResultsInputTag_;
+  std::string triggerProcess_;
+  std::vector<std::string> triggerNames_;
   std::string histFolder_;
   std::string efficiencyFolder_;
 
@@ -83,13 +87,25 @@ private:
 
   std::vector<double> electronEfficiencyThresholds_;
   std::vector<double> electronEfficiencyBins_;
+  double probeToL1Offset_;
+  std::vector<double> deepInspectionElectronThresholds_;
 
   std::vector<double> photonEfficiencyThresholds_;
   std::vector<double> photonEfficiencyBins_;
 
+  double maxDeltaRForL1Matching_;
+  double maxDeltaRForHLTMatching_;
+  double recoToL1TThresholdFactor_;
+
   reco::GsfElectron tagElectron_;
   reco::GsfElectron probeElectron_;
   double tagAndProbleInvariantMass_;
+
+  HLTConfigProvider hltConfig_;
+  std::vector<unsigned int> triggerIndices_;
+  edm::TriggerResults triggerResults_;
+  trigger::TriggerEvent triggerEvent_;
+  dqmoffline::l1t::HistDefinitions histDefinitions_;
 
   // TODO: add turn-on cuts (vectors of doubles)
   // Histograms
@@ -122,12 +138,22 @@ private:
   std::map<double, MonitorElement*> h_efficiencyElectronET_EB_pass_;
   std::map<double, MonitorElement*> h_efficiencyElectronET_EE_pass_;
   std::map<double, MonitorElement*> h_efficiencyElectronET_EB_EE_pass_;
+  std::map<double, MonitorElement*> h_efficiencyElectronPhi_vs_Eta_pass_;
+  // for deep inspection only
+  std::map<double, MonitorElement*> h_efficiencyElectronEta_pass_;
+  std::map<double, MonitorElement*> h_efficiencyElectronPhi_pass_;
+  std::map<double, MonitorElement*> h_efficiencyElectronNVertex_pass_;
 
   // we could drop the map here, but L1TEfficiency_Harvesting expects
   // identical names except for the suffix
   std::map<double, MonitorElement*> h_efficiencyElectronET_EB_total_;
   std::map<double, MonitorElement*> h_efficiencyElectronET_EE_total_;
   std::map<double, MonitorElement*> h_efficiencyElectronET_EB_EE_total_;
+  std::map<double, MonitorElement*> h_efficiencyElectronPhi_vs_Eta_total_;
+  // for deep inspection only
+  std::map<double, MonitorElement*> h_efficiencyElectronEta_total_;
+  std::map<double, MonitorElement*> h_efficiencyElectronPhi_total_;
+  std::map<double, MonitorElement*> h_efficiencyElectronNVertex_total_;
 
   // photons
   MonitorElement* h_L1EGammaETvsPhotonET_EB_;
@@ -151,7 +177,7 @@ private:
 
   MonitorElement* h_resolutionPhotonEta_;
 
-  // electron turn-ons
+  // photon turn-ons
   std::map<double, MonitorElement*> h_efficiencyPhotonET_EB_pass_;
   std::map<double, MonitorElement*> h_efficiencyPhotonET_EE_pass_;
   std::map<double, MonitorElement*> h_efficiencyPhotonET_EB_EE_pass_;
@@ -161,7 +187,6 @@ private:
   std::map<double, MonitorElement*> h_efficiencyPhotonET_EB_total_;
   std::map<double, MonitorElement*> h_efficiencyPhotonET_EE_total_;
   std::map<double, MonitorElement*> h_efficiencyPhotonET_EB_EE_total_;
-
 };
 
 #endif

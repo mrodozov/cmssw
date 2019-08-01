@@ -10,36 +10,26 @@
 
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 
+#include "DataFormats/EgammaReco/interface/SuperClusterFwd.h"
 #include "DataFormats/EcalRecHit/interface/EcalRecHitCollections.h"
 #include "RecoEcal/EgammaCoreTools/interface/ClusterShapeAlgo.h"
 
+class CleanAndMergeProducer : public edm::stream::EDProducer<> {
+public:
+  CleanAndMergeProducer(const edm::ParameterSet& ps);
 
-class CleanAndMergeProducer : public edm::stream::EDProducer<>
-{
-  
-  public:
+  ~CleanAndMergeProducer() override;
 
-      CleanAndMergeProducer(const edm::ParameterSet& ps);
+  void produce(edm::Event&, const edm::EventSetup&) override;
 
-      ~CleanAndMergeProducer();
+private:
+  edm::EDGetTokenT<reco::SuperClusterCollection> cleanScToken_;
+  edm::EDGetTokenT<reco::SuperClusterCollection> uncleanScToken_;
 
-      virtual void produce(edm::Event&, const edm::EventSetup&);
-      
-  private:
-      
-
-      edm::EDGetTokenT<reco::SuperClusterCollection> cleanScToken_;
-      edm::EDGetTokenT<reco::SuperClusterCollection> uncleanScToken_;
-     
-      // the names of the products to be produced:
-      std::string  bcCollection_;     
-      std::string  scCollection_;     
-      std::string  refScCollection_;  
-
-
+  // the names of the products to be produced:
+  std::string bcCollection_;
+  std::string scCollection_;
+  std::string refScCollection_;
 };
 
-
 #endif
-
-

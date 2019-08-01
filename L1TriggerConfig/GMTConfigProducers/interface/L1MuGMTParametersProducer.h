@@ -26,7 +26,6 @@
 #include "CondFormats/L1TObjects/interface/L1MuGMTChannelMask.h"
 #include "CondFormats/DataRecord/interface/L1MuGMTChannelMaskRcd.h"
 
-
 //
 // class declaration
 //
@@ -34,15 +33,14 @@
 class L1MuGMTParametersProducer : public edm::ESProducer {
 public:
   L1MuGMTParametersProducer(const edm::ParameterSet&);
-  ~L1MuGMTParametersProducer();
-  
+  ~L1MuGMTParametersProducer() override;
+
   std::unique_ptr<L1MuGMTParameters> produceL1MuGMTParameters(const L1MuGMTParametersRcd&);
   std::unique_ptr<L1MuGMTChannelMask> produceL1MuGMTChannelMask(const L1MuGMTChannelMaskRcd&);
 
 private:
   // ----------member data ---------------------------
   edm::ParameterSet* m_ps;
-  
 };
 
 #endif

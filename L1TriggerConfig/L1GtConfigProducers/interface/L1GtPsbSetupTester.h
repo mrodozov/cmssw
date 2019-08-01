@@ -24,23 +24,18 @@
 #include "FWCore/Framework/interface/Event.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 
-
 // forward declarations
 
 // class declaration
-class L1GtPsbSetupTester : public edm::EDAnalyzer
-{
-
+class L1GtPsbSetupTester : public edm::EDAnalyzer {
 public:
+  // constructor
+  explicit L1GtPsbSetupTester(const edm::ParameterSet&);
 
-    // constructor
-    explicit L1GtPsbSetupTester(const edm::ParameterSet&);
+  // destructor
+  ~L1GtPsbSetupTester() override;
 
-    // destructor
-    virtual ~L1GtPsbSetupTester();
-
-    virtual void analyze(const edm::Event&, const edm::EventSetup&);
-
+  void analyze(const edm::Event&, const edm::EventSetup&) override;
 };
 
 #endif /*L1GtConfigProducers_L1GtPsbSetupTester_h*/

@@ -24,23 +24,21 @@
 #include <DataFormats/CSCDigi/interface/CSCStripDigiCollection.h>
 #include <DataFormats/CSCDigi/interface/CSCWireDigiCollection.h>
 
-class CSCRecHitDBuilder; 
+class CSCRecHitDBuilder;
 class CSCRecoConditions;
 
 class CSCRecHitDProducer : public edm::stream::EDProducer<> {
-
 public:
-  explicit CSCRecHitDProducer( const edm::ParameterSet& ps );
-  ~CSCRecHitDProducer();
+  explicit CSCRecHitDProducer(const edm::ParameterSet& ps);
+  ~CSCRecHitDProducer() override;
 
-  virtual void produce( edm::Event&, const edm::EventSetup& );
+  void produce(edm::Event&, const edm::EventSetup&) override;
 
-  static void fillDescriptions(edm::ConfigurationDescriptions & descriptions);
+  static void fillDescriptions(edm::ConfigurationDescriptions& descriptions);
 
- private:
-
+private:
   // Counting events processed
-  unsigned iRun; 
+  unsigned iRun;
   bool useCalib;
   bool useStaticPedestals;
   bool useTimingCorrections;

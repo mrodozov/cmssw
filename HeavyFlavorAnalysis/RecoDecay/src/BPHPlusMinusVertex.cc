@@ -26,40 +26,30 @@ using namespace std;
 // Initializations --
 //-------------------
 
-
 //----------------
 // Constructors --
 //----------------
-BPHPlusMinusVertex::BPHPlusMinusVertex( const edm::EventSetup* es ):
- BPHDecayVertex( es ),
- oldA( true ),
- inRPhi( 0 ) {
-}
+BPHPlusMinusVertex::BPHPlusMinusVertex(const edm::EventSetup* es) : BPHDecayVertex(es), oldA(true), inRPhi(nullptr) {}
 
 //--------------
 // Destructor --
 //--------------
-BPHPlusMinusVertex::~BPHPlusMinusVertex() {
-  delete inRPhi;
-}
+BPHPlusMinusVertex::~BPHPlusMinusVertex() { delete inRPhi; }
 
 //--------------
 // Operations --
 //--------------
 const ClosestApproachInRPhi& BPHPlusMinusVertex::cAppInRPhi() const {
-  if ( oldA ) computeApp();
-  if ( inRPhi == 0 ) {
+  if (oldA)
+    computeApp();
+  if (inRPhi == nullptr) {
     static const ClosestApproachInRPhi ca;
     return ca;
   }
   return *inRPhi;
 }
 
-
-bool BPHPlusMinusVertex::chkSize( const string& msg ) const {
-  return chkSize( daughters(), msg );
-}
-
+bool BPHPlusMinusVertex::chkSize(const string& msg) const { return chkSize(daughters(), msg); }
 
 void BPHPlusMinusVertex::setNotUpdated() const {
   BPHDecayVertex::setNotUpdated();
@@ -67,22 +57,18 @@ void BPHPlusMinusVertex::setNotUpdated() const {
   return;
 }
 
-
 void BPHPlusMinusVertex::computeApp() const {
-  static const string msg =
-  "BPHPlusMinusVertex::computeApp: incomplete, no closest approach available";
+  static const string msg = "BPHPlusMinusVertex::computeApp: incomplete, no closest approach available";
   delete inRPhi;
-  if ( !chkSize( msg ) ) {
-    inRPhi = 0;
+  if (!chkSize(msg)) {
+    inRPhi = nullptr;
     return;
   }
   inRPhi = new ClosestApproachInRPhi;
   const vector<reco::TransientTrack>& ttk = transientTracks();
   const reco::TransientTrack& ttp = ttk[0];
   const reco::TransientTrack& ttn = ttk[1];
-  inRPhi->calculate( ttp.impactPointTSCP().theState(),
-                     ttn.impactPointTSCP().theState() );
+  inRPhi->calculate(ttp.impactPointTSCP().theState(), ttn.impactPointTSCP().theState());
   oldA = false;
   return;
 }
-

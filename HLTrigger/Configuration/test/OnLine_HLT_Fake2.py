@@ -1,11 +1,13 @@
-# /dev/CMSSW_9_0_1/Fake2/V1 (CMSSW_9_0_0_pre6)
+# hltGetConfiguration --full --data /dev/CMSSW_11_0_0/Fake2 --type Fake2 --unprescale --process HLTFake2 --globaltag auto:run2_hlt_Fake2 --input file:RelVal_Raw_Fake2_DATA.root
+
+# /dev/CMSSW_11_0_0/Fake2/V3 (CMSSW_11_0_0_pre4)
 
 import FWCore.ParameterSet.Config as cms
 
 process = cms.Process( "HLTFake2" )
 
 process.HLTConfigVersion = cms.PSet(
-  tableName = cms.string('/dev/CMSSW_9_0_1/Fake2/V1')
+  tableName = cms.string('/dev/CMSSW_11_0_0/Fake2/V3')
 )
 
 process.streams = cms.PSet(  A = cms.vstring( 'InitialPD' ) )
@@ -41,13 +43,8 @@ process.GlobalTag = cms.ESSource( "PoolDBESSource",
     RefreshOpenIOVs = cms.untracked.bool( False ),
     DumpStat = cms.untracked.bool( False )
 )
-process.StableParametersRcdSource = cms.ESSource( "EmptyESSource",
-    iovIsRunNotTime = cms.bool( True ),
-    recordName = cms.string( "L1TGlobalStableParametersRcd" ),
-    firstValid = cms.vuint32( 1 )
-)
 
-process.StableParameters = cms.ESProducer( "StableParametersTrivialProducer",
+process.GlobalParameters = cms.ESProducer( "StableParametersTrivialProducer",
   NumberL1JetCounts = cms.uint32( 12 ),
   NumberL1NoIsoEG = cms.uint32( 4 ),
   NumberL1CenJet = cms.uint32( 4 ),
@@ -94,30 +91,27 @@ process.hcalDDDSimConstants = cms.ESProducer( "HcalDDDSimConstantsESModule",
 process.FastTimerService = cms.Service( "FastTimerService",
     dqmPath = cms.untracked.string( "HLT/TimerService" ),
     dqmModuleTimeRange = cms.untracked.double( 40.0 ),
-    useRealTimeClock = cms.untracked.bool( True ),
-    enableTimingModules = cms.untracked.bool( True ),
+    enableDQMbyPath = cms.untracked.bool( False ),
+    dqmModuleTimeResolution = cms.untracked.double( 0.2 ),
+    dqmPathMemoryResolution = cms.untracked.double( 5000.0 ),
     enableDQM = cms.untracked.bool( True ),
     enableDQMbyModule = cms.untracked.bool( False ),
-    enableTimingExclusive = cms.untracked.bool( True ),
-    skipFirstPath = cms.untracked.bool( False ),
+    dqmModuleMemoryRange = cms.untracked.double( 100000.0 ),
+    dqmMemoryResolution = cms.untracked.double( 5000.0 ),
     enableDQMbyLumiSection = cms.untracked.bool( True ),
     dqmPathTimeResolution = cms.untracked.double( 0.5 ),
+    printEventSummary = cms.untracked.bool( False ),
     dqmPathTimeRange = cms.untracked.double( 100.0 ),
     dqmTimeRange = cms.untracked.double( 1000.0 ),
+    enableDQMTransitions = cms.untracked.bool( False ),
     dqmLumiSectionsRange = cms.untracked.uint32( 2500 ),
-    enableDQMbyProcesses = cms.untracked.bool( True ),
-    enableDQMSummary = cms.untracked.bool( True ),
-    enableTimingSummary = cms.untracked.bool( True ),
-    enableDQMbyPathTotal = cms.untracked.bool( True ),
-    enableTimingPaths = cms.untracked.bool( True ),
-    enableDQMbyPathExclusive = cms.untracked.bool( True ),
+    dqmPathMemoryRange = cms.untracked.double( 1000000.0 ),
+    dqmMemoryRange = cms.untracked.double( 1000000.0 ),
     dqmTimeResolution = cms.untracked.double( 5.0 ),
-    dqmModuleTimeResolution = cms.untracked.double( 0.2 ),
-    enableDQMbyPathActive = cms.untracked.bool( True ),
-    enableDQMbyPathDetails = cms.untracked.bool( True ),
-    enableDQMbyPathOverhead = cms.untracked.bool( False ),
-    enableDQMbyPathCounters = cms.untracked.bool( True ),
-    enableDQMbyModuleType = cms.untracked.bool( False )
+    printRunSummary = cms.untracked.bool( True ),
+    dqmModuleMemoryResolution = cms.untracked.double( 500.0 ),
+    printJobSummary = cms.untracked.bool( True ),
+    enableDQMbyProcesses = cms.untracked.bool( True )
 )
 process.MessageLogger = cms.Service( "MessageLogger",
     suppressInfo = cms.untracked.vstring(  ),
@@ -252,32 +246,36 @@ process.hltGtStage2Digis = cms.EDProducer( "L1TRawToDigi",
     lenSlinkHeader = cms.untracked.int32( 8 ),
     MTF7 = cms.untracked.bool( False ),
     FWId = cms.uint32( 0 ),
+    TMTCheck = cms.bool( True ),
+    lenAMCTrailer = cms.untracked.int32( 0 ),
     debug = cms.untracked.bool( False ),
     FedIds = cms.vint32( 1404 ),
     lenAMCHeader = cms.untracked.int32( 8 ),
-    lenAMCTrailer = cms.untracked.int32( 0 ),
+    DmxFWId = cms.uint32( 0 ),
     FWOverride = cms.bool( False )
 )
 process.hltGtStage2ObjectMap = cms.EDProducer( "L1TGlobalProducer",
     L1DataBxInEvent = cms.int32( 5 ),
-    JetInputTag = cms.InputTag( 'hltGtStage2Digis','Jet' ),
     AlgorithmTriggersUnmasked = cms.bool( True ),
-    EmulateBxInEvent = cms.int32( 1 ),
-    AlgorithmTriggersUnprescaled = cms.bool( True ),
-    PrintL1Menu = cms.untracked.bool( False ),
-    Verbosity = cms.untracked.int32( 0 ),
     EtSumInputTag = cms.InputTag( 'hltGtStage2Digis','EtSum' ),
-    ProduceL1GtDaqRecord = cms.bool( True ),
-    PrescaleSet = cms.uint32( 1 ),
-    ExtInputTag = cms.InputTag( "hltGtStage2Digis" ),
-    EGammaInputTag = cms.InputTag( 'hltGtStage2Digis','EGamma' ),
-    TriggerMenuLuminosity = cms.string( "startup" ),
-    ProduceL1GtObjectMapRecord = cms.bool( True ),
-    AlternativeNrBxBoardDaq = cms.uint32( 0 ),
-    PrescaleCSVFile = cms.string( "prescale_L1TGlobal.csv" ),
-    TauInputTag = cms.InputTag( 'hltGtStage2Digis','Tau' ),
     BstLengthBytes = cms.int32( -1 ),
-    MuonInputTag = cms.InputTag( 'hltGtStage2Digis','Muon' )
+    MuonInputTag = cms.InputTag( 'hltGtStage2Digis','Muon' ),
+    AlgorithmTriggersUnprescaled = cms.bool( True ),
+    AlternativeNrBxBoardDaq = cms.uint32( 0 ),
+    JetInputTag = cms.InputTag( 'hltGtStage2Digis','Jet' ),
+    EmulateBxInEvent = cms.int32( 1 ),
+    Verbosity = cms.untracked.int32( 0 ),
+    ProduceL1GtDaqRecord = cms.bool( True ),
+    TriggerMenuLuminosity = cms.string( "startup" ),
+    PrescaleCSVFile = cms.string( "prescale_L1TGlobal.csv" ),
+    PrintL1Menu = cms.untracked.bool( False ),
+    ExtInputTag = cms.InputTag( "hltGtStage2Digis" ),
+    AlgoBlkInputTag = cms.InputTag( "hltGtStage2Digis" ),
+    PrescaleSet = cms.uint32( 1 ),
+    EGammaInputTag = cms.InputTag( 'hltGtStage2Digis','EGamma' ),
+    ProduceL1GtObjectMapRecord = cms.bool( True ),
+    GetPrescaleColumnFromData = cms.bool( False ),
+    TauInputTag = cms.InputTag( 'hltGtStage2Digis','Tau' )
 )
 process.hltScalersRawToDigi = cms.EDProducer( "ScalersRawToDigi",
     scalersInputTag = cms.InputTag( "rawDataCollector" )
@@ -326,6 +324,7 @@ process.hltFEDSelector = cms.EDProducer( "EvFFEDSelector",
 process.hltTriggerSummaryAOD = cms.EDProducer( "TriggerSummaryProducerAOD",
     moduleLabelPatternsToSkip = cms.vstring(  ),
     processName = cms.string( "@" ),
+    throw = cms.bool( False ),
     moduleLabelPatternsToMatch = cms.vstring( 'hlt*' )
 )
 process.hltTriggerSummaryRAW = cms.EDProducer( "TriggerSummaryProducerRAW",
@@ -339,10 +338,13 @@ process.hltL1TGlobalSummary = cms.EDAnalyzer( "L1TGlobalSummary",
     ExtInputTag = cms.InputTag( "hltGtStage2Digis" ),
     MaxBx = cms.int32( 0 ),
     DumpRecord = cms.bool( False ),
+    psFileName = cms.string( "prescale_L1TGlobal.csv" ),
+    ReadPrescalesFromFile = cms.bool( False ),
     AlgInputTag = cms.InputTag( "hltGtStage2Digis" ),
     MinBx = cms.int32( 0 ),
-    DumpTrigResults = cms.bool( False ),
-    DumpTrigSummary = cms.bool( True )
+    psColumn = cms.int32( 0 ),
+    DumpTrigSummary = cms.bool( True ),
+    DumpTrigResults = cms.bool( False )
 )
 process.hltTrigReport = cms.EDAnalyzer( "HLTrigReport",
     ReferencePath = cms.untracked.string( "HLTriggerFinalPath" ),
@@ -350,7 +352,7 @@ process.hltTrigReport = cms.EDAnalyzer( "HLTrigReport",
     serviceBy = cms.untracked.string( "never" ),
     resetBy = cms.untracked.string( "never" ),
     reportBy = cms.untracked.string( "job" ),
-    HLTriggerResults = cms.InputTag( 'TriggerResults','','HLT' )
+    HLTriggerResults = cms.InputTag( 'TriggerResults','','@currentProcess' )
 )
 process.hltPreAOutput = cms.EDFilter( "HLTPrescaler",
     L1GtReadoutRecordTag = cms.InputTag( "hltGtDigis" ),
@@ -413,38 +415,6 @@ process.source = cms.Source( "PoolSource",
     )
 )
 
-# adapt HLT modules to the correct process name
-if 'hltTrigReport' in process.__dict__:
-    process.hltTrigReport.HLTriggerResults                    = cms.InputTag( 'TriggerResults', '', 'HLTFake2' )
-
-if 'hltPreExpressCosmicsOutputSmart' in process.__dict__:
-    process.hltPreExpressCosmicsOutputSmart.hltResults = cms.InputTag( 'TriggerResults', '', 'HLTFake2' )
-
-if 'hltPreExpressOutputSmart' in process.__dict__:
-    process.hltPreExpressOutputSmart.hltResults        = cms.InputTag( 'TriggerResults', '', 'HLTFake2' )
-
-if 'hltPreDQMForHIOutputSmart' in process.__dict__:
-    process.hltPreDQMForHIOutputSmart.hltResults       = cms.InputTag( 'TriggerResults', '', 'HLTFake2' )
-
-if 'hltPreDQMForPPOutputSmart' in process.__dict__:
-    process.hltPreDQMForPPOutputSmart.hltResults       = cms.InputTag( 'TriggerResults', '', 'HLTFake2' )
-
-if 'hltPreHLTDQMResultsOutputSmart' in process.__dict__:
-    process.hltPreHLTDQMResultsOutputSmart.hltResults  = cms.InputTag( 'TriggerResults', '', 'HLTFake2' )
-
-if 'hltPreHLTDQMOutputSmart' in process.__dict__:
-    process.hltPreHLTDQMOutputSmart.hltResults         = cms.InputTag( 'TriggerResults', '', 'HLTFake2' )
-
-if 'hltPreHLTMONOutputSmart' in process.__dict__:
-    process.hltPreHLTMONOutputSmart.hltResults         = cms.InputTag( 'TriggerResults', '', 'HLTFake2' )
-
-if 'hltDQMHLTScalers' in process.__dict__:
-    process.hltDQMHLTScalers.triggerResults                   = cms.InputTag( 'TriggerResults', '', 'HLTFake2' )
-    process.hltDQMHLTScalers.processname                      = 'HLTFake2'
-
-if 'hltDQML1SeedLogicScalers' in process.__dict__:
-    process.hltDQML1SeedLogicScalers.processname              = 'HLTFake2'
-
 # limit the number of events to be processed
 process.maxEvents = cms.untracked.PSet(
     input = cms.untracked.int32( 100 )
@@ -462,7 +432,6 @@ process.options = cms.untracked.PSet(
 if 'GlobalTag' in process.__dict__:
     from Configuration.AlCa.GlobalTag import GlobalTag as customiseGlobalTag
     process.GlobalTag = customiseGlobalTag(process.GlobalTag, globaltag = 'auto:run2_hlt_Fake2')
-    process.GlobalTag.connect   = 'frontier://FrontierProd/CMS_CONDITIONS'
 
 if 'MessageLogger' in process.__dict__:
     process.MessageLogger.categories.append('TriggerSummaryProducerAOD')

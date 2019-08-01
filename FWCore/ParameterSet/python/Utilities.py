@@ -1,3 +1,4 @@
+
 def ignoreAllFiltersOnPath(path):
   """Given a 'Path', find all EDFilters and wrap them in 'cms.ignore'
   """
@@ -106,7 +107,8 @@ def cleanUnscheduled(proc):
   # On each path we move EDProducers and EDFilters that
   # are ignored to Tasks
   producerList = list()
-  for pName, originalPath in pathsAndEndPaths.iteritems():
+  import six
+  for pName, originalPath in six.iteritems(pathsAndEndPaths):
     producerList[:] = []
     qualified_names = []
     v = cms.DecoratedNodeNamePlusVisitor(qualified_names)
@@ -161,6 +163,50 @@ def modulesInSequences(* sequences):
 
 def moduleLabelsInSequences(* sequences):
   return [module.label() for module in modulesInSequences(* sequences)]
+
+def createTaskWithAllProducersAndFilters(process):
+  from FWCore.ParameterSet.Config import Task
+  import six
+
+  l = [ p for p in six.itervalues(process.producers)]
+  l.extend( (f for f in six.itervalues(process.filters)) )
+  return Task(*l)
+
+def convertToSingleModuleEndPaths(process):
+    """Remove the EndPaths in the Process with more than one module
+    and replace with new EndPaths each with only one module.
+    """
+    import FWCore.ParameterSet.Config as cms
+    import six
+    toRemove =[]
+    added = []
+    for n,ep in six.iteritems(process.endpaths_()):
+        tsks = []
+        ep.visit(cms.TaskVisitor(tsks))
+
+        names = ep.moduleNames()
+        if 1 == len(names):
+            continue
+        toRemove.append(n)
+        for m in names:
+            epName = m+"_endpath"
+            setattr(process,epName,cms.EndPath(getattr(process,m),*tsks))
+            added.append(epName)
+
+    s = process.schedule_()
+    if s:
+        pathNames = [p.label_() for p in s]
+        for rName in toRemove:
+            pathNames.remove(rName)
+        for n in added:
+            pathNames.append(n)
+        newS = cms.Schedule(*[getattr(process,n) for n in pathNames])
+        if s._tasks:
+          newS.associate(*s._tasks)
+        process.setSchedule_(newS)
+
+    for r in toRemove:
+        delattr(process,r)
 
 
 if __name__ == "__main__":
@@ -304,5 +350,43 @@ if __name__ == "__main__":
             self.assertEqual([p for p in process.schedule],[process.p1,process.p4,process.p2,process.p3,process.end1,process.end2])
             listOfTasks = list(process.schedule._tasks)
             self.assertEqual(listOfTasks, [process.t1,t2])
+
+        def testCreateTaskWithAllProducersAndFilters(self):
+
+            import FWCore.ParameterSet.Config as cms
+            process = cms.Process("TEST")
+
+            process.a = cms.EDProducer("AProd")
+            process.b = cms.EDProducer("BProd")
+            process.c = cms.EDProducer("CProd")
+
+            process.f1 = cms.EDFilter("Filter")
+            process.f2 = cms.EDFilter("Filter2")
+            process.f3 = cms.EDFilter("Filter3")
+
+            process.out1 = cms.OutputModule("Output1")
+            process.out2 = cms.OutputModule("Output2")
+
+            process.analyzer1 = cms.EDAnalyzer("analyzerType1")
+            process.analyzer2 = cms.EDAnalyzer("analyzerType2")
+
+            process.task = createTaskWithAllProducersAndFilters(process)
+            process.path = cms.Path(process.a, process.task)
+
+            self.assertEqual(process.task.dumpPython(None),'cms.Task(process.a, process.b, process.c, process.f1, process.f2, process.f3)\n')
+            self.assertEqual(process.path.dumpPython(None),'cms.Path(process.a, process.task)\n')
+
+        def testConvertToSingleModuleEndPaths(self):
+            import FWCore.ParameterSet.Config as cms
+            process = cms.Process("TEST")
+            process.a = cms.EDAnalyzer("A")
+            process.b = cms.EDAnalyzer("B")
+            process.c = cms.EDProducer("C")
+            process.ep = cms.EndPath(process.a+process.b,cms.Task(process.c))
+            self.assertEqual(process.ep.dumpPython(None),'cms.EndPath(process.a+process.b, cms.Task(process.c))\n')
+            convertToSingleModuleEndPaths(process)
+            self.assertEqual(False,hasattr(process,"ep"))
+            self.assertEqual(process.a_endpath.dumpPython(None),'cms.EndPath(process.a, cms.Task(process.c))\n')
+            self.assertEqual(process.b_endpath.dumpPython(None),'cms.EndPath(process.b, cms.Task(process.c))\n')
 
     unittest.main()

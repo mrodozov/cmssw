@@ -11,24 +11,22 @@
 class PFTrackTransformer;
 class PFDisplacedTrackerVertexProducer : public edm::stream::EDProducer<> {
 public:
-  
   ///Constructor
-  explicit PFDisplacedTrackerVertexProducer(const edm::ParameterSet&);
-  
+  explicit PFDisplacedTrackerVertexProducer(const edm::ParameterSet &);
+
   ///Destructor
-  ~PFDisplacedTrackerVertexProducer();
-  
+  ~PFDisplacedTrackerVertexProducer() override;
+
 private:
-  virtual void beginRun(const edm::Run&,const edm::EventSetup&) override;
-  virtual void endRun(const edm::Run&,const edm::EventSetup&) override;
-  
+  void beginRun(const edm::Run &, const edm::EventSetup &) override;
+  void endRun(const edm::Run &, const edm::EventSetup &) override;
+
   ///Produce the PFRecTrack collection
-  virtual void produce(edm::Event&, const edm::EventSetup&) override;
-  
+  void produce(edm::Event &, const edm::EventSetup &) override;
+
   ///PFTrackTransformer
-  PFTrackTransformer *pfTransformer_; 
+  PFTrackTransformer *pfTransformer_;
   edm::EDGetTokenT<reco::PFDisplacedVertexCollection> pfDisplacedVertexContainer_;
   edm::EDGetTokenT<reco::TrackCollection> pfTrackContainer_;
-
 };
 #endif

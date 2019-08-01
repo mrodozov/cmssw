@@ -4,7 +4,6 @@ process = cms.Process("APVGAIN")
 
 process.load('Configuration.StandardSequences.GeometryRecoDB_cff')
 process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_condDBv2_cff")
-process.SiStripDetInfoFileReader = cms.Service("SiStripDetInfoFileReader")
 
 #this block is there to solve issue related to SiStripQualityRcd
 process.load("CalibTracker.SiStripESProducers.SiStripQualityESProducer_cfi")
@@ -87,13 +86,13 @@ if(XXX_PCL_XXX):
    process.EDMtoMEConvertSiStripGains.lumiInputTag = cms.InputTag("MEtoEDMConvertSiStripGains","MEtoEDMConverterLumi")
    process.EDMtoMEConvertSiStripGains.runInputTag = cms.InputTag("MEtoEDMConvertSiStripGains","MEtoEDMConverterRun")
 
-   process.EDMtoMEConvertSiStripGainsAfterAbortGap = EDMtoMEConverter.clone()
-   process.EDMtoMEConvertSiStripGainsAfterAbortGap.lumiInputTag = cms.InputTag("MEtoEDMConvertSiStripGainsAfterAbortGap","MEtoEDMConverterLumi")
-   process.EDMtoMEConvertSiStripGainsAfterAbortGap.runInputTag = cms.InputTag("MEtoEDMConvertSiStripGainsAfterAbortGap","MEtoEDMConverterRun")
+   process.EDMtoMEConvertSiStripGainsAAG = EDMtoMEConverter.clone()
+   process.EDMtoMEConvertSiStripGainsAAG.lumiInputTag = cms.InputTag("MEtoEDMConvertSiStripGainsAAG","MEtoEDMConverterLumi")
+   process.EDMtoMEConvertSiStripGainsAAG.runInputTag = cms.InputTag("MEtoEDMConvertSiStripGainsAAG","MEtoEDMConverterRun")
 
 
    ConvertersSiStripGains = cms.Sequence( process.EDMtoMEConvertSiStripGains +
-                                          process.EDMtoMEConvertSiStripGainsAfterAbortGap )
+                                          process.EDMtoMEConvertSiStripGainsAAG )
 
    process.p = cms.Path( ConvertersSiStripGains * process.SiStripCalib * process.dqmSaver)
 

@@ -13,21 +13,19 @@
 #include <string>
 
 class CSCReadoutMappingFromFile : public CSCReadoutMappingForSliceTest {
- public:
-
+public:
   /// Constructor
-   explicit CSCReadoutMappingFromFile( const edm::ParameterSet& ps );
-   CSCReadoutMappingFromFile() {}
+  explicit CSCReadoutMappingFromFile(const edm::ParameterSet& ps);
+  CSCReadoutMappingFromFile() {}
 
   /// Destructor
-   virtual ~CSCReadoutMappingFromFile();
+  ~CSCReadoutMappingFromFile() override;
 
   /// Fill mapping store
-   virtual void fill( const edm::ParameterSet& ps );
+  void fill(const edm::ParameterSet& ps) override;
 
- private: 
-   std::string theMappingFile;
-
+private:
+  std::string theMappingFile;
 };
 
 #endif

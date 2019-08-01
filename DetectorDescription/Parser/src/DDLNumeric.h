@@ -9,7 +9,7 @@
 // Includes
 // -------------------------------------------------------------------------
 #include "DDXMLElement.h"
-#include "DetectorDescription/Base/interface/DDTypes.h"
+#include "DetectorDescription/Core/interface/DDTypes.h"
 #include "DetectorDescription/Core/interface/DDNumeric.h"
 
 class DDCompactView;
@@ -26,13 +26,11 @@ class DDLElementRegistry;
  *
  *
  */
-class DDLNumeric final : public DDXMLElement
-{
+class DDLNumeric final : public DDXMLElement {
 public:
+  DDLNumeric(DDLElementRegistry* myreg);
 
-  DDLNumeric( DDLElementRegistry* myreg );
-
-  void preProcessElement( const std::string& name, const std::string& nmspace, DDCompactView& cpv ) override;
-  void processElement( const std::string& name, const std::string& nmspace, DDCompactView& cpv ) override;
+  void preProcessElement(const std::string& name, const std::string& nmspace, DDCompactView& cpv) override;
+  void processElement(const std::string& name, const std::string& nmspace, DDCompactView& cpv) override;
 };
 #endif

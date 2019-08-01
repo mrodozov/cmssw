@@ -4,7 +4,7 @@
 //
 // Package:    PythiaMomDauFilter
 // Class:      PythiaMomDauFilter
-// 
+//
 /**\class PythiaMomDauFilter PythiaMomDauFilter.cc 
 
  Description: Filter events using MotherId and ChildrenIds infos
@@ -15,14 +15,11 @@
 //
 // Original Author:  Daniele Pedrini
 //         Created:  Oct 27 2015
-// Fixed : Ta-Wei Wang, Dec 11 2015        
+// Fixed : Ta-Wei Wang, Dec 11 2015
 // $Id: PythiaMomDauFilter.h,v 1.1 2015/10/27  pedrini Exp $
 //
 //
 
-namespace edm {
-    class HepMCProduct;
-}
 // system include files
 #include <memory>
 
@@ -35,43 +32,45 @@ namespace edm {
 
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 
+namespace edm {
+  class HepMCProduct;
+}
 
 //
 // class decleration
 //
 
 class PythiaMomDauFilter : public edm::EDFilter {
-   public:
-      explicit PythiaMomDauFilter(const edm::ParameterSet&);
-      ~PythiaMomDauFilter();
+public:
+  explicit PythiaMomDauFilter(const edm::ParameterSet&);
+  ~PythiaMomDauFilter() override;
 
+  bool filter(edm::Event&, const edm::EventSetup&) override;
 
-      virtual bool filter(edm::Event&, const edm::EventSetup&);
-   private:
-      // ----------memeber function----------------------
+private:
+  // ----------member data ---------------------------
 
-      // ----------member data ---------------------------
-      
-       edm::EDGetTokenT<edm::HepMCProduct> label_;
-       std::vector<int> dauIDs;
-       std::vector<int> desIDs;
-       int particleID;
-       int daughterID;
-       bool chargeconju; 
-       int ndaughters;
-       int ndescendants;
-       double minptcut;
-       double maxptcut;
-       double minetacut;
-       double maxetacut;
-       double mom_minptcut;
-       double mom_maxptcut;
-       double mom_minetacut;
-       double mom_maxetacut;
+  edm::EDGetTokenT<edm::HepMCProduct> label_;
+  std::vector<int> dauIDs;
+  std::vector<int> desIDs;
+  int particleID;
+  int daughterID;
+  bool chargeconju;
+  int ndaughters;
+  int ndescendants;
+  double minptcut;
+  double maxptcut;
+  double minetacut;
+  double maxetacut;
+  double mom_minptcut;
+  double mom_maxptcut;
+  double mom_minetacut;
+  double mom_maxetacut;
+  double betaBoost;
 };
 #define PYCOMP pycomp_
 extern "C" {
- int PYCOMP(int& ip);
-} 
+int PYCOMP(int& ip);
+}
 #endif
 DEFINE_FWK_MODULE(PythiaMomDauFilter);

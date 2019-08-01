@@ -1,9 +1,10 @@
 import FWCore.ParameterSet.Config as cms 
-from Configuration.StandardSequences.Eras import eras
+from Configuration.ProcessModifiers.convertHGCalDigisSim_cff import convertHGCalDigisSim
 
-
-
-process = cms.Process('DIGI',eras.Phase2C2)
+# For old samples use the digi converter
+from Configuration.Eras.Era_Phase2_cff import Phase2
+#process = cms.Process('DIGI',Phase2,convertHGCalDigisSim)
+process = cms.Process('DIGI',Phase2)
 
 # import of standard configurations
 process.load('Configuration.StandardSequences.Services_cff')
@@ -11,9 +12,9 @@ process.load('SimGeneral.HepPDTESSource.pythiapdt_cfi')
 process.load('FWCore.MessageService.MessageLogger_cfi')
 process.load('Configuration.EventContent.EventContent_cff')
 process.load('SimGeneral.MixingModule.mixNoPU_cfi')
-process.load('Configuration.Geometry.GeometryExtended2023D4Reco_cff')
-process.load('Configuration.Geometry.GeometryExtended2023D4_cff')
-process.load('Configuration.StandardSequences.MagneticField_38T_PostLS1_cff')
+process.load('Configuration.Geometry.GeometryExtended2023D17Reco_cff')
+process.load('Configuration.Geometry.GeometryExtended2023D17_cff')
+process.load('Configuration.StandardSequences.MagneticField_cff')
 process.load('Configuration.StandardSequences.Generator_cff')
 process.load('IOMC.EventVertexGenerators.VtxSmearedHLLHC14TeV_cfi')
 process.load('GeneratorInterface.Core.genFilterSummary_cff')
@@ -31,7 +32,16 @@ process.maxEvents = cms.untracked.PSet(
 
 # Input source
 process.source = cms.Source("PoolSource",
-       fileNames = cms.untracked.vstring('/store/relval//CMSSW_9_0_0_pre4/RelValZEE_14/GEN-SIM-DIGI-RAW/90X_upgrade2023_realistic_v3_2023D4Timing-v1/10000/02605B3A-92EC-E611-A9A9-0025905B85B2.root') )
+       fileNames = cms.untracked.vstring('/store/relval/CMSSW_10_4_0_pre2/RelValTTbar_14TeV/GEN-SIM-DIGI-RAW/103X_upgrade2023_realistic_v2_2023D21noPU-v1/20000/F4344045-AEDE-4240-B7B1-27D2CF96C34E.root'),
+       inputCommands=cms.untracked.vstring(
+           'keep *',
+           'drop l1tEMTFHit2016Extras_simEmtfDigis_CSC_HLT',
+           'drop l1tEMTFHit2016Extras_simEmtfDigis_RPC_HLT',
+           'drop l1tEMTFHit2016s_simEmtfDigis__HLT',
+           'drop l1tEMTFTrack2016Extras_simEmtfDigis__HLT',
+           'drop l1tEMTFTrack2016s_simEmtfDigis__HLT',
+           )
+       )
 
 process.options = cms.untracked.PSet(
 
@@ -44,70 +54,32 @@ process.configurationMetadata = cms.untracked.PSet(
     name = cms.untracked.string('Applications')
 )
 
-# Output definition
-
 process.FEVTDEBUGoutput = cms.OutputModule("PoolOutputModule",
     splitLevel = cms.untracked.int32(0),
     eventAutoFlushCompressedSize = cms.untracked.int32(5242880),
-    #outputCommands = process.FEVTDEBUGEventContent.outputCommands,
     outputCommands = cms.untracked.vstring(
-        'keep *_*_HGCHitsEE_*',
-        'keep *_*_HGCHitsHEback_*',
-        'keep *_*_HGCHitsHEfront_*',
-        'keep *_mix_*_*',
-        'keep *_genParticles_*_*',
-        'keep *_hgcalTriggerPrimitiveDigiProducer_*_*'
+        'keep *_hgcalBackEndLayer2Producer_*_*',
+        'keep *_hgcalTowerProducer_*_*',
     ),
-    fileName = cms.untracked.string('file:test.root'),
-    dataset = cms.untracked.PSet(
-        filterName = cms.untracked.string(''),
-        dataTier = cms.untracked.string('GEN-SIM-DIGI-RAW')
-    ),
-    SelectEvents = cms.untracked.PSet(
-        SelectEvents = cms.vstring('generation_step')
-    )
+    fileName = cms.untracked.string('file:test.root')
 )
-
-# Additional output definition
-process.TFileService = cms.Service(
-    "TFileService",
-    fileName = cms.string("ntuple.root")
-    )
 
 # Other statements
 from Configuration.AlCa.GlobalTag import GlobalTag
 process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:phase2_realistic', '')
 
+# load HGCAL TPG simulation
 process.load('L1Trigger.L1THGCal.hgcalTriggerPrimitives_cff')
-# Remove best choice selection
-process.hgcalTriggerPrimitiveDigiProducer.FECodec.NData = cms.uint32(999)
-process.hgcalTriggerPrimitiveDigiProducer.FECodec.DataLength = cms.uint32(8)
-process.hgcalTriggerPrimitiveDigiProducer.FECodec.triggerCellTruncationBits = cms.uint32(7)
-
-process.hgcalTriggerPrimitiveDigiProducer.BEConfiguration.algorithms[0].calib_parameters.cellLSB = cms.double(
-        process.hgcalTriggerPrimitiveDigiProducer.FECodec.linLSB.value() * 
-        2 ** process.hgcalTriggerPrimitiveDigiProducer.FECodec.triggerCellTruncationBits.value() 
-)
-
-cluster_algo_all =  cms.PSet( AlgorithmName = cms.string('SingleCellClusterAlgoBestChoice'),
-                              FECodec = process.hgcalTriggerPrimitiveDigiProducer.FECodec,
-                              HGCalEESensitive_tag = cms.string('HGCalEESensitive'),
-                              HGCalHESiliconSensitive_tag = cms.string('HGCalHESiliconSensitive'),
-                           
-                              calib_parameters = process.hgcalTriggerPrimitiveDigiProducer.BEConfiguration.algorithms[0].calib_parameters
-                              )
-
-process.hgcalTriggerPrimitiveDigiProducer.BEConfiguration.algorithms = cms.VPSet( cluster_algo_all )
-
 process.hgcl1tpg_step = cms.Path(process.hgcalTriggerPrimitives)
+# Change to V7 trigger geometry for older samples
+#  from L1Trigger.L1THGCal.customTriggerGeometry import custom_geometry_ZoltanSplit_V7
+#  process = custom_geometry_ZoltanSplit_V7(process)
 
 
-# load ntuplizer
-process.load('L1Trigger.L1THGCal.hgcalTriggerNtuples_cff')
-process.ntuple_step = cms.Path(process.hgcalTriggerNtuples)
+process.FEVTDEBUGoutput_step = cms.EndPath(process.FEVTDEBUGoutput)
 
 # Schedule definition
-process.schedule = cms.Schedule(process.hgcl1tpg_step, process.ntuple_step)
+process.schedule = cms.Schedule(process.hgcl1tpg_step, process.FEVTDEBUGoutput_step)
 
 # Add early deletion of temporary data products to reduce peak memory need
 from Configuration.StandardSequences.earlyDeleteSettings_cff import customiseEarlyDelete

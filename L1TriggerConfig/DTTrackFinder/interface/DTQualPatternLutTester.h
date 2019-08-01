@@ -20,18 +20,15 @@
 #include "CondFormats/L1TObjects/interface/L1MuDTQualPatternLut.h"
 #include "CondFormats/DataRecord/interface/L1MuDTQualPatternLutRcd.h"
 
-
 class DTQualPatternLutTester : public edm::EDAnalyzer {
- public:
-
+public:
   DTQualPatternLutTester(const edm::ParameterSet& ps);
 
-  ~DTQualPatternLutTester();
-  
-  virtual void analyze(const edm::Event& e, const edm::EventSetup& c);
+  ~DTQualPatternLutTester() override;
 
- private:
+  void analyze(const edm::Event& e, const edm::EventSetup& c) override;
 
+private:
 };
 
 #endif

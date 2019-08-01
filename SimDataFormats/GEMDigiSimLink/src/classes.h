@@ -10,19 +10,6 @@
 #include <map>
 
 #include "SimDataFormats/GEMDigiSimLink/interface/GEMDigiSimLink.h"
+#include "SimDataFormats/GEMDigiSimLink/interface/ME0DigiSimLink.h"
 
-namespace SimDataFormats_GEMDigiSimLink
-{
-  struct dictionary
-  {
-    edm::Wrapper<GEMDigiSimLink> GEMDigiSimLinkWrapper;
-    edm::Wrapper<std::vector<GEMDigiSimLink> > GEMDigiSimLinkVector;
-
-    edm::Wrapper<edm::DetSet<GEMDigiSimLink> > GEMDigiSimLinkDetSetWrapper;
-    edm::Wrapper<std::vector<edm::DetSet<GEMDigiSimLink> > > GEMDigiSimLinkVectorDetSet;
-    edm::Wrapper<edm::DetSetVector<GEMDigiSimLink> > GEMDigiSimLinkDetSetVectorWrapper;
-  };
-}
-
-#endif // GEMDIGISIMLINK_CLASSES_H
-
+#endif  // GEMDIGISIMLINK_CLASSES_H

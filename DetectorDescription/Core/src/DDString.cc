@@ -2,39 +2,19 @@
 
 #include <utility>
 
-#include "DetectorDescription/Base/interface/Store.h"
-//#include "DetectorDescription/Base/interface/DDException.h"
+DDString::DDString() : DDBase<DDName, std::unique_ptr<std::string>>() {}
 
-// Evaluator 
-//#include "DetectorDescription/ExprAlgo/interface/ExprEvalSingleton.h"
+DDString::DDString(const DDName& name) : DDBase<DDName, std::unique_ptr<std::string>>() { create(name); }
 
+DDString::DDString(const DDName& name, std::unique_ptr<std::string> vals) { create(name, std::move(vals)); }
 
+std::ostream& operator<<(std::ostream& os, const DDString& cons) {
+  os << "DDString name=" << cons.name();
 
-DDString::DDString() : DDBase<DDName,std::string*>() { }
-
-
-DDString::DDString(const DDName & name) : DDBase<DDName,std::string*>() 
-{
-  prep_ = StoreT::instance().create(name);
-}
-
-DDString::DDString(const DDName & name,std::string* vals)
-{
-  prep_ = StoreT::instance().create(name,vals);
-}  
-
-
-std::ostream & operator<<(std::ostream & os, const DDString & cons)
-{
-  os << "DDString name=" << cons.name(); 
-  
-  if(cons.isDefined().second) {
+  if (cons.isDefined().second) {
     os << " val=" << cons.value();
-  }
-  else {
+  } else {
     os << " constant is not yet defined, only declared.";
-  }  
+  }
   return os;
 }
-
-

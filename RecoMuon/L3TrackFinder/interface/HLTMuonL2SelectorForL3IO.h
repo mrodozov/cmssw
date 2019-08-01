@@ -18,29 +18,33 @@
 #include "DataFormats/RecoCandidate/interface/RecoChargedCandidate.h"
 #include "DataFormats/RecoCandidate/interface/RecoChargedCandidateFwd.h"
 
-namespace edm {class ParameterSet; class Event; class EventSetup;}
+namespace edm {
+  class ParameterSet;
+  class Event;
+  class EventSetup;
+}  // namespace edm
 
 class HLTMuonL2SelectorForL3IO : public edm::stream::EDProducer<> {
- public:
+public:
   /// constructor with config
   HLTMuonL2SelectorForL3IO(const edm::ParameterSet&);
-  
+
   /// destructor
-  virtual ~HLTMuonL2SelectorForL3IO(); 
-  
+  ~HLTMuonL2SelectorForL3IO() override;
+
   /// default values
   static void fillDescriptions(edm::ConfigurationDescriptions& descriptions);
-  
+
   /// select muons
-  virtual void produce(edm::Event&, const edm::EventSetup&);
-  
- private:
+  void produce(edm::Event&, const edm::EventSetup&) override;
+
+private:
   const edm::EDGetTokenT<reco::TrackCollection> l2Src_;
   const edm::EDGetTokenT<reco::RecoChargedCandidateCollection> l3OISrc_;
   const edm::EDGetTokenT<reco::MuonTrackLinksCollection> l3linkToken_;
   const bool applyL3Filters_;
-  const double max_NormalizedChi2_,max_PtDifference_;
-  const int min_Nhits_,min_NmuonHits_;
+  const double max_NormalizedChi2_, max_PtDifference_;
+  const int min_Nhits_, min_NmuonHits_;
 };
 
 #endif

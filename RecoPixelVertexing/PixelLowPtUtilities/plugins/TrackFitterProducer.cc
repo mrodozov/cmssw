@@ -20,23 +20,22 @@
 #include "TrackingTools/Records/interface/TransientRecHitRecord.h"
 #include "TrackingTools/Records/interface/TrackingComponentsRecord.h"
 
-class TrackFitterProducer: public edm::global::EDProducer<> {
+class TrackFitterProducer : public edm::global::EDProducer<> {
 public:
   explicit TrackFitterProducer(const edm::ParameterSet& iConfig);
-  ~TrackFitterProducer() {}
+  ~TrackFitterProducer() override {}
 
   static void fillDescriptions(edm::ConfigurationDescriptions& descriptions);
 
 private:
-  virtual void produce(edm::StreamID, edm::Event& iEvent, const edm::EventSetup& iSetup) const override;
+  void produce(edm::StreamID, edm::Event& iEvent, const edm::EventSetup& iSetup) const override;
 
   std::string theTTRHBuilderName;
   edm::EDGetTokenT<reco::BeamSpot> theBeamSpotToken;
 };
 
-TrackFitterProducer::TrackFitterProducer(const edm::ParameterSet& iConfig):
-  theTTRHBuilderName(iConfig.getParameter<std::string>("TTRHBuilder"))
-{
+TrackFitterProducer::TrackFitterProducer(const edm::ParameterSet& iConfig)
+    : theTTRHBuilderName(iConfig.getParameter<std::string>("TTRHBuilder")) {
   produces<PixelFitter>();
 }
 
@@ -58,10 +57,7 @@ void TrackFitterProducer::produce(edm::StreamID, edm::Event& iEvent, const edm::
   edm::ESHandle<TransientTrackingRecHitBuilder> ttrhbESH;
   iSetup.get<TransientRecHitRecord>().get(theTTRHBuilderName, ttrhbESH);
 
-  auto impl = std::make_unique<TrackFitter>(&iSetup,
-                                            trackerESH.product(),
-                                            fieldESH.product(),
-                                            ttrhbESH.product());
+  auto impl = std::make_unique<TrackFitter>(trackerESH.product(), fieldESH.product(), ttrhbESH.product());
   auto prod = std::make_unique<PixelFitter>(std::move(impl));
   iEvent.put(std::move(prod));
 }

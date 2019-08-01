@@ -1,18 +1,28 @@
 import FWCore.ParameterSet.Config as cms
 
+# Slopes for the S9S1 filter
+_slopes_S9S1_run1 = [-99999,0.0164905,0.0238698,0.0321383,
+                     0.041296,0.0513428,0.0622789,0.0741041,
+                     0.0868186,0.100422,0.135313,0.136289,0.0589927]
+
+_coeffs = [1.0, 2.5, 2.2, 2.0, 1.8, 1.6, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
+
+_slopes_S9S1_run2 = [s*c for s, c in zip(_slopes_S9S1_run1, _coeffs)]
+
+
 hfreco = cms.EDProducer("HFPhase1Reconstructor",
     # Label for the input HFPreRecHitCollection
     inputLabel = cms.InputTag("hfprereco"),
 
     # Change the following to True in order to use the channel
     # status from the DB
-    useChannelQualityFromDB = cms.bool(False),
+    useChannelQualityFromDB = cms.bool(True),
 
     # Change the following to True when the status becomes
     # available in the DB for both anodes. If this parameter
     # is set to False then it is assumed that the status of
     # both anodes is given by the channel at depth 1 and 2.
-    checkChannelQualityForDepth3and4 = cms.bool(False),
+    checkChannelQualityForDepth3and4 = cms.bool(True),
 
     # Configure the reconstruction algorithm
     algorithm = cms.PSet(
@@ -52,15 +62,31 @@ hfreco = cms.EDProducer("HFPhase1Reconstructor",
         triseIfNoTDC = cms.double(-100.0),
         tfallIfNoTDC = cms.double(-101.0),
 
+        # Charge limits for special TDC values. If the anode charge is
+        # below such a limit, the anode will participate in the energy
+        # reconstruction even if its TDC undershoots/overshoots. These
+        # global limits are in addition to those per channel limits in
+        # the database (effectively, the larger limit is used).
+        minChargeForUndershoot = cms.double(1.0e10),
+        minChargeForOvershoot = cms.double(1.0e10),
+
         # Do not construct rechits with problems
-        rejectAllFailures = cms.bool(True)
+        rejectAllFailures = cms.bool(True),
+
+        # If False, calculate charge asymmetry only when both PMT
+        # anodes have "OK" status (or were mapped into "OK" status)
+        alwaysCalculateQAsymmetry = cms.bool(False)
     ),
 
     # Reconstruction algorithm data to fetch from DB, if any
     algoConfigClass = cms.string("HFPhase1PMTParams"),
 
     # Turn on/off the noise cleanup algorithms
-    setNoiseFlags = cms.bool(False),
+    setNoiseFlags = cms.bool(True),
+
+    # Run HFStripFilter in the noise cleanup sequence? This switch
+    # is meaningful only if "setNoiseFlags" is set to True.
+    runHFStripFilter = cms.bool(True),
 
     # Parameters for the S9S1 test.
     #
@@ -72,10 +98,7 @@ hfreco = cms.EDProducer("HFPhase1Reconstructor",
     #
     S9S1stat = cms.PSet(
         # WARNING!  ONLY LONG PARAMETERS ARE USED IN DEFAULT RECO; SHORT S9S1 IS NOT USED!
-        short_optimumSlope   = cms.vdouble([-99999,0.0164905,0.0238698,0.0321383,
-                                            0.041296,0.0513428,0.0622789,0.0741041,
-                                            0.0868186,0.100422,0.135313,0.136289,
-                                            0.0589927]),
+        short_optimumSlope   = cms.vdouble(_slopes_S9S1_run2),
 
         # Short energy cut is 129.9 - 6.61*|ieta|+0.1153*|ieta|^2
         shortEnergyParams    = cms.vdouble([35.1773, 35.37, 35.7933, 36.4472,
@@ -86,10 +109,7 @@ hfreco = cms.EDProducer("HFPhase1Reconstructor",
                                             0,0,0,0,
                                             0,0,0,0,0]),
 
-        long_optimumSlope    = cms.vdouble([-99999,0.0164905,0.0238698,0.0321383,
-                                            0.041296,0.0513428,0.0622789,0.0741041,
-                                            0.0868186,0.100422,0.135313,0.136289,
-                                            0.0589927]),
+        long_optimumSlope    = cms.vdouble(_slopes_S9S1_run2),
 
         # Long energy cut is 162.4-10.9*abs(ieta)+0.21*ieta*ieta
         longEnergyParams     = cms.vdouble([43.5, 45.7, 48.32, 51.36,
@@ -178,5 +198,19 @@ hfreco = cms.EDProducer("HFPhase1Reconstructor",
         short_R_29 = cms.vdouble([0.8]),
         long_R_29  = cms.vdouble([0.8]), # should move from 0.98 to 0.8?
         HcalAcceptSeverityLevel = cms.int32(9), # allow hits with severity up to AND INCLUDING 9
+    ),
+
+    # Parameters for HFStripFilter.
+    # Please add some descriptions of their meaning.
+    HFStripFilter = cms.PSet(
+        stripThreshold = cms.double(40.0),
+        maxThreshold = cms.double(100.0),
+        timeMax = cms.double(6.0),
+        maxStripTime = cms.double(10.0),
+        wedgeCut = cms.double(0.05),
+        seedHitIetaMax = cms.int32(35),
+        gap = cms.int32(2),
+        lstrips = cms.int32(2),
+        verboseLevel = cms.untracked.int32(10)
     )
 )

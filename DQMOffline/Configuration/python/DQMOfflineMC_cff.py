@@ -3,8 +3,8 @@ import FWCore.ParameterSet.Config as cms
 from DQMOffline.Configuration.DQMOffline_cff import *
 
 #	remove Trigger Primtive Task from hcal's sequence
-#hcalOfflineSourceSequence.remove(tpTask)
-#hcalOfflineSourceSequence.remove(rawTask)
+hcalOfflineSourceSequence.remove(tpTask)
+hcalOfflineSourceSequence.remove(rawTask)
 
 siStripFEDCheck.RawDataTag = 'rawDataCollector'
 siStripFEDMonitor.RawDataTag = 'rawDataCollector'
@@ -28,3 +28,6 @@ for tracks in selectedTracks :
     label = 'TrackerCollisionSelectedTrackMonMB' + str(tracks)
     locals()[label].doEffFromHitPatternVsBX = False
 
+from PhysicsTools.NanoAOD.nanoDQM_cff import nanoDQMMC
+DQMOfflineNanoAOD.replace(nanoDQM, nanoDQMMC)
+#PostDQMOfflineNanoAOD.replace(nanoDQM, nanoDQMMC)

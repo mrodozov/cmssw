@@ -9,24 +9,20 @@
 class SeedGeneratorFromRegionHits;
 class TrackingRegion;
 
-
 class TSGFromOrderedHits : public TrackerSeedGenerator {
-
 public:
-  TSGFromOrderedHits(const edm::ParameterSet &pset,edm::ConsumesCollector& iC);
+  TSGFromOrderedHits(const edm::ParameterSet &pset, edm::ConsumesCollector &iC);
 
-  virtual ~TSGFromOrderedHits();
-
-private:
-  virtual void run(TrajectorySeedCollection &seeds, 
-      const edm::Event &ev, const edm::EventSetup &es, const TrackingRegion& region);
+  ~TSGFromOrderedHits() override;
 
 private:
-  void init();
+  void run(TrajectorySeedCollection &seeds,
+           const edm::Event &ev,
+           const edm::EventSetup &es,
+           const TrackingRegion &region) override;
+
   edm::RunNumber_t theLastRun;
-  edm::ParameterSet theConfig;
-  SeedGeneratorFromRegionHits * theGenerator; 
+  std::unique_ptr<SeedGeneratorFromRegionHits> theGenerator;
 };
 
-
-#endif 
+#endif
