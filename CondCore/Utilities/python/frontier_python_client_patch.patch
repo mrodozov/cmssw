@@ -1,0 +1,74 @@
+diff --git a/__pycache__/frontier.cpython-36.pyc b/__pycache__/frontier.cpython-36.pyc
+deleted file mode 100644
+index 8f71921..0000000
+Binary files a/__pycache__/frontier.cpython-36.pyc and /dev/null differ
+diff --git a/frontier.py b/frontier.py
+index c5824a1..8061a2b 100644
+--- a/frontier.py
++++ b/frontier.py
+@@ -19,7 +19,7 @@ __maintainer__ = 'Miguel Ojeda'
+ __email__ = 'mojedasa@cern.ch'
+ 
+ 
+-import exceptions
++#import exceptions
+ import datetime
+ import time
+ import re
+@@ -78,10 +78,10 @@ _paramchar = '?'
+ _separatorchar = ':'
+ 
+ 
+-class Error(exceptions.StandardError):
++class Error(Exception):
+     pass
+ 
+-class Warning(exceptions.StandardError):
++class Warning(Exception):
+     pass
+ 
+ class InterfaceError(Error):
+@@ -452,7 +452,7 @@ def TimeFromTicks(ticks):
+ def TimestampFromTicks(ticks):
+     return Timestamp(*time.localtime(ticks)[:6])
+ 
+-Binary = buffer
++Binary = memoryview
+ 
+ #class STRING(object):
+ #    pass
+diff --git a/frontier_client.py b/frontier_client.py
+index 1030967..825ae0b 100644
+--- a/frontier_client.py
++++ b/frontier_client.py
+@@ -1,3 +1,4 @@
++from __future__ import print_function
+ '''Frontier Client thin binding.
+ 
+ Please do not use this module: this module is internal, intended to simplify
+@@ -84,14 +85,24 @@ def frontier_init():
+     if retcode != FRONTIER_OK:
+         raise FrontierClientError(retcode, libfc.frontier_getErrorMsg())
+ 
++def frontier_getErrorMsg():
++    return libfc.frontier_getErrorMsg()
+ 
+ def frontier_createChannel(serverURL = None, proxyURL = None):
+     logger.debug('frontier_client.frontier_createChannel(serverURL = %s, proxyURL = %s)', repr(serverURL), repr(proxyURL))
+     retcode = ctypes.c_int(FRONTIER_OK)
++    str_url = str(serverURL)
++    print("DEBUG retcode values frontier_client file:    ", "retcode: " , retcode, "FRONTIER_OK: ", FRONTIER_OK, "retcode.value: ", retcode.value)
++    # calls the shared object function to create the channel
++    print("DEBUG ctypes.byref retcode: " , ctypes.byref(retcode))
+     channel = libfc.frontier_createChannel(serverURL, proxyURL, ctypes.byref(retcode))
++    # creates the 
++    print("DEBUG retcode values frontier_client file:    ", "retcode: " , retcode, "FRONTIER_OK: ", FRONTIER_OK, "retcode.value: ", retcode.value)
+     retcode = retcode.value
++    print("DEBUG URLS frontier_client file   :   ", serverURL, proxyURL)
++    logger.debug('frontier_client.frontier_createChannel(serverURL = %s, proxyURL = %s) = %s', repr(serverURL), repr(proxyURL), channel)
+     if retcode != FRONTIER_OK:
+-        raise FrontierClientError(retcode, libfc.frontier_getErrorMsg())
++        raise FrontierClientError(retcode, frontier_getErrorMsg())
+     logger.debug('frontier_client.frontier_createChannel(serverURL = %s, proxyURL = %s) = %s', repr(serverURL), repr(proxyURL), channel)
+     return channel
+ 

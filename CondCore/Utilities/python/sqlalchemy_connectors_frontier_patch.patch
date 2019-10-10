@@ -1,0 +1,16 @@
+diff --git a/__pycache__/frontier.cpython-36.pyc b/__pycache__/frontier.cpython-36.pyc
+index b5438fe..5338dd0 100644
+Binary files a/__pycache__/frontier.cpython-36.pyc and b/__pycache__/frontier.cpython-36.pyc differ
+diff --git a/frontier.py b/frontier.py
+index 5cbb3d7..9478780 100644
+--- a/frontier.py
++++ b/frontier.py
+@@ -18,7 +18,7 @@ class FrontierConnector(Connector):
+         self.url_database = url.database
+ 
+         return [
+-            [urllib.unquote_plus(url.host)] if url.host else [],
++            [urllib.parse.unquote_plus(url.host)] if url.host else [],
+             url.query
+         ]
+ 
