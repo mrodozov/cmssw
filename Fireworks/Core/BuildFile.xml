@@ -33,7 +33,7 @@
 <use name="rootguihtml"/>
 <use name="rootx11"/>
 <use name="rootrgl"/>
-<use name="rootglew"/>
+<use name="glew"/>
 <use name="rootgui"/>
 <export>
   <lib name="1"/>
