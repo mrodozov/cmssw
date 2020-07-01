@@ -28,8 +28,8 @@ public:
   DummyProxy() {}
 
 protected:
-  const value_type* make(const record_type&, const DataKey&) { return static_cast<const value_type*>(nullptr); }
-  void invalidateCache() {}
+  const value_type* make(const record_type&, const DataKey&) override { return static_cast<const value_type*>(nullptr); }
+  void invalidateCache() override {}
 };
 
 class Test1Producer : public ESProxyFactoryProducer {
@@ -52,8 +52,8 @@ class testProxyfactor : public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE_END();
 
 public:
-  void setUp() {}
-  void tearDown() {}
+  void setUp() override {}
+  void tearDown() override {}
 
   void registerProxyfactorytemplateTest();
   void appendLabelTest();

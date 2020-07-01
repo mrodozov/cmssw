@@ -103,8 +103,8 @@ class testEventsetup : public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE_END();
 
 public:
-  void setUp() { m_scheduler = std::make_unique<tbb::task_scheduler_init>(1); }
-  void tearDown() {}
+  void setUp() override { m_scheduler = std::make_unique<tbb::task_scheduler_init>(1); }
+  void tearDown() override {}
 
   void constructTest();
   void getTest();
@@ -206,9 +206,9 @@ public:
   void setInterval(const ValidityInterval& iInterval) { interval_ = iInterval; }
 
 protected:
-  virtual void setIntervalFor(const eventsetup::EventSetupRecordKey&,
+  void setIntervalFor(const eventsetup::EventSetupRecordKey&,
                               const IOVSyncValue& iTime,
-                              ValidityInterval& iInterval) {
+                              ValidityInterval& iInterval) override {
     if (interval_.validFor(iTime)) {
       iInterval = interval_;
     } else {
@@ -1234,7 +1234,7 @@ void testEventsetup::introspectionTest() {
       CPPUNIT_ASSERT(eventSetup.recordIsProvidedByAModule(dummyRecordKey));
       std::vector<edm::eventsetup::EventSetupRecordKey> recordKeys;
       eventSetup.fillAvailableRecordKeys(recordKeys);
-      CPPUNIT_ASSERT(0 == recordKeys.size());
+      CPPUNIT_ASSERT(recordKeys.empty());
       auto record = eventSetup.find(dummyRecordKey);
       CPPUNIT_ASSERT(!record.has_value());
 

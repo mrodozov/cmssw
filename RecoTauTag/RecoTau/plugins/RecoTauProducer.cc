@@ -21,7 +21,9 @@
 
 #include <algorithm>
 #include <functional>
+#include <memory>
 
+        
 #include "FWCore/Framework/interface/stream/EDProducer.h"
 #include "FWCore/Framework/interface/EventSetup.h"
 #include "FWCore/Framework/interface/ESHandle.h"
@@ -115,7 +117,7 @@ RecoTauProducer::RecoTauProducer(const edm::ParameterSet& pset) {
   // Check if we want to apply a final output selection
   std::string selection = pset.getParameter<std::string>("outputSelection");
   if (!selection.empty()) {
-    outputSelector_.reset(new StringCutObjectSelector<reco::PFTau>(selection));
+    outputSelector_ = std::make_unique<StringCutObjectSelector<reco::PFTau>>(selection);
   }
   buildNullTaus_ = pset.getParameter<bool>("buildNullTaus");
 

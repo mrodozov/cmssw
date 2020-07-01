@@ -1,26 +1,28 @@
 #include "HcalHitReconstructor.h"
-#include "DataFormats/HcalRecHit/interface/HcalRecHitCollections.h"
-#include "DataFormats/Common/interface/EDCollection.h"
-#include "DataFormats/Common/interface/Handle.h"
-#include "FWCore/Framework/interface/ESHandle.h"
-#include "FWCore/Framework/interface/EventSetup.h"
+#include "CalibCalorimetry/HcalAlgos/interface/HcalDbASCIIIO.h"
 #include "CalibFormats/HcalObjects/interface/HcalCoderDb.h"
 #include "CalibFormats/HcalObjects/interface/HcalDbRecord.h"
-#include "RecoLocalCalo/HcalRecAlgos/interface/HcalSeverityLevelComputer.h"
-#include "RecoLocalCalo/HcalRecAlgos/interface/HcalSeverityLevelComputerRcd.h"
-#include "CalibCalorimetry/HcalAlgos/interface/HcalDbASCIIIO.h"
+#include "CondFormats/DataRecord/interface/HBHENegativeEFilterRcd.h"
+#include "CondFormats/DataRecord/interface/HcalFrontEndMapRcd.h"
+#include "CondFormats/DataRecord/interface/HcalOOTPileupCompatibilityRcd.h"
+#include "CondFormats/DataRecord/interface/HcalOOTPileupCorrectionRcd.h"
+#include "CondFormats/HcalObjects/interface/HcalFrontEndMap.h"
+#include "CondFormats/HcalObjects/interface/OOTPileupCorrData.h"
+#include "CondFormats/HcalObjects/interface/OOTPileupCorrectionColl.h"
+#include "DataFormats/Common/interface/EDCollection.h"
+#include "DataFormats/Common/interface/Handle.h"
+#include "DataFormats/HcalRecHit/interface/HcalRecHitCollections.h"
+#include "FWCore/Framework/interface/ESHandle.h"
+#include "FWCore/Framework/interface/EventSetup.h"
 #include "Geometry/CaloTopology/interface/HcalTopology.h"
 #include "Geometry/Records/interface/HcalRecNumberingRecord.h"
-#include "CondFormats/DataRecord/interface/HcalFrontEndMapRcd.h"
-#include "CondFormats/DataRecord/interface/HcalOOTPileupCorrectionRcd.h"
-#include "CondFormats/DataRecord/interface/HcalOOTPileupCompatibilityRcd.h"
-#include "CondFormats/DataRecord/interface/HBHENegativeEFilterRcd.h"
-#include "CondFormats/HcalObjects/interface/HcalFrontEndMap.h"
-#include "CondFormats/HcalObjects/interface/OOTPileupCorrectionColl.h"
-#include "CondFormats/HcalObjects/interface/OOTPileupCorrData.h"
-#include <iostream>
+#include "RecoLocalCalo/HcalRecAlgos/interface/HcalSeverityLevelComputer.h"
+#include "RecoLocalCalo/HcalRecAlgos/interface/HcalSeverityLevelComputerRcd.h"
 #include <fstream>
+#include <iostream>
+#include <memory>
 
+        
 /*  Hcal Hit reconstructor allows for CaloRecHits with status words */
 
 HcalHitReconstructor::HcalHitReconstructor(edm::ParameterSet const& conf)
@@ -194,7 +196,7 @@ void HcalHitReconstructor::beginRun(edm::Run const& r, edm::EventSetup const& es
   if (digiTimeFromDB_ == true) {
     edm::ESHandle<HcalFlagHFDigiTimeParams> p;
     es.get<HcalFlagHFDigiTimeParamsRcd>().get(p);
-    HFDigiTimeParams.reset(new HcalFlagHFDigiTimeParams(*p));
+    HFDigiTimeParams = std::make_unique<HcalFlagHFDigiTimeParams>(*p);
     HFDigiTimeParams->setTopo(htopo.product());
   }
 

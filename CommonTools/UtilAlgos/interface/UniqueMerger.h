@@ -58,8 +58,8 @@ UniqueMerger<InputCollection, OutputCollection, P>::~UniqueMerger() {}
 
 template <typename InputCollection, typename OutputCollection, typename P>
 void UniqueMerger<InputCollection, OutputCollection, P>::produce(edm::StreamID,
-                                                              edm::Event& evt,
-                                                              const edm::EventSetup&) const {
+                                                                 edm::Event& evt,
+                                                                 const edm::EventSetup&) const {
   set_type coll_set;
   for (typename vtoken::const_iterator s = srcToken_.begin(); s != srcToken_.end(); ++s) {
     edm::Handle<InputCollection> h;

@@ -36,8 +36,8 @@ public:
   explicit TestESDummyDataAnalyzer(const edm::ParameterSet&);
 
 private:
-  virtual void endJob();
-  virtual void analyze(const edm::Event&, const edm::EventSetup&);
+  void endJob() override;
+  void analyze(const edm::Event&, const edm::EventSetup&) override;
 
   int m_expectedValue;
   int const m_nEventsValue;

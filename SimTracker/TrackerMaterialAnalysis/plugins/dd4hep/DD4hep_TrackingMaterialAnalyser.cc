@@ -153,9 +153,11 @@ void DD4hep_TrackingMaterialAnalyser::analyze(const edm::Event& event, const edm
     for (unsigned int i = 0; i < m_groupNames.size(); ++i)
       m_groups.push_back(new DD4hep_MaterialAccountingGroup(m_groupNames[i], *hDDD));
 
-    edm::LogVerbatim("TrackingMaterialAnalyser") << "TrackingMaterialAnalyser: List of the tracker groups: " << std::endl;
+    edm::LogVerbatim("TrackingMaterialAnalyser")
+        << "TrackingMaterialAnalyser: List of the tracker groups: " << std::endl;
     for (unsigned int i = 0; i < m_groups.size(); ++i)
-      edm::LogVerbatim("TrackingMaterialAnalyser") << i << " TrackingMaterialAnalyser:\t" << m_groups[i]->info() << std::endl;
+      edm::LogVerbatim("TrackingMaterialAnalyser")
+          << i << " TrackingMaterialAnalyser:\t" << m_groups[i]->info() << std::endl;
   }
   Handle<std::vector<MaterialAccountingTrack> > h_tracks;
   event.getByToken(m_materialToken, h_tracks);
@@ -185,11 +187,12 @@ void DD4hep_TrackingMaterialAnalyser::split(MaterialAccountingTrack& track) {
 
   for (unsigned int i = 0; i < group.size(); ++i)
     if (group[i] > 0)
-      edm::LogVerbatim("TrackingMaterialAnalyser") << "For detector i: " << i << " index: " << group[i]
-                                          << " R-ranges: " << m_groups[group[i] - 1]->getBoundingR().first << ", "
-                                          << m_groups[group[i] - 1]->getBoundingR().second << group[i]
-                                          << " Z-ranges: " << m_groups[group[i] - 1]->getBoundingZ().first << ", "
-                                          << m_groups[group[i] - 1]->getBoundingZ().second << std::endl;
+      edm::LogVerbatim("TrackingMaterialAnalyser")
+          << "For detector i: " << i << " index: " << group[i]
+          << " R-ranges: " << m_groups[group[i] - 1]->getBoundingR().first << ", "
+          << m_groups[group[i] - 1]->getBoundingR().second << group[i]
+          << " Z-ranges: " << m_groups[group[i] - 1]->getBoundingZ().first << ", "
+          << m_groups[group[i] - 1]->getBoundingZ().second << std::endl;
 
   unsigned int detectors = track.detectors().size();
   if (detectors == 0) {

@@ -15,11 +15,13 @@
  *
  */
 #include <boost/foreach.hpp>
-#include "RecoTauTag/RecoTau/interface/TauDiscriminationProducerBase.h"
-#include "FWCore/Utilities/interface/InputTag.h"
+#include <memory>
+
 #include "CommonTools/Utils/interface/StringObjectFunction.h"
 #include "DataFormats/TauReco/interface/PFTau.h"
 #include "FWCore/ParameterSet/interface/FileInPath.h"
+#include "FWCore/Utilities/interface/InputTag.h"
+        #include "RecoTauTag/RecoTau/interface/TauDiscriminationProducerBase.h"
 
 #include <FWCore/ParameterSet/interface/ConfigurationDescriptions.h>
 #include <FWCore/ParameterSet/interface/ParameterSetDescription.h>
@@ -84,7 +86,7 @@ namespace {
       throw cms::Exception("TauDiscriminantCutMultiplexerT::loadObjectFromFile")
           << " Failed to find File = " << inputFileName << " !!\n";
     }
-    return std::unique_ptr<TFile>{new TFile(inputFileName.fullPath().data())};
+    return std::make_unique<TFile>(inputFileName.fullPath().data());
   }
 
   template <typename T>
@@ -121,7 +123,7 @@ namespace {
     es.get<PhysicsTFormulaPayloadRcd>().get(formulaName, formulaPayload);
 
     if (formulaPayload->formulas().size() == 1 && formulaPayload->limits().size() == 1) {
-      return std::unique_ptr<TFormula>{new TFormula(newName, formulaPayload->formulas().at(0).data())};
+      return std::make_unique<TFormula>(newName, formulaPayload->formulas().at(0).data());
     } else {
       throw cms::Exception("TauDiscriminantCutMultiplexerT::loadTFormulaFromDB")
           << "Failed to load TFormula = " << formulaName << " from Database !!\n";
